@@ -6,21 +6,119 @@
 <title>SkillRush</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--bg:#10101a;--card:#1c1c2b;--purple:#8b5cf6;--text:#fff;--muted:#9999ad;--green:#35d399}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;padding:18px 16px 90px}
-header{display:flex;justify-content:space-between;align-items:center}.logo{font-size:24px;font-weight:900}.logo span{color:var(--purple)}
-.balance{background:#29213e;padding:11px 15px;border-radius:14px;color:#f5c95c;font-weight:bold}
-h2{font-size:20px;margin:25px 0 13px}h3{margin:0 0 8px}p{color:var(--muted);font-size:13px;line-height:1.5}
-.hero{margin-top:22px;padding:22px;border-radius:22px;background:linear-gradient(135deg,#5426a5,#211d49)}.hero h1{font-size:27px;margin:0 0 8px}
-.level{margin-top:18px;color:#e4d5ff;font-size:13px}.progress{height:9px;background:#ffffff30;border-radius:10px;margin-top:9px;overflow:hidden}.progress div{height:100%;background:#d7b5ff;width:0%}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.card{background:var(--card);padding:16px;border-radius:18px}.game{min-height:145px;cursor:pointer}.emoji{font-size:34px;margin-bottom:12px}.game strong{display:block;font-size:15px}.reward{color:#f5c95c;font-size:12px;margin-top:8px}
-.quest{margin-bottom:10px}.quest-top{display:flex;justify-content:space-between;gap:8px}.quest-title{font-weight:bold;font-size:14px}.quest-reward{color:#f5c95c;font-size:12px;white-space:nowrap}
-.quest-progress{height:6px;background:#353548;border-radius:10px;margin-top:12px;overflow:hidden}.quest-progress div{height:100%;background:var(--green);width:0%}.quest-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:9px}
-button{border:0;border-radius:12px;padding:11px 15px;background:var(--purple);color:white;font-weight:bold;cursor:pointer}button:disabled{opacity:.4;cursor:default}.claim{padding:8px 12px;font-size:12px}
-.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:#191927;padding:12px 4px;border-top:1px solid #303044}.tabs button{background:none;color:var(--muted);font-size:12px;padding:8px}.tabs button.active{color:#b99aff}
-.page{display:none}.page.active{display:block}.modal{display:none;position:fixed;inset:0;background:#000c;z-index:5;align-items:center;justify-content:center;padding:18px}.modal-box{width:100%;max-width:400px;background:var(--card);padding:23px;border-radius:22px;text-align:center}.modal-box h2{margin-top:0}
-.modal-box input{width:100%;padding:13px;margin:12px 0;border-radius:10px;border:1px solid #555;background:#10101a;color:white;font-size:17px}.big{font-size:46px;margin:20px}.result{color:var(--green);font-weight:bold;margin:15px}.secondary{background:#38384e;margin-top:12px}
-.profile-stat{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #343447}
+
+:root{
+  color-scheme:dark;
+  --bg:#100826;--panel:#211044;--panel2:#2b1456;--purple:#8b42f5;
+  --purple2:#bd72ff;--gold:#ffd34e;--gold2:#ff9f1c;
+  --text:#fff9ff;--muted:#c4b3df;--green:#50e0a0;
+  --line:rgba(210,165,255,.22);--shadow:0 12px 30px rgba(0,0,0,.34)
+}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg)}
+body{
+  min-height:100vh;margin:0;padding:18px 16px calc(112px + env(safe-area-inset-bottom));
+  color:var(--text);font-family:Inter,ui-rounded,"Segoe UI",Arial,sans-serif;
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(140,55,255,.35),transparent 38%),
+    radial-gradient(ellipse at 100% 40%,rgba(92,35,190,.23),transparent 42%),
+    linear-gradient(160deg,#100622 0%,#190a35 52%,#100826 100%);
+  overflow-x:hidden
+}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;
+  background-image:radial-gradient(#fff 1px,transparent 1px);background-size:28px 28px;z-index:-1}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:760px;margin:0 auto}
+.logo{font-size:25px;font-weight:1000;letter-spacing:1.3px;text-shadow:0 3px 16px #9a4cff}
+.logo span{color:var(--gold)}
+.balance{
+  padding:11px 16px;border-radius:16px;color:#fff0a8;font-weight:900;
+  background:linear-gradient(145deg,#563080,#29134e);border:1px solid #a66aff66;
+  box-shadow:inset 0 2px 5px #ffffff20,0 7px 18px #0005
+}
+h2{font-size:20px;margin:25px 0 13px;letter-spacing:.2px}
+h3{margin:0 0 8px}
+p{color:var(--muted);font-size:13px;line-height:1.55}
+main{max-width:760px;margin:0 auto}
+.hero{
+  position:relative;isolation:isolate;overflow:hidden;margin:22px auto 0;padding:24px;
+  border-radius:26px;background:linear-gradient(135deg,#7134c9 0%,#3b176e 48%,#211044 100%);
+  border:1px solid #d49aff70;box-shadow:var(--shadow),inset 0 1px 0 #ffffff45
+}
+.hero:after{content:"🍪";position:absolute;right:12px;bottom:-22px;font-size:100px;opacity:.16;transform:rotate(-20deg);z-index:-1}
+.hero h1{font-size:27px;line-height:1.12;margin:0 0 8px;text-shadow:0 3px 12px #21063d}
+.hero p{max-width:440px}
+.level{margin-top:18px;color:#f0ddff;font-size:13px}
+.progress{height:10px;background:#16072e99;border:1px solid #ffffff20;border-radius:20px;margin-top:9px;overflow:hidden}
+.progress div{height:100%;background:linear-gradient(90deg,#ffb52e,#ffe779);border-radius:20px;box-shadow:0 0 12px #ffce4d;width:0%;transition:width .35s}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{
+  background:linear-gradient(145deg,rgba(57,32,91,.96),rgba(31,19,55,.98));
+  padding:16px;border-radius:20px;border:1px solid var(--line);
+  box-shadow:0 8px 20px #0003,inset 0 1px 0 #ffffff16
+}
+.game{min-height:155px;cursor:pointer;position:relative;overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s}
+.game:after{content:"";position:absolute;width:90px;height:90px;right:-35px;top:-38px;border-radius:50%;background:#a75aff22}
+.game:active{transform:scale(.975)}
+.game:hover{transform:translateY(-3px);border-color:#c18bff99;box-shadow:0 12px 26px #0005,0 0 18px #8b42f533}
+.emoji{font-size:34px;margin-bottom:12px;filter:drop-shadow(0 5px 7px #0005)}
+.game strong{display:block;font-size:15px}
+.reward{color:var(--gold);font-size:12px;margin-top:8px;font-weight:800}
+.quest{margin-bottom:10px}
+.quest-top{display:flex;justify-content:space-between;gap:8px}
+.quest-title{font-weight:800;font-size:14px}
+.quest-reward{color:var(--gold);font-size:12px;white-space:nowrap;font-weight:800}
+.quest-progress{height:7px;background:#160d2c;border-radius:10px;margin-top:12px;overflow:hidden}
+.quest-progress div{height:100%;background:linear-gradient(90deg,#45dba0,#b5ff9c);border-radius:10px;transition:width .3s}
+.quest-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+button{
+  border:0;border-radius:14px;padding:11px 15px;
+  background:linear-gradient(145deg,#a75cff,#7132d5);color:white;font-weight:850;
+  cursor:pointer;box-shadow:0 5px 0 #451b88,0 8px 16px #0003,inset 0 1px 0 #ffffff55;
+  transition:transform .14s,filter .14s,box-shadow .14s
+}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 #451b88,0 4px 9px #0003}
+button:hover{filter:brightness(1.12)}
+button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
+.claim{padding:8px 12px;font-size:12px}
+.tabs{
+  position:fixed;z-index:4;bottom:0;left:0;right:0;display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;
+  padding:10px 12px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(25,10,47,.9),rgba(13,6,27,.98));
+  border-top:1px solid #bd82ff44;backdrop-filter:blur(18px);
+  box-shadow:0 -10px 30px #0005
+}
+.tabs button{
+  min-width:0;min-height:58px;padding:8px 3px;border-radius:17px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  background:linear-gradient(145deg,#45216f,#281344);color:#d8c4f5;
+  border:1px solid #b77aff44;box-shadow:0 5px 0 #160927,0 8px 14px #0004,inset 0 1px 0 #ffffff20;
+  font-size:11px;white-space:nowrap
+}
+.tabs button.active{
+  color:#4a2600;background:linear-gradient(145deg,#ffe477,#ffad25);
+  border-color:#fff0a5;box-shadow:0 5px 0 #a95c0b,0 0 20px #ffbd3d55,inset 0 2px 0 #ffffffa8;
+  transform:translateY(-5px);font-weight:1000
+}
+.page{display:none;animation:pageIn .22s ease}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:.5;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.modal{display:none;position:fixed;inset:0;background:#080313d9;backdrop-filter:blur(8px);z-index:5;align-items:center;justify-content:center;padding:18px}
+.modal-box{
+  width:100%;max-width:400px;max-height:85vh;overflow:auto;
+  background:linear-gradient(145deg,#38205d,#1c1034);padding:23px;
+  border:1px solid #c28aff66;border-radius:25px;text-align:center;box-shadow:0 20px 60px #0009
+}
+.modal-box h2{margin-top:0}
+.modal-box input{width:100%;padding:13px;margin:12px 0;border-radius:12px;border:1px solid #a875d966;background:#140a28;color:white;font-size:17px;outline:none}
+.modal-box input:focus{border-color:#d5a3ff;box-shadow:0 0 0 3px #a75cff33}
+.big{font-size:46px;margin:20px}
+.result{color:var(--green);font-weight:900;margin:15px}
+.secondary{background:linear-gradient(145deg,#55466d,#332443);margin-top:12px;box-shadow:0 4px 0 #21172f}
+.profile-stat{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #ffffff18}
+.profile-stat b{color:#ffe07a}
+@media(max-width:380px){body{padding-left:12px;padding-right:12px}.tabs{gap:5px;padding-left:7px;padding-right:7px}.tabs button{font-size:10px}.hero{padding:19px}.hero h1{font-size:24px}}
+
 </style>
 </head>
 <body>
@@ -32,7 +130,7 @@ button{border:0;border-radius:12px;padding:11px 15px;background:var(--purple);co
 <section class="page" id="quests"><h2>☀️ Ежедневные квесты</h2><div id="daily"></div><h2>🏆 Еженедельные квесты</h2><div id="weekly"></div></section>
 <section class="page" id="profile"><h2>👤 Профиль игрока</h2><div class="card"><div class="emoji">🎮</div><h3 id="username">Игрок SkillRush</h3><p>Участник игровой арены</p><div class="profile-stat"><span>Уровень</span><b id="plevel">1</b></div><div class="profile-stat"><span>Хрумсы</span><b id="pcoins">0</b></div><div class="profile-stat"><span>Всего игр</span><b id="pplays">0</b></div><div class="profile-stat"><span>Победы</span><b id="pwins">0</b></div><div class="profile-stat"><span>Всего заработано</span><b id="pearned">0</b></div></div></section>
 </main>
-<nav class="tabs"><button class="active" onclick="showPage('home',this)">🏠 Главная</button><button onclick="showPage('gamespage',this)">🎮 Игры</button><button onclick="showPage('quests',this)">🎯 Квесты</button><button onclick="showPage('profile',this)">👤 Профиль</button></nav>
+<nav class="tabs" aria-label="Основная навигация"><button class="active" onclick="showPage('home',this)">🏠 Главная</button><button onclick="showPage('gamespage',this)">🎮 Игры</button><button onclick="showPage('quests',this)">🎯 Квесты</button><button onclick="showPage('profile',this)">👤 Профиль</button></nav>
 <div class="modal" id="modal"><div class="modal-box"><h2 id="gameTitle">Игра</h2><div id="gameContent"></div><button class="secondary" onclick="closeGame()">Закрыть</button></div></div>
 <script>
 const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
