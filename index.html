@@ -1,5 +1,10 @@
+from pathlib import Path
+import zipfile, textwrap, os
 
-<!DOCTYPE html>
+root = Path("/mnt/data/SkillRush")
+(root / "supabase" / "functions" / "index").mkdir(parents=True, exist_ok=True)
+
+html = r'''<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -698,3 +703,857 @@ boot();
 </script>
 </body>
 </html>
+'''
+
+ts = r'''import { createClient } from "npm:@supabase/supabase-js@2";
+
+const encoder = new TextEncoder();
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "https://2222-alex57.github.io",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+type JsonObject = Record<string, unknown>;
+
+function isObject(value: unknown): value is JsonObject {
+  return typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value);
+}
+
+function toHex(bytes: Uint8Array): string {
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function hmacSha256(
+  keyBytes: Uint8Array,
+  message: string,
+): Promise<Uint8Array> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyBytes,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+
+  return new Uint8Array(
+    await crypto.subtle.sign("HMAC", key, encoder.encode(message)),
+  );
+}
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+
+  let result = 0;
+
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+
+  return result === 0;
+}
+
+async function verifyTelegram(initData: string, botToken: string) {
+  const params = new URLSearchParams(initData);
+  const receivedHash = params.get("hash");
+
+  if (!receivedHash || !/^[a-f0-9]{64}$/i.test(receivedHash)) {
+    throw new Error("Invalid Telegram hash");
+  }
+
+  params.delete("hash");
+
+  const entries = Array.from(params.entries()).sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0
+  );
+
+  const dataCheckString = entries
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n");
+
+  const secretKey = await hmacSha256(
+    encoder.encode("WebAppData"),
+    botToken,
+  );
+
+  const calculatedHash = toHex(
+    await hmacSha256(secretKey, dataCheckString),
+  );
+
+  if (!safeEqual(calculatedHash, receivedHash.toLowerCase())) {
+    throw new Error("Invalid Telegram signature");
+  }
+
+  const authDate = Number(params.get("auth_date"));
+  const now = Math.floor(Date.now() / 1000);
+
+  if (!authDate || now - authDate > 86400 || authDate > now + 60) {
+    throw new Error("Telegram session expired");
+  }
+
+  const userData = params.get("user");
+
+  if (!userData) {
+    throw new Error("Telegram user missing");
+  }
+
+  const user = JSON.parse(userData);
+
+  if (!Number.isSafeInteger(user.id) || user.id <= 0) {
+    throw new Error("Invalid Telegram user");
+  }
+
+  return user;
+}
+
+function randomInt(min: number, max: number): number {
+  const range = max - min + 1;
+  const limit = Math.floor(0x100000000 / range) * range;
+  const value = new Uint32Array(1);
+
+  do {
+    crypto.getRandomValues(value);
+  } while (value[0] >= limit);
+
+  return min + (value[0] % range);
+}
+
+function randomDie(): number {
+  return randomInt(1, 6);
+}
+
+function validRoomId(value: unknown): value is string {
+  return typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      .test(value);
+}
+
+function normalizeWord(value: unknown): string {
+  if (typeof value !== "string") return "";
+
+  return value
+    .trim()
+    .toLocaleUpperCase("ru-RU")
+    .replace(/\s+/g, "");
+}
+
+const WORDS = [
+  { word: "КОМЕТА", hint: "Космический объект" },
+  { word: "РАДУГА", hint: "Цветное природное явление" },
+  { word: "ПИРАТ", hint: "Морской персонаж" },
+  { word: "КНИГА", hint: "Источник историй и знаний" },
+  { word: "ЗЕБРА", hint: "Полосатое животное" },
+  { word: "ПЛАНЕТА", hint: "Небесное тело" },
+  { word: "РОБОТ", hint: "Механический помощник" },
+  { word: "ФОНАРЬ", hint: "Источник света" },
+];
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  const respond = (data: unknown, status = 200) =>
+    new Response(JSON.stringify(data), {
+      status,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
+    });
+
+  try {
+    if (req.method !== "POST") {
+      return respond({ error: "Use POST" }, 405);
+    }
+
+    const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!botToken || !supabaseUrl || !serviceKey) {
+      throw new Error("Server environment is not configured");
+    }
+
+    const body: unknown = await req.json();
+
+    if (
+      !isObject(body) ||
+      typeof body.initData !== "string" ||
+      body.initData.length > 10000
+    ) {
+      return respond({ error: "Invalid request" }, 400);
+    }
+
+    const user = await verifyTelegram(body.initData, botToken);
+
+    const supabase = createClient(supabaseUrl, serviceKey, {
+      auth: { persistSession: false },
+    });
+
+    const username = String(
+      user.username || user.first_name || "Игрок",
+    ).slice(0, 64);
+
+    async function ensurePlayer() {
+      const { error } = await supabase
+        .from("players")
+        .upsert(
+          {
+            telegram_id: user.id,
+            username,
+          },
+          {
+            onConflict: "telegram_id",
+          },
+        );
+
+      if (error) throw error;
+    }
+
+    async function settle(
+      sessionId: string,
+      points: number,
+      won: boolean,
+    ) {
+      const { data, error } = await supabase.rpc(
+        "settle_game_session",
+        {
+          p_session_id: sessionId,
+          p_telegram_id: user.id,
+          p_points: points,
+          p_won: won,
+        },
+      );
+
+      if (error) throw error;
+
+      return data;
+    }
+
+    if (body.action === "profile") {
+      await ensurePlayer();
+
+      const { data, error } = await supabase
+        .from("players")
+        .select("username, xp, crumbs, level")
+        .eq("telegram_id", user.id)
+        .single();
+
+      if (error) throw error;
+
+      return respond({ success: true, player: data });
+    }
+
+    if (body.action === "leaderboard") {
+      const { data, error } = await supabase
+        .from("players")
+        .select("username, xp, crumbs, level")
+        .order("xp", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      return respond({ success: true, leaderboard: data });
+    }
+
+    if (body.action === "quest_status") {
+      await ensurePlayer();
+
+      const { data, error } = await supabase.rpc(
+        "get_skillrush_quest_status",
+        { p_telegram_id: user.id },
+      );
+
+      if (error) throw error;
+
+      return respond({ success: true, quests: data });
+    }
+
+    const gameActions = [
+      "dice_create",
+      "dice_rooms",
+      "dice_join",
+      "dice_state",
+      "dice_roll",
+      "game_start",
+      "game_submit",
+      "game_guess",
+      "quest_claim",
+    ];
+
+    if (gameActions.includes(String(body.action))) {
+      await ensurePlayer();
+    }
+
+    if (body.action === "quest_claim") {
+      const period = body.period;
+      const questKey = body.questKey;
+
+      if (
+        (period !== "daily" && period !== "weekly") ||
+        !["games", "earned", "wins"].includes(String(questKey))
+      ) {
+        return respond({ error: "Invalid quest" }, 400);
+      }
+
+      const { data, error } = await supabase.rpc(
+        "claim_skillrush_quest",
+        {
+          p_telegram_id: user.id,
+          p_period: period,
+          p_quest_key: questKey,
+        },
+      );
+
+      if (error) throw error;
+
+      const { data: player, error: playerError } = await supabase
+        .from("players")
+        .select("username, xp, crumbs, level")
+        .eq("telegram_id", user.id)
+        .single();
+
+      if (playerError) throw playerError;
+
+      return respond({ ...data, player });
+    }
+
+    if (body.action === "game_start") {
+      const game = body.game;
+
+      if (
+        game !== "memory_match" &&
+        game !== "number_guess" &&
+        game !== "word_guess"
+      ) {
+        return respond({ error: "Unknown game" }, 400);
+      }
+
+      let challenge: JsonObject;
+      let publicChallenge: JsonObject;
+      let rewardCrumbs = 10;
+      let rewardXp = 20;
+
+      if (game === "memory_match") {
+        const sequence = Array.from(
+          { length: 5 },
+          () => randomInt(1, 9),
+        );
+
+        challenge = { sequence };
+        publicChallenge = { sequence, displaySeconds: 5 };
+      } else if (game === "number_guess") {
+        challenge = {
+          secret: randomInt(1, 20),
+          attempts: 0,
+          maxAttempts: 7,
+        };
+
+        publicChallenge = {
+          min: 1,
+          max: 20,
+          maxAttempts: 7,
+        };
+      } else {
+        const selected = WORDS[randomInt(0, WORDS.length - 1)];
+
+        challenge = {
+          secret: selected.word,
+          attempts: 0,
+          maxAttempts: 8,
+        };
+
+        publicChallenge = {
+          hint: selected.hint,
+          wordLength: selected.word.length,
+          maxAttempts: 8,
+        };
+
+        rewardCrumbs = 15;
+        rewardXp = 25;
+      }
+
+      const { data, error } = await supabase
+        .from("game_sessions")
+        .insert({
+          telegram_id: user.id,
+          game,
+          challenge,
+          reward_crumbs: rewardCrumbs,
+          reward_xp: rewardXp,
+        })
+        .select("id, expires_at")
+        .single();
+
+      if (error) throw error;
+
+      return respond({
+        success: true,
+        sessionId: data.id,
+        expiresAt: data.expires_at,
+        game,
+        challenge: publicChallenge,
+      });
+    }
+
+    if (body.action === "game_submit") {
+      if (
+        typeof body.sessionId !== "string" ||
+        !Array.isArray(body.answer) ||
+        body.answer.length !== 5 ||
+        !body.answer.every(
+          (value: unknown) =>
+            Number.isSafeInteger(value) &&
+            Number(value) >= 1 &&
+            Number(value) <= 9,
+        )
+      ) {
+        return respond({ error: "Invalid answer" }, 400);
+      }
+
+      const { data: session, error } = await supabase
+        .from("game_sessions")
+        .select("id, game, challenge, status, expires_at")
+        .eq("id", body.sessionId)
+        .eq("telegram_id", user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!session || session.game !== "memory_match") {
+        return respond({ error: "Session not found" }, 404);
+      }
+
+      if (
+        session.status !== "active" ||
+        new Date(session.expires_at).getTime() < Date.now()
+      ) {
+        return respond({ error: "Session expired" }, 400);
+      }
+
+      const expected = session.challenge?.sequence;
+
+      if (!Array.isArray(expected) || expected.length !== 5) {
+        throw new Error("Invalid memory challenge");
+      }
+
+      const won = expected.every(
+        (value: number, index: number) =>
+          value === body.answer[index],
+      );
+
+      const result = await settle(body.sessionId, won ? 100 : 0, won);
+
+      return respond({ success: true, won, result });
+    }
+
+    if (body.action === "game_guess") {
+      if (
+        typeof body.sessionId !== "string" ||
+        (typeof body.guess !== "string" &&
+          typeof body.guess !== "number")
+      ) {
+        return respond({ error: "Invalid guess" }, 400);
+      }
+
+      const { data: session, error } = await supabase
+        .from("game_sessions")
+        .select("id, game, challenge, status, expires_at")
+        .eq("id", body.sessionId)
+        .eq("telegram_id", user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (
+        !session ||
+        (session.game !== "number_guess" &&
+          session.game !== "word_guess")
+      ) {
+        return respond({ error: "Session not found" }, 404);
+      }
+
+      if (
+        session.status !== "active" ||
+        new Date(session.expires_at).getTime() < Date.now()
+      ) {
+        return respond({ error: "Session expired" }, 400);
+      }
+
+      const challenge = session.challenge;
+
+      if (
+        !isObject(challenge) ||
+        (typeof challenge.secret !== "string" &&
+          typeof challenge.secret !== "number") ||
+        typeof challenge.attempts !== "number" ||
+        typeof challenge.maxAttempts !== "number"
+      ) {
+        throw new Error("Invalid challenge");
+      }
+
+      const maxAttempts = challenge.maxAttempts;
+      const attempts = challenge.attempts + 1;
+
+      let won = false;
+      let hint = "wrong";
+
+      if (session.game === "number_guess") {
+        const guess = Number(body.guess);
+
+        if (
+          !Number.isSafeInteger(guess) ||
+          guess < 1 ||
+          guess > 20
+        ) {
+          return respond({ error: "Enter a number from 1 to 20" }, 400);
+        }
+
+        const secret = Number(challenge.secret);
+        won = guess === secret;
+
+        if (guess < secret) hint = "higher";
+        if (guess > secret) hint = "lower";
+      } else {
+        const guess = normalizeWord(body.guess);
+        const secret = normalizeWord(challenge.secret);
+
+        if (!guess || guess.length > 30) {
+          return respond({ error: "Invalid word" }, 400);
+        }
+
+        won = guess === secret;
+      }
+
+      const updatedChallenge = { ...challenge, attempts };
+
+      const { data: updatedRows, error: updateError } = await supabase
+        .from("game_sessions")
+        .update({ challenge: updatedChallenge })
+        .eq("id", body.sessionId)
+        .eq("telegram_id", user.id)
+        .eq("status", "active")
+        .eq("challenge", challenge)
+        .select("id");
+
+      if (updateError) throw updateError;
+
+      if (!updatedRows || updatedRows.length === 0) {
+        return respond({
+          success: false,
+          error: "Attempt conflict. Please try again.",
+          code: "ATTEMPT_CONFLICT",
+        }, 409);
+      }
+
+      if (won) {
+        const points = Math.max(1, maxAttempts - attempts + 1) * 10;
+        const result = await settle(body.sessionId, points, true);
+
+        return respond({ success: true, status: "won", attempts, result });
+      }
+
+      if (attempts >= maxAttempts) {
+        const result = await settle(body.sessionId, 0, false);
+
+        return respond({ success: true, status: "lost", attempts, result });
+      }
+
+      return respond({
+        success: true,
+        status: "try_again",
+        hint,
+        attempts,
+        attemptsLeft: maxAttempts - attempts,
+      });
+    }
+
+    if (body.action === "dice_create") {
+      const { data, error } = await supabase.rpc(
+        "create_dice_room",
+        { p_telegram_id: user.id },
+      );
+
+      if (error) throw error;
+
+      return respond(data);
+    }
+
+    if (body.action === "dice_rooms") {
+      const { data: rooms, error } = await supabase
+        .from("dice_rooms")
+        .select(
+          "id, creator_telegram_id, status, current_round, created_at, expires_at",
+        )
+        .eq("status", "waiting")
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(30);
+
+      if (error) throw error;
+
+      const ids = [...new Set(
+        (rooms || []).map((room) => room.creator_telegram_id),
+      )];
+
+      const names: Record<string, string> = {};
+
+      if (ids.length > 0) {
+        const { data: players, error: playerError } = await supabase
+          .from("players")
+          .select("telegram_id, username")
+          .in("telegram_id", ids);
+
+        if (playerError) throw playerError;
+
+        for (const player of players || []) {
+          names[String(player.telegram_id)] = player.username;
+        }
+      }
+
+      return respond({
+        success: true,
+        rooms: (rooms || []).map((room) => ({
+          id: room.id,
+          status: room.status,
+          current_round: room.current_round,
+          created_at: room.created_at,
+          expires_at: room.expires_at,
+          creator_username: names[String(room.creator_telegram_id)] || "Игрок",
+        })),
+      });
+    }
+
+    if (body.action === "dice_join") {
+      if (!validRoomId(body.roomId)) {
+        return respond({ error: "Invalid room ID" }, 400);
+      }
+
+      const { data, error } = await supabase.rpc(
+        "join_dice_room",
+        {
+          p_room_id: body.roomId,
+          p_telegram_id: user.id,
+        },
+      );
+
+      if (error) throw error;
+
+      return respond(data);
+    }
+
+    if (body.action === "dice_state") {
+      if (!validRoomId(body.roomId)) {
+        return respond({ error: "Invalid room ID" }, 400);
+      }
+
+      const { data: room, error: roomError } = await supabase
+        .from("dice_rooms")
+        .select(
+          "id, creator_telegram_id, status, current_round, winner_telegram_id, created_at, expires_at, finished_at",
+        )
+        .eq("id", body.roomId)
+        .maybeSingle();
+
+      if (roomError) throw roomError;
+
+      if (!room) {
+        return respond({ error: "Room not found" }, 404);
+      }
+
+      const { data: members, error: membersError } = await supabase
+        .from("dice_room_players")
+        .select("telegram_id, seat, joined_at")
+        .eq("room_id", body.roomId)
+        .order("seat");
+
+      if (membersError) throw membersError;
+
+      if (!(members || []).some((member) => member.telegram_id === user.id)) {
+        return respond({ error: "You are not in this room" }, 403);
+      }
+
+      const { data: rounds, error: roundsError } = await supabase
+        .from("dice_rounds")
+        .select(
+          "round_number, player1_telegram_id, player2_telegram_id, player1_dice1, player1_dice2, player2_dice1, player2_dice2, winner_telegram_id, created_at",
+        )
+        .eq("room_id", body.roomId)
+        .order("round_number");
+
+      if (roundsError) throw roundsError;
+
+      const { data: pendingRoll, error: pendingError } = await supabase
+        .from("dice_player_rolls")
+        .select("round_number")
+        .eq("room_id", body.roomId)
+        .eq("telegram_id", user.id)
+        .order("round_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (pendingError) throw pendingError;
+
+      return respond({
+        success: true,
+        room,
+        members,
+        rounds,
+        waiting_for_opponent: Boolean(pendingRoll),
+      });
+    }
+
+    if (body.action === "dice_roll") {
+      if (!validRoomId(body.roomId)) {
+        return respond({ error: "Invalid room ID" }, 400);
+      }
+
+      if (!Number.isSafeInteger(body.round) || Number(body.round) < 1) {
+        return respond({ error: "Invalid round" }, 400);
+      }
+
+      const { data: existing, error: existingError } = await supabase
+        .from("dice_player_rolls")
+        .select("round_number")
+        .eq("room_id", body.roomId)
+        .eq("telegram_id", user.id)
+        .eq("round_number", body.round)
+        .maybeSingle();
+
+      if (existingError) throw existingError;
+
+      if (existing) {
+        return respond({
+          success: true,
+          status: "waiting_for_opponent",
+          round: body.round,
+        });
+      }
+
+      const dice1 = randomDie();
+      const dice2 = randomDie();
+
+      const { data, error } = await supabase.rpc(
+        "roll_dice_for_player",
+        {
+          p_room_id: body.roomId,
+          p_telegram_id: user.id,
+          p_round: body.round,
+          p_dice1: dice1,
+          p_dice2: dice2,
+        },
+      );
+
+      if (error) {
+        const { data: retry, error: retryError } = await supabase
+          .from("dice_player_rolls")
+          .select("round_number")
+          .eq("room_id", body.roomId)
+          .eq("telegram_id", user.id)
+          .eq("round_number", body.round)
+          .maybeSingle();
+
+        if (!retryError && retry) {
+          return respond({
+            success: true,
+            status: "waiting_for_opponent",
+            round: body.round,
+          });
+        }
+
+        throw error;
+      }
+
+      return respond(data);
+    }
+
+    return respond({ error: "Unknown action" }, 400);
+  } catch (error) {
+    console.error("SkillRush API error:", error);
+
+    return respond({ error: "Request failed" }, 400);
+  }
+});
+'''
+
+config = '''# Supabase CLI configuration for the SkillRush Edge Function.
+# verify_jwt=false is required because the function validates Telegram initData itself.
+[functions.index]
+verify_jwt = false
+'''
+
+readme = '''# SkillRush
+
+Telegram Mini App: мини-игры, квесты, профиль, рейтинг и комнаты с кубиками.
+
+## Состав проекта
+
+- `index.html` — клиентское приложение.
+- `supabase/functions/index/index.ts` — Supabase Edge Function.
+- `supabase/config.toml` — настройки функции для Supabase CLI.
+
+## Важно перед запуском
+
+Этот архив собирает два исходных файла, которые предоставил владелец проекта, и минимальные настройки CLI. Он **не содержит SQL-миграций** для таблиц и RPC-функций: они должны уже существовать в Supabase.
+
+Ожидаемые таблицы и RPC включают `players`, `game_sessions`, `dice_rooms`, `dice_room_players`, `dice_rounds`, `dice_player_rolls`, `quest_claims`, `settle_game_session`, `get_skillrush_quest_status`, `claim_skillrush_quest`, `create_dice_room`, `join_dice_room`, `roll_dice_for_player`.
+
+## Настройка Supabase
+
+1. Установи Supabase CLI и выполни `supabase login`.
+2. В корне проекта выполни `supabase link --project-ref dxsekydmpmaskmxafapx`.
+3. Добавь серверные секреты:
+   - `TELEGRAM_BOT_TOKEN` — токен Telegram-бота.
+   - `SUPABASE_SERVICE_ROLE_KEY` — service_role key проекта.
+4. `SUPABASE_URL` обычно автоматически доступен в Supabase Edge Functions; если окружение требует, задай URL проекта.
+5. Опубликуй функцию:
+
+   ```bash
+   supabase functions deploy index
+   ```
+
+`service_role` и токен бота должны храниться только в секретах Supabase. Не вставляй их в `index.html`, GitHub Pages или публичный репозиторий.
+
+## Настройка Telegram
+
+В BotFather укажи URL Mini App / Menu Button:
+
+`https://2222-alex57.github.io/my-telegram-bot/`
+
+В `index.html` уже указан публичный Supabase Publishable key. Публичный ключ предназначен для клиентского использования; он не заменяет проверку Telegram `initData`.
+
+## Публикация фронтенда
+
+Помести `index.html` в корень репозитория GitHub Pages и опубликуй изменения. Остальные файлы можно хранить в репозитории, но для работы сайта достаточно корневого `index.html`.
+
+## Примечания
+
+- Функция проверяет подпись Telegram `initData`.
+- Баланс и опыт читаются с сервера.
+- В кубиках клиент не списывает Хрумсы; серверные RPC должны начислять награду победителю по согласованной логике.
+- Перед публичным запуском проверь SQL-политики доступа к таблицам: клиент не должен получать прямой доступ к приватным данным игроков.
+'''
+
+(root / "index.html").write_text(html, encoding="utf-8")
+(root / "supabase" / "functions" / "index" / "index.ts").write_text(ts, encoding="utf-8")
+(root / "supabase" / "config.toml").write_text(config, encoding="utf-8")
+(root / "README.md").write_text(readme, encoding="utf-8")
+
+zip_path = Path("/mnt/data/SkillRush-project.zip")
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    for p in root.rglob("*"):
+        if p.is_file():
+            z.write(p, p.relative_to(root.parent))
+
+print(f"Готово: {zip_path}")
+print("Файлы:")
+for p in sorted(root.rglob("*")):
+    if p.is_file():
+        print(p.relative_to(root))
