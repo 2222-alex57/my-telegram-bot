@@ -1,10 +1,5 @@
-from pathlib import Path
-import zipfile, textwrap, os
 
-root = Path("/mnt/data/SkillRush")
-(root / "supabase" / "functions" / "index").mkdir(parents=True, exist_ok=True)
-
-html = r'''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -12,1548 +7,461 @@ html = r'''<!DOCTYPE html>
 <title>SkillRush</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{
- color-scheme:dark;--bg:#100826;--panel:#211044;--purple:#8b42f5;
- --purple2:#bd72ff;--gold:#ffd34e;--text:#fff9ff;--muted:#c4b3df;
- --green:#50e0a0;--line:rgba(210,165,255,.22)
+:root {
+  --bg:#10101a;
+  --card:#1c1c2b;
+  --purple:#8b5cf6;
+  --text:#fff;
+  --muted:#9999ad;
+  --green:#35d399;
 }
-*{box-sizing:border-box}
-body{min-height:100vh;margin:0;padding:18px 16px 110px;color:var(--text);
- font-family:Inter,"Segoe UI",Arial,sans-serif;
- background:radial-gradient(ellipse at 12% 0%,#8c37ff55,transparent 38%),
- radial-gradient(ellipse at 100% 40%,#5c23be3b,transparent 42%),
- linear-gradient(160deg,#100622,#190a35 52%,#100826);overflow-x:hidden}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:760px;margin:auto}
-.logo{font-size:25px;font-weight:1000;letter-spacing:1.3px;text-shadow:0 3px 16px #9a4cff}
-.logo span{color:var(--gold)}
-.balance{padding:11px 16px;border-radius:16px;color:#fff0a8;font-weight:900;
- background:linear-gradient(145deg,#563080,#29134e);border:1px solid #a66aff66}
-main{max-width:760px;margin:auto}
-h2{font-size:20px;margin:25px 0 13px}
-h3{margin:0 0 8px}
-p{color:var(--muted);font-size:13px;line-height:1.55}
-.hero{margin:22px auto 0;padding:24px;border-radius:26px;
- background:linear-gradient(135deg,#7134c9,#3b176e 48%,#211044);
- border:1px solid #d49aff70;box-shadow:0 12px 30px #0005}
-.hero h1{font-size:27px;line-height:1.12;margin:0 0 8px}
-.level{margin-top:18px;color:#f0ddff;font-size:13px}
-.progress,.quest-progress{height:9px;background:#16072e;border-radius:20px;margin-top:9px;overflow:hidden}
-.progress div{height:100%;background:linear-gradient(90deg,#ffb52e,#ffe779);width:0}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.card{background:linear-gradient(145deg,#39205bf5,#1f1337fa);padding:16px;
- border-radius:20px;border:1px solid var(--line);box-shadow:0 8px 20px #0003}
-.game{min-height:155px;cursor:pointer}
-.game:active{transform:scale(.98)}
-.emoji{font-size:34px;margin-bottom:12px}
-.game strong{display:block;font-size:15px}
-.reward,.quest-reward{color:var(--gold);font-size:12px;font-weight:800}
-button{border:0;border-radius:14px;padding:11px 15px;
- background:linear-gradient(145deg,#a75cff,#7132d5);color:white;font-weight:850;
- cursor:pointer;box-shadow:0 5px 0 #451b88,0 8px 16px #0003}
-button:disabled{opacity:.45;cursor:default}
-input{width:100%;padding:13px;margin:12px 0;border-radius:12px;
- border:1px solid #a875d966;background:#140a28;color:white;font-size:17px}
-.tabs{position:fixed;z-index:4;bottom:0;left:0;right:0;display:grid;
- grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px 12px calc(12px + env(safe-area-inset-bottom));
- background:#190a2fee;border-top:1px solid #bd82ff44;backdrop-filter:blur(18px)}
-.tabs button{min-width:0;min-height:58px;padding:8px 3px;border-radius:17px;
- display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
- background:linear-gradient(145deg,#45216f,#281344);color:#d8c4f5;
- border:1px solid #b77aff44;box-shadow:0 5px 0 #160927;font-size:11px}
-.tabs button.active{color:#4a2600;background:linear-gradient(145deg,#ffe477,#ffad25);
- border-color:#fff0a5;transform:translateY(-4px)}
-.page{display:none}.page.active{display:block}
-.modal{display:none;position:fixed;inset:0;background:#080313e8;z-index:5;
- align-items:center;justify-content:center;padding:18px}
-.modal-box{width:100%;max-width:410px;max-height:85vh;overflow:auto;
- background:linear-gradient(145deg,#38205d,#1c1034);padding:23px;
- border:1px solid #c28aff66;border-radius:25px;text-align:center}
-.modal-box button{margin:5px}
-.big{font-size:46px;margin:20px}
-.result{color:var(--green);font-weight:900;margin:15px}
-.secondary{background:linear-gradient(145deg,#55466d,#332443);margin-top:12px}
-.quest{margin-bottom:10px}
-.quest-top,.quest-bottom{display:flex;justify-content:space-between;gap:8px;align-items:center}
-.quest-title{font-weight:800;font-size:14px}
-.quest-progress div{height:100%;background:linear-gradient(90deg,#45dba0,#b5ff9c)}
-.profile-stat{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #ffffff18}
-.profile-stat b{color:#ffe07a}
-.notice{padding:12px;border-radius:12px;background:#160b2c;color:#d8c4f5;margin:10px 0;font-size:13px}
-.small{font-size:12px}
-.dice-round{padding:12px;margin:8px 0;background:#160b2c;border-radius:12px;text-align:left}
-.dice-values{font-size:20px;font-weight:900;color:var(--gold)}
-@media(max-width:380px){
- body{padding-left:12px;padding-right:12px}
- .tabs{gap:5px;padding-left:7px;padding-right:7px}
- .tabs button{font-size:10px}
- .hero{padding:19px}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+  padding:18px 16px 90px;
+}
+header {display:flex;justify-content:space-between;align-items:center}
+.logo {font-size:24px;font-weight:900}
+.logo span {color:var(--purple)}
+.balance {
+  background:#29213e;
+  padding:11px 15px;
+  border-radius:14px;
+  color:#f5c95c;
+  font-weight:bold;
+}
+h2 {font-size:20px;margin:25px 0 13px}
+h3 {margin:0 0 8px}
+p {color:var(--muted);font-size:13px;line-height:1.5}
+.hero {
+  margin-top:22px;
+  padding:22px;
+  border-radius:22px;
+  background:linear-gradient(135deg,#5426a5,#211d49);
+}
+.hero h1 {font-size:27px;margin:0 0 8px}
+.level {margin-top:18px;color:#e4d5ff;font-size:13px}
+.progress {
+  height:9px;background:#ffffff30;
+  border-radius:10px;margin-top:9px;overflow:hidden;
+}
+.progress div {height:100%;background:#d7b5ff;width:0%}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+.card {
+  background:var(--card);
+  padding:16px;
+  border-radius:18px;
+}
+.game {min-height:145px;cursor:pointer}
+.emoji {font-size:34px;margin-bottom:12px}
+.game strong {display:block;font-size:15px}
+.reward {color:#f5c95c;font-size:12px;margin-top:8px}
+.quest {margin-bottom:10px}
+.quest-top {display:flex;justify-content:space-between;gap:8px}
+.quest-title {font-weight:bold;font-size:14px}
+.quest-reward {color:#f5c95c;font-size:12px;white-space:nowrap}
+.quest-progress {
+  height:6px;background:#353548;
+  border-radius:10px;margin-top:12px;overflow:hidden;
+}
+.quest-progress div {
+  height:100%;background:var(--green);width:0%;
+}
+.quest-bottom {
+  display:flex;justify-content:space-between;
+  align-items:center;margin-top:9px;
+}
+button {
+  border:0;border-radius:12px;padding:11px 15px;
+  background:var(--purple);color:white;
+  font-weight:bold;cursor:pointer;
+}
+button:disabled {opacity:.4;cursor:default}
+.claim {padding:8px 12px;font-size:12px}
+.tabs {
+  position:fixed;bottom:0;left:0;right:0;
+  display:flex;justify-content:space-around;
+  background:#191927;padding:12px 4px;
+  border-top:1px solid #303044;
+}
+.tabs button {
+  background:none;color:var(--muted);
+  font-size:12px;padding:8px;
+}
+.tabs button.active {color:#b99aff}
+.page {display:none}
+.page.active {display:block}
+.modal {
+  display:none;position:fixed;inset:0;
+  background:#000c;z-index:5;
+  align-items:center;justify-content:center;padding:18px;
+}
+.modal-box {
+  width:100%;max-width:400px;background:var(--card);
+  padding:23px;border-radius:22px;text-align:center;
+}
+.modal-box h2 {margin-top:0}
+.modal-box input {
+  width:100%;padding:13px;margin:12px 0;
+  border-radius:10px;border:1px solid #555;
+  background:#10101a;color:white;font-size:17px;
+}
+.big {font-size:46px;margin:20px}
+.result {color:var(--green);font-weight:bold;margin:15px}
+.secondary {background:#38384e;margin-top:12px}
+.profile-stat {
+  display:flex;justify-content:space-between;
+  padding:14px 0;border-bottom:1px solid #343447;
 }
 </style>
 </head>
 <body>
+
 <header>
- <div class="logo">SKILL<span>RUSH</span></div>
- <div class="balance">🍪 <span id="balance">0</span> Хрумсов</div>
+  <div class="logo">SKILL<span>RUSH</span></div>
+  <div class="balance">🍪 <span id="balance">0</span></div>
 </header>
 
 <section class="hero">
- <h1>Играй. Побеждай. Забирай!</h1>
- <p>Соревнуйся в мини-играх, выполняй задания и зарабатывай Хрумсы.</p>
- <div class="level">
-  <div style="display:flex;justify-content:space-between">
-   <span>⭐ Уровень <b id="level">1</b></span>
-   <span id="xp">0 / 500 XP</span>
+  <h1>Играй. Побеждай. Забирай!</h1>
+  <p>Соревнуйся в мини-играх, выполняй задания и зарабатывай Хрумсы.</p>
+  <div class="level">
+    <div style="display:flex;justify-content:space-between">
+      <span>⭐ Уровень <b id="level">1</b></span>
+      <span id="xp">0 / 500 XP</span>
+    </div>
+    <div class="progress"><div id="xpbar"></div></div>
   </div>
-  <div class="progress"><div id="xpbar"></div></div>
- </div>
 </section>
 
 <main>
 <section class="page active" id="home">
- <h2>🔥 Популярные игры</h2>
- <div class="grid" id="games"></div>
- <h2>🎯 Твои задания</h2>
- <div class="card">
-  <div id="homequests"></div>
-  <button onclick="showPage('quests')" style="width:100%;margin-top:12px">Все квесты →</button>
- </div>
+  <h2>🔥 Популярные игры</h2>
+  <div class="grid" id="games"></div>
+  <h2>🎯 Твои задания</h2>
+  <div class="card">
+    <div id="homequests"></div>
+    <button onclick="showPage('quests')" style="width:100%;margin-top:12px">Все квесты →</button>
+  </div>
 </section>
 
 <section class="page" id="gamespage">
- <h2>🎮 Все игры</h2>
- <div class="grid" id="allgames"></div>
- <h2>🎲 Кубы</h2>
- <div class="card">
-  <p>Создай комнату или присоединись к открытой. Ставок и потери Хрумсов нет. Победитель получает 20 Хрумсов.</p>
-  <button onclick="createDiceRoom()">Создать комнату</button>
-  <button onclick="loadDiceRooms()">Обновить комнаты</button>
-  <div id="diceRooms" class="notice">Комнаты ещё не загружены.</div>
-  <div id="diceRoomState"></div>
- </div>
+  <h2>🎮 Все игры</h2>
+  <div class="grid" id="allgames"></div>
 </section>
 
 <section class="page" id="quests">
- <h2>☀️ Ежедневные квесты</h2>
- <div id="daily"></div>
- <h2>🏆 Еженедельные квесты</h2>
- <div id="weekly"></div>
+  <h2>☀️ Ежедневные квесты</h2>
+  <div id="daily"></div>
+  <h2>🏆 Еженедельные квесты</h2>
+  <div id="weekly"></div>
 </section>
 
 <section class="page" id="profile">
- <h2>👤 Профиль игрока</h2>
- <div class="card">
-  <div class="emoji">🎮</div>
-  <h3 id="username">Игрок SkillRush</h3>
-  <p>Участник игровой арены</p>
-  <div class="profile-stat"><span>Уровень</span><b id="plevel">1</b></div>
-  <div class="profile-stat"><span>Хрумсы</span><b id="pcoins">0</b></div>
-  <div class="profile-stat"><span>XP</span><b id="pxp">0</b></div>
-  <p class="small">Статистика игр и побед пока не передаётся сервером.</p>
- </div>
- <h2>🏆 Таблица лидеров</h2>
- <div class="card" id="leaderboard">Загрузка рейтинга...</div>
+  <h2>👤 Профиль игрока</h2>
+  <div class="card">
+    <div class="emoji">🎮</div>
+    <h3 id="username">Игрок SkillRush</h3>
+    <p>Участник игровой арены</p>
+    <div class="profile-stat"><span>Уровень</span><b id="plevel">1</b></div>
+    <div class="profile-stat"><span>Хрумсы</span><b id="pcoins">0</b></div>
+    <div class="profile-stat"><span>Всего игр</span><b id="pplays">0</b></div>
+    <div class="profile-stat"><span>Победы</span><b id="pwins">0</b></div>
+    <div class="profile-stat"><span>Всего заработано</span><b id="pearned">0</b></div>
+  </div>
 </section>
 </main>
 
 <nav class="tabs">
- <button class="active" onclick="showPage('home',this)">🏠 Главная</button>
- <button onclick="showPage('gamespage',this)">🎮 Игры</button>
- <button onclick="showPage('quests',this)">🎯 Квесты</button>
- <button onclick="showPage('profile',this)">👤 Профиль</button>
+  <button class="active" onclick="showPage('home',this)">🏠 Главная</button>
+  <button onclick="showPage('gamespage',this)">🎮 Игры</button>
+  <button onclick="showPage('quests',this)">🎯 Квесты</button>
+  <button onclick="showPage('profile',this)">👤 Профиль</button>
 </nav>
 
 <div class="modal" id="modal">
- <div class="modal-box">
-  <h2 id="gameTitle">Игра</h2>
-  <div id="gameContent"></div>
-  <button class="secondary" onclick="closeGame()">Закрыть</button>
- </div>
+  <div class="modal-box">
+    <h2 id="gameTitle">Игра</h2>
+    <div id="gameContent"></div>
+    <button class="secondary" onclick="closeGame()">Закрыть</button>
+  </div>
 </div>
 
 <script>
-const SUPABASE_URL='https://dxsekydmpmaskmxafapx.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_OWmjCdIYWm24udIT0PSkmA_qPhBU96X';
-const FUNCTION_URL=SUPABASE_URL+'/functions/v1/index';
-
-const tg=window.Telegram?.WebApp;
+const tg = window.Telegram?.WebApp;
 tg?.ready();
 tg?.expand();
 
-let profile=null;
-let questData=null;
-let currentSession=null;
-let diceRoomId=null;
-let activeGame=null;
-let busy=false;
-let memoryTimer=null;
+const today = () => new Date().toLocaleDateString('en-CA');
+const week = () => {
+  const d = new Date();
+  const jan = new Date(d.getFullYear(),0,1);
+  return `${d.getFullYear()}-${Math.floor((d-jan)/604800000)}`;
+};
 
-const games=[
- {id:'memory_match',name:'Memory Match',emoji:'🧩',desc:'Запомни и повтори последовательность',reward:'10 Хрумсов и 20 XP'},
- {id:'number_guess',name:'Number Guess',emoji:'🔢',desc:'Угадай число от 1 до 20',reward:'10 Хрумсов и 20 XP'},
- {id:'word_guess',name:'Угадай слово',emoji:'🔤',desc:'Отгадай слово по подсказке',reward:'15 Хрумсов и 25 XP'}
+const defaultState = () => ({
+  coins:0, earned:0, xp:0, plays:0, wins:0,
+  dailyDate:today(), weeklyDate:week(),
+  daily:{plays:0,earn:0,wins:0},
+  weekly:{plays:0,earn:0,wins:0},
+  claimed:[]
+});
+
+let state;
+try {
+  state = {...defaultState(),...JSON.parse(localStorage.getItem('skillrush'))};
+} catch { state=defaultState(); }
+
+function save() {
+  localStorage.setItem('skillrush',JSON.stringify(state));
+}
+
+function resetQuests() {
+  if(state.dailyDate!==today()) {
+    state.dailyDate=today();
+    state.daily={plays:0,earn:0,wins:0};
+    state.claimed=state.claimed.filter(x=>!x.startsWith('d-'));
+  }
+  if(state.weeklyDate!==week()) {
+    state.weeklyDate=week();
+    state.weekly={plays:0,earn:0,wins:0};
+    state.claimed=state.claimed.filter(x=>!x.startsWith('w-'));
+  }
+}
+
+const games = [
+  {id:'reaction',name:'Reaction Rush',emoji:'⚡',desc:'Проверь скорость реакции',reward:30},
+  {id:'math',name:'Math Battle',emoji:'🧠',desc:'Решай примеры на время',reward:40},
+  {id:'memory',name:'Memory Match',emoji:'🧩',desc:'Повтори последовательность',reward:35},
+  {id:'guess',name:'Number Guess',emoji:'🎲',desc:'Угадай секретное число',reward:25}
 ];
 
-const dailyTasks=[
- {period:'daily',id:'games',serverKey:'games',name:'Сыграть 3 игры',goal:3,reward:60},
- {period:'daily',id:'earned',serverKey:'earned',name:'Заработать 100 Хрумсов',goal:100,reward:50},
- {period:'daily',id:'wins',serverKey:'wins',name:'Одержать 2 победы',goal:2,reward:70}
+const dailyTasks = [
+  {id:'d-plays',name:'Сыграть 3 игры',key:'plays',goal:3,reward:60},
+  {id:'d-earn',name:'Заработать 100 Хрумсов',key:'earn',goal:100,reward:50},
+  {id:'d-wins',name:'Одержать 2 победы',key:'wins',goal:2,reward:70}
 ];
-const weeklyTasks=[
- {period:'weekly',id:'games',serverKey:'games',name:'Сыграть 15 игр',goal:15,reward:250},
- {period:'weekly',id:'earned',serverKey:'earned',name:'Заработать 500 Хрумсов',goal:500,reward:200},
- {period:'weekly',id:'wins',serverKey:'wins',name:'Одержать 10 побед',goal:10,reward:300}
+const weeklyTasks = [
+  {id:'w-plays',name:'Сыграть 15 игр',key:'plays',goal:15,reward:250},
+  {id:'w-earn',name:'Заработать 500 Хрумсов',key:'earn',goal:500,reward:200},
+  {id:'w-wins',name:'Одержать 10 побед',key:'wins',goal:10,reward:300}
 ];
 
-function escapeHTML(value){
- return String(value??'').replace(/[&<>"']/g,c=>({
-  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
- }[c]));
-}
-function initData(){return tg?.initData||''}
-
-async function api(action,data={}){
- if(!initData())throw new Error('Открой SkillRush через Telegram, чтобы сервер мог проверить твой аккаунт.');
- if(SUPABASE_ANON_KEY==='ВСТАВЬ_ПУБЛИЧНЫЙ_КЛЮЧ') {
-  throw new Error('Добавь публичный Publishable key Supabase в index.html.');
- }
- const response=await fetch(FUNCTION_URL,{
-  method:'POST',
-  headers:{
-   'Content-Type':'application/json',
-   'apikey':SUPABASE_ANON_KEY,
-   'Authorization':'Bearer '+SUPABASE_ANON_KEY
-  },
-  body:JSON.stringify({action,initData:initData(),...data})
- });
- let result={};
- try{result=await response.json()}catch{}
- if(!response.ok||result.error){
-  throw new Error(result.error||result.message||'Ошибка сервера: '+response.status);
- }
- return result;
-}
-
-function showError(error){
- console.error(error);
- alert(error?.message||'Не удалось выполнить запрос.');
-}
-function updateProfile(data){
- const p=data?.player||data?.profile||data;
- if(!p||typeof p!=='object')return;
- profile={
-  username:p.username||tg?.initDataUnsafe?.user?.first_name||'Игрок SkillRush',
-  crumbs:Number(p.crumbs??0),
-  xp:Number(p.xp??0),
-  level:Number(p.level??1)
- };
- renderProfile();
-}
-function renderProfile(){
- if(!profile)return;
- document.getElementById('balance').textContent=profile.crumbs;
- document.getElementById('level').textContent=profile.level;
- document.getElementById('plevel').textContent=profile.level;
- document.getElementById('pcoins').textContent=profile.crumbs;
- document.getElementById('pxp').textContent=profile.xp;
- const progress=profile.xp%500;
- document.getElementById('xp').textContent=progress+' / 500 XP';
- document.getElementById('xpbar').style.width=(progress/500*100)+'%';
- document.getElementById('username').textContent=profile.username;
-}
-async function refreshProfile(){
- const data=await api('profile');
- updateProfile(data);
-}
-async function refreshAll(){
- await refreshProfile();
- await refreshQuests();
- await refreshLeaderboard();
-}
-
-function showPage(id,button){
- document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
- document.getElementById(id).classList.add('active');
- document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
- if(button)button.classList.add('active');
- else{
-  const index={home:0,gamespage:1,quests:2,profile:3}[id];
-  document.querySelectorAll('.tabs button')[index].classList.add('active');
- }
- if(id==='profile')refreshLeaderboard();
- if(id==='quests')refreshQuests();
- if(id==='gamespage')loadDiceRooms();
-}
-
-function gameCard(g){
- return `<div class="card game" onclick="openGame('${g.id}')">
- <div class="emoji">${g.emoji}</div>
- <strong>${g.name}</strong>
- <p>${g.desc}</p>
- <div class="reward">🏆 ${g.reward}</div>
- </div>`;
-}
-function renderGames(){
- document.getElementById('games').innerHTML=games.slice(0,2).map(gameCard).join('');
- document.getElementById('allgames').innerHTML=games.map(gameCard).join('');
-}
-
-function showModal(title,html){
- document.getElementById('gameTitle').textContent=title;
- document.getElementById('gameContent').innerHTML=html;
- document.getElementById('modal').style.display='flex';
-}
-function closeGame(){
- if(memoryTimer){clearInterval(memoryTimer);memoryTimer=null}
- document.getElementById('modal').style.display='none';
- activeGame=null;
- currentSession=null;
-}
-function setGameContent(html){
- document.getElementById('gameContent').innerHTML=html;
-}
-function challengeOf(session){
- return session?.challenge||{};
-}
-
-async function startGame(game){
- if(busy)return;
- busy=true;
- try{
-  const data=await api('game_start',{game});
-  if(!data.sessionId)throw new Error('Сервер не вернул sessionId.');
-  currentSession={
-   id:data.sessionId,
-   game:data.game,
-   expiresAt:data.expiresAt,
-   challenge:data.challenge||{}
-  };
-  activeGame=game;
-  if(game==='memory_match')playMemory(currentSession);
-  if(game==='number_guess')playNumber(currentSession);
-  if(game==='word_guess')playWord(currentSession);
- }catch(e){showError(e)}
- finally{busy=false}
-}
-function openGame(id){
- const game=games.find(x=>x.id===id);
- if(!game)return;
- showModal(game.name,'<p>Подключаем игру...</p>');
- startGame(id);
-}
-
-function playMemory(session){
- const sequence=challengeOf(session).sequence||[];
- if(sequence.length!==5){
-  setGameContent('<p>Сервер не прислал правильную последовательность. Попробуй начать игру заново.</p>');
-  return;
- }
- let countdown=3;
- setGameContent('<p>Запомни последовательность чисел.</p><div class="big" id="memoryNumber">3</div>');
- memoryTimer=setInterval(()=>{
-  const el=document.getElementById('memoryNumber');
-  if(!el){clearInterval(memoryTimer);memoryTimer=null;return}
-  countdown--;
-  if(countdown>0){
-   el.textContent=countdown;
-   return;
+function addReward(amount,win=false) {
+  state.coins+=amount;
+  state.earned+=amount;
+  state.xp+=amount;
+  state.daily.earn+=amount;
+  state.weekly.earn+=amount;
+  if(win) {
+    state.wins++;
+    state.daily.wins++;
+    state.weekly.wins++;
   }
-  clearInterval(memoryTimer);
-  memoryTimer=null;
-  let index=0;
-  const showNext=()=>{
-   const node=document.getElementById('memoryNumber');
-   if(!node)return;
-   if(index>=sequence.length){
-    setGameContent('<p>Введи все числа в правильном порядке через пробел.</p><input id="memoryAnswer" inputmode="numeric" placeholder="Например: 2 5 1 8 3"><button onclick="submitMemory()">Проверить</button>');
-    return;
-   }
-   node.textContent=sequence[index++];
-   setTimeout(showNext,850);
-  };
-  showNext();
- },1000);
-}
-async function submitMemory(){
- const value=document.getElementById('memoryAnswer')?.value||'';
- const answer=value.trim().split(/[,\s]+/).filter(Boolean).map(Number);
- if(answer.length!==5||answer.some(n=>!Number.isInteger(n)||n<1||n>9)){
-  alert('Введи ровно 5 чисел от 1 до 9.');
-  return;
- }
- await submitGame('game_submit',{sessionId:currentSession.id,answer});
-}
-function playNumber(session){
- const ch=challengeOf(session);
- const min=Number(ch.min??1);
- const max=Number(ch.max??20);
- const attempts=Number(ch.maxAttempts??7);
- setGameContent(`<p>Угадай число от ${min} до ${max}. У тебя ${attempts} попыток.</p>
- <input id="numberAnswer" type="number" min="${min}" max="${max}" placeholder="Твоё число">
- <button onclick="sendNumberGuess()">Проверить</button><div id="numberHint"></div>`);
-}
-async function sendNumberGuess(){
- const input=document.getElementById('numberAnswer');
- const n=Number(input?.value);
- if(!input?.value||!Number.isInteger(n)||n<1||n>20){
-  alert('Введи целое число от 1 до 20.');
-  return;
- }
- await submitGame('game_guess',{sessionId:currentSession.id,guess:n});
-}
-function playWord(session){
- const ch=challengeOf(session);
- const hint=ch.hint||'Слово загадано. Попробуй его отгадать!';
- const length=Number(ch.wordLength??0);
- const attempts=Number(ch.maxAttempts??8);
- setGameContent(`<p>${escapeHTML(hint)}</p>
- <p>Букв в слове: <b>${length||'?'}</b>. До ${attempts} попыток.</p>
- <input id="wordAnswer" maxlength="30" placeholder="Введи слово">
- <button onclick="sendWordGuess()">Проверить</button><div id="wordHint"></div>`);
-}
-async function sendWordGuess(){
- const word=document.getElementById('wordAnswer')?.value?.trim()||'';
- if(!word){alert('Введи слово.');return}
- await submitGame('game_guess',{sessionId:currentSession.id,guess:word});
+  render();
 }
 
-function resultFields(data){
- const result=data?.result;
- const candidates=[result,result?.player,result?.data,data?.player,data?.data,data];
- let crumbs=null,xp=null;
- for(const item of candidates){
-  if(!item||typeof item!=='object')continue;
-  if(crumbs===null){
-   const value=item.reward_crumbs??item.crumbs_awarded??item.crumbs;
-   if(value!==undefined&&value!==null)crumbs=Number(value);
-  }
-  if(xp===null){
-   const value=item.reward_xp??item.xp_awarded??item.xp;
-   if(value!==undefined&&value!==null)xp=Number(value);
-  }
- }
- return {crumbs:crumbs??0,xp:xp??0};
+function finishGame(amount,win,message) {
+  state.plays++;
+  state.daily.plays++;
+  state.weekly.plays++;
+  addReward(amount,win);
+  document.getElementById('gameContent').innerHTML=
+    `<div class="big">${win?'🏆':'🎮'}</div>
+     <h3>${message}</h3>
+     <div class="result">+${amount} 🍪 Хрумсов</div>
+     <p>${win?'Отличный результат!':'Попробуй ещё раз!'}</p>`;
 }
-async function showGameResult(won,data){
- const rewards=resultFields(data);
- const title=won?'Победа!':'Игра завершена';
- setGameContent(`<div class="big">${won?'🏆':'🎮'}</div>
-  <h3>${title}</h3>
-  <div class="result">+${rewards.crumbs} 🍪 Хрумсов</div>
-  <p>XP: +${rewards.xp}</p>
-  <button onclick="closeGame();refreshAll()">Продолжить</button>`);
- currentSession=null;
- await refreshProfile();
- await refreshQuests();
-}
-async function submitGame(action,payload){
- if(busy||!currentSession)return;
- busy=true;
- try{
-  const data=await api(action,payload);
-  if(action==='game_submit'){
-   await showGameResult(Boolean(data.won),data);
-   return;
-  }
-  if(data.status==='won'){
-   await showGameResult(true,data);
-   return;
-  }
-  if(data.status==='lost'){
-   await showGameResult(false,data);
-   return;
-  }
-  if(data.status==='try_again'){
-   const el=document.getElementById(activeGame==='number_guess'?'numberHint':'wordHint');
-   if(el){
-    const hints={
-     higher:'Загаданное число больше.',
-     lower:'Загаданное число меньше.',
-     wrong:'Не угадал. Попробуй ещё раз.'
+
+function openGame(id) {
+  const g=games.find(x=>x.id===id);
+  document.getElementById('modal').style.display='flex';
+  document.getElementById('gameTitle').textContent=g.name;
+  const c=document.getElementById('gameContent');
+
+  if(id==='reaction') {
+    c.innerHTML='<p>Нажми «Старт» и жди зелёный сигнал. Затем нажми как можно быстрее!</p><button id="start">Старт</button><div id="signal" class="big">⏳</div>';
+    document.getElementById('start').onclick=()=>{
+      c.innerHTML='<p>Жди зелёный сигнал...</p><div class="big" id="signal">🔴</div>';
+      const delay=1500+Math.random()*3500;
+      let active=false,started=0,done=false;
+      const timer=setTimeout(()=>{
+        active=true;started=performance.now();
+        document.getElementById('signal').textContent='🟢';
+        document.getElementById('signal').onclick=()=>{
+          if(!active||done)return;
+          done=true;
+          const ms=Math.round(performance.now()-started);
+          finishGame(ms<350?30:ms<550?20:10,ms<550,`Твоя реакция: ${ms} мс`);
+        };
+      },delay);
+      c.onclick=e=>{
+        if(e.target.id==='signal'&&!active&&!done){
+          clearTimeout(timer);done=true;
+          finishGame(0,false,'Слишком рано! Попробуй ещё раз.');
+        }
+      };
     };
-    el.textContent=hints[data.hint]||'Попробуй ещё раз.';
-    const left=document.createElement('p');
-    left.textContent='Осталось попыток: '+Number(data.attemptsLeft??0);
-    el.appendChild(left);
-   }
-   const input=document.getElementById(activeGame==='number_guess'?'numberAnswer':'wordAnswer');
-   if(input){input.value='';input.focus()}
-   return;
   }
-  throw new Error('Сервер вернул неизвестный результат игры.');
- }catch(e){showError(e)}
- finally{busy=false}
-}
 
-/* КВЕСТЫ */
-function findQuestStatus(period,key){
- const root=questData||{};
- let group=root[period]||root[period+'_quests']||root[period+'Quests']||{};
- if(Array.isArray(group)){
-  return group.find(x=>
-   x.quest_key===key||x.key===key||x.questKey===key
-  )||{};
- }
- if(group&&typeof group==='object'){
-  return group[key]||group[key==='earned'?'earn':key]||{};
- }
- const flat=root[key]||root[key==='earned'?'earn':key]||{};
- if(flat&&typeof flat==='object'){
-  return flat[period]||flat[period+'_progress']||{};
- }
- return {};
-}
-function questProgress(status){
- if(typeof status==='number')return status;
- return Number(
-  status?.progress??
-  status?.current??
-  status?.value??
-  status?.count??
-  status?.completed_count??0
- );
-}
-function questClaimed(status){
- return Boolean(status?.claimed??status?.is_claimed??status?.completed_and_claimed??false);
-}
-function taskHTML(task,status){
- const progress=questProgress(status);
- const claimed=questClaimed(status);
- const complete=progress>=task.goal;
- const width=Math.min(100,progress/task.goal*100);
- return `<div class="card quest">
-  <div class="quest-top">
-   <span class="quest-title">${task.name}</span>
-   <span class="quest-reward">+${task.reward} 🍪</span>
-  </div>
-  <div class="quest-progress"><div style="width:${width}%"></div></div>
-  <div class="quest-bottom">
-   <small>${Math.min(progress,task.goal)} / ${task.goal}</small>
-   <button ${!complete||claimed?'disabled':''}
-    onclick="claimQuest('${task.period}','${task.serverKey}')">
-    ${claimed?'Получено':complete?'Забрать':'В процессе'}
-   </button>
-  </div>
- </div>`;
-}
-async function refreshQuests(){
- try{
-  const data=await api('quest_status');
-  questData=data.quests||{};
-  document.getElementById('daily').innerHTML=dailyTasks.map(t=>
-   taskHTML(t,findQuestStatus('daily',t.id))
-  ).join('');
-  document.getElementById('weekly').innerHTML=weeklyTasks.map(t=>
-   taskHTML(t,findQuestStatus('weekly',t.id))
-  ).join('');
-  document.getElementById('homequests').innerHTML=dailyTasks.map(t=>
-   taskHTML(t,findQuestStatus('daily',t.id))
-  ).join('');
- }catch(e){
-  console.error('Quest status:',e);
-  document.getElementById('homequests').innerHTML=
-   '<div class="notice">Не удалось загрузить задания. Проверь подключение.</div>';
- }
-}
-async function claimQuest(period,key){
- try{
-  const data=await api('quest_claim',{period,questKey:key});
-  if(data.player)updateProfile(data);
-  await refreshProfile();
-  await refreshQuests();
-  alert('Награда за задание получена!');
- }catch(e){showError(e)}
-}
-
-/* РЕЙТИНГ */
-async function refreshLeaderboard(){
- try{
-  const data=await api('leaderboard');
-  const rows=data.leaderboard||[];
-  if(!Array.isArray(rows))throw new Error('Неверный формат рейтинга.');
-  document.getElementById('leaderboard').innerHTML=rows.length?
-   rows.map((p,i)=>`<div class="profile-stat">
-    <span>${i+1}. ${escapeHTML(p.username||'Игрок')}</span>
-    <b>${Number(p.xp||0)} XP</b>
-   </div>`).join(''):
-   '<p>Пока нет участников рейтинга.</p>';
- }catch(e){
-  document.getElementById('leaderboard').textContent='Не удалось загрузить рейтинг.';
-  console.error(e);
- }
-}
-
-/* КУБЫ */
-function roomIdFrom(data){
- return data?.room?.id||
-  data?.room_id||
-  data?.roomId||
-  data?.id||
-  data?.data?.room_id||
-  data?.data?.id||
-  null;
-}
-async function createDiceRoom(){
- try{
-  const data=await api('dice_create');
-  diceRoomId=roomIdFrom(data);
-  if(!diceRoomId)throw new Error('Сервер не вернул ID комнаты.');
-  await showDiceRoom();
- }catch(e){showError(e)}
-}
-async function loadDiceRooms(){
- try{
-  const data=await api('dice_rooms');
-  const rooms=data.rooms||[];
-  document.getElementById('diceRooms').innerHTML=rooms.length?
-   rooms.map(r=>`<div class="profile-stat">
-    <span>🎲 ${escapeHTML(r.creator_username||'Игрок')} · ${escapeHTML(String(r.id).slice(0,8))}</span>
-    <button onclick="joinDiceRoom('${escapeHTML(r.id)}')">Войти</button>
-   </div>`).join(''):
-   'Свободных комнат пока нет.';
- }catch(e){
-  document.getElementById('diceRooms').textContent='Не удалось загрузить комнаты.';
-  console.error(e);
- }
-}
-async function joinDiceRoom(id){
- try{
-  await api('dice_join',{roomId:id});
-  diceRoomId=id;
-  await showDiceRoom();
- }catch(e){showError(e)}
-}
-function diceMemberName(member,index){
- if(member.telegram_id===tg?.initDataUnsafe?.user?.id)return 'Ты';
- return 'Игрок '+(index+1);
-}
-function renderDiceRounds(rounds){
- if(!rounds?.length)return '<p>Раундов пока нет.</p>';
- return rounds.map(r=>`
-  <div class="dice-round">
-   <b>Раунд ${Number(r.round_number)}</b>
-   <div class="dice-values">
-    🎲 ${r.player1_dice1??'—'} + ${r.player1_dice2??'—'}
-    &nbsp; против &nbsp;
-    ${r.player2_dice1??'—'} + ${r.player2_dice2??'—'} 🎲
-   </div>
-   <small>${r.winner_telegram_id?'Раунд завершён':'Ожидается результат'}</small>
-  </div>
- `).join('');
-}
-async function showDiceRoom(){
- if(!diceRoomId)return;
- try{
-  const data=await api('dice_state',{roomId:diceRoomId});
-  const room=data.room||{};
-  const members=data.members||[];
-  const rounds=data.rounds||[];
-  const state=document.getElementById('diceRoomState');
-  const currentRound=Number(room.current_round||1);
-  const finished=room.status==='finished'||Boolean(room.winner_telegram_id);
-  const memberList=members.map((m,i)=>
-   `<div>${escapeHTML(diceMemberName(m,i))} · место ${Number(m.seat)}</div>`
-  ).join('');
-  const isWaiting=Boolean(data.waiting_for_opponent);
-  state.innerHTML=`
-   <div class="notice">
-    <b>Комната:</b> ${escapeHTML(String(diceRoomId).slice(0,8))}<br>
-    <b>Статус:</b> ${escapeHTML(room.status||'Ожидание')}<br>
-    <b>Игроки:</b><br>${memberList||'Ожидаем игроков'}
-    <p>Текущий раунд: ${currentRound}</p>
-    ${finished?
-      '<h3>🏆 Матч завершён!</h3><p>Победитель получает 20 Хрумсов. Проигравший ничего не теряет.</p>':
-      `<button onclick="rollDice()" ${isWaiting?'disabled':''}>${isWaiting?'Бросок сделан — ждём соперника':'Бросить кубики 🎲'}</button>`
+  if(id==='math') {
+    let round=0,score=0;
+    function question() {
+      if(round===5) {
+        finishGame(score*8,score>=3,`Правильных ответов: ${score}/5`);
+        return;
+      }
+      const a=2+Math.floor(Math.random()*20);
+      const b=2+Math.floor(Math.random()*20);
+      const op=Math.random()<.5?'+':'×';
+      const answer=op==='+'?a+b:a*b;
+      c.innerHTML=`<p>Вопрос ${round+1} из 5</p>
+      <div class="big">${a} ${op} ${b} = ?</div>
+      <input id="answer" type="number" placeholder="Твой ответ">
+      <button id="submit">Ответить</button>`;
+      document.getElementById('submit').onclick=()=>{
+        if(document.getElementById('answer').value==='')return;
+        if(Number(document.getElementById('answer').value)===answer)score++;
+        round++;question();
+      };
     }
-    <button class="secondary" onclick="showDiceRoom()">Обновить состояние</button>
-    <div>${renderDiceRounds(rounds)}</div>
-    ${isWaiting?'<p>Твой бросок уже принят. Обнови комнату, когда соперник сделает свой бросок.</p>':''}
-   </div>`;
-  if(finished)await refreshProfile();
- }catch(e){showError(e)}
-}
-async function rollDice(){
- if(!diceRoomId)return;
- try{
-  const state=await api('dice_state',{roomId:diceRoomId});
-  const room=state.room||{};
-  const round=Number(room.current_round||1);
-  if(!Number.isSafeInteger(round)||round<1)throw new Error('Не удалось определить номер раунда.');
-  const data=await api('dice_roll',{roomId:diceRoomId,round});
-  if(data.status==='waiting_for_opponent'){
-   alert('Твой бросок принят. Ждём соперника!');
+    question();
   }
-  await showDiceRoom();
-  await refreshProfile();
- }catch(e){showError(e)}
+
+  if(id==='memory') {
+    const seq=Array.from({length:4},()=>Math.floor(Math.random()*4));
+    const icons=['🔴','🔵','🟡','🟢'];
+    let shown=0,entered=[];
+    c.innerHTML='<p>Запомни последовательность:</p><div class="big" id="sequence">...</div>';
+    const display=()=>{
+      if(shown<seq.length) {
+        document.getElementById('sequence').textContent=icons[seq[shown++]];
+        setTimeout(display,750);
+      } else {
+        c.innerHTML='<p>Повтори последовательность по порядку:</p><div class="grid">'+icons.map((x,i)=>`<button onclick="memoryPick(${i})">${x}</button>`).join('')+'</div>';
+      }
+    };
+    window.memoryPick=(i)=>{
+      entered.push(i);
+      if(i!==seq[entered.length-1]) {
+        finishGame(0,false,'Последовательность не совпала!');
+      } else if(entered.length===seq.length) {
+        finishGame(35,true,'Отличная память!');
+      }
+    };
+    setTimeout(display,800);
+  }
+
+  if(id==='guess') {
+    const target=1+Math.floor(Math.random()*10);
+    let attempts=0;
+    c.innerHTML='<p>Угадай число от 1 до 10. У тебя 3 попытки.</p><input id="guess" type="number" min="1" max="10" placeholder="Введи число"><button id="try">Проверить</button><div id="hint"></div>';
+    document.getElementById('try').onclick=()=>{
+      const n=Number(document.getElementById('guess').value);
+      if(!Number.isInteger(n)||n<1||n>10)return;
+      attempts++;
+      if(n===target) {
+        finishGame(25,true,'Ты угадал число!');
+      } else if(attempts>=3) {
+        finishGame(0,false,`Не угадал! Это было число ${target}`);
+      } else {
+        document.getElementById('hint').textContent=n<target?'Загаданное число больше ↑':'Загаданное число меньше ↓';
+        document.getElementById('guess').value='';
+      }
+    };
+  }
 }
 
-async function boot(){
- renderGames();
- try{
-  await refreshProfile();
-  await refreshQuests();
-  await refreshLeaderboard();
- }catch(e){
-  console.error(e);
-  document.getElementById('homequests').innerHTML=
-   '<div class="notice">Не удалось подключиться. Открой игру через Telegram и проверь настройки Supabase.</div>';
- }
+function closeGame() {
+  document.getElementById('modal').style.display='none';
+  render();
 }
-boot();
+
+function showPage(id,button) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+  if(button)button.classList.add('active');
+  else {
+    const index={home:0,gamespage:1,quests:2,profile:3}[id];
+    document.querySelectorAll('.tabs button')[index].classList.add('active');
+  }
+}
+
+function taskHTML(t,period) {
+  const data=period==='d'?state.daily:state.weekly;
+  const value=data[t.key]||0;
+  const done=value>=t.goal;
+  const claimed=state.claimed.includes(t.id);
+  return `<div class="card quest">
+    <div class="quest-top">
+      <span class="quest-title">${t.name}</span>
+      <span class="quest-reward">+${t.reward} 🍪</span>
+    </div>
+    <div class="quest-progress"><div style="width:${Math.min(100,value/t.goal*100)}%"></div></div>
+    <div class="quest-bottom">
+      <small>${Math.min(value,t.goal)} / ${t.goal}</small>
+      <button class="claim" ${!done||claimed?'disabled':''}
+        onclick="claimQuest('${t.id}',${t.reward})">
+        ${claimed?'Получено':done?'Забрать':'В процессе'}
+      </button>
+    </div>
+  </div>`;
+}
+
+function claimQuest(id,reward) {
+  if(state.claimed.includes(id))return;
+  const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks;
+  const t=tasks.find(x=>x.id===id);
+  const data=id.startsWith('d-')?state.daily:state.weekly;
+  if(!t||data[t.key]<t.goal)return;
+  state.claimed.push(id);
+  addReward(reward,false);
+}
+
+function render() {
+  resetQuests();
+  document.getElementById('balance').textContent=state.coins;
+  const level=Math.floor(state.xp/500)+1;
+  const progress=state.xp%500;
+  document.getElementById('level').textContent=level;
+  document.getElementById('xp').textContent=`${progress} / 500 XP`;
+  document.getElementById('xpbar').style.width=(progress/500*100)+'%';
+
+  document.getElementById('games').innerHTML=games.slice(0,4).map(gameCard).join('');
+  document.getElementById('allgames').innerHTML=games.map(gameCard).join('');
+  document.getElementById('daily').innerHTML=dailyTasks.map(t=>taskHTML(t,'d')).join('');
+  document.getElementById('weekly').innerHTML=weeklyTasks.map(t=>taskHTML(t,'w')).join('');
+  document.getElementById('homequests').innerHTML=
+    [...dailyTasks,...weeklyTasks].slice(0,3).map(t=>taskHTML(t,t.id.startsWith('d-')?'d':'w')).join('');
+
+  const user=tg?.initDataUnsafe?.user;
+  document.getElementById('username').textContent=user?.first_name||'Игрок SkillRush';
+  document.getElementById('plevel').textContent=level;
+  document.getElementById('pcoins').textContent=state.coins;
+  document.getElementById('pplays').textContent=state.plays;
+  document.getElementById('pwins').textContent=state.wins;
+  document.getElementById('pearned').textContent=state.earned;
+  save();
+}
+
+function gameCard(g) {
+  return `<div class="card game" onclick="openGame('${g.id}')">
+    <div class="emoji">${g.emoji}</div>
+    <strong>${g.name}</strong>
+    <p>${g.desc}</p>
+    <div class="reward">🏆 До ${g.reward} Хрумсов</div>
+  </div>`;
+}
+
+render();
 </script>
 </body>
 </html>
-'''
-
-ts = r'''import { createClient } from "npm:@supabase/supabase-js@2";
-
-const encoder = new TextEncoder();
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://2222-alex57.github.io",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-type JsonObject = Record<string, unknown>;
-
-function isObject(value: unknown): value is JsonObject {
-  return typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value);
-}
-
-function toHex(bytes: Uint8Array): string {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function hmacSha256(
-  keyBytes: Uint8Array,
-  message: string,
-): Promise<Uint8Array> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyBytes,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-
-  return new Uint8Array(
-    await crypto.subtle.sign("HMAC", key, encoder.encode(message)),
-  );
-}
-
-function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-
-  let result = 0;
-
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-
-  return result === 0;
-}
-
-async function verifyTelegram(initData: string, botToken: string) {
-  const params = new URLSearchParams(initData);
-  const receivedHash = params.get("hash");
-
-  if (!receivedHash || !/^[a-f0-9]{64}$/i.test(receivedHash)) {
-    throw new Error("Invalid Telegram hash");
-  }
-
-  params.delete("hash");
-
-  const entries = Array.from(params.entries()).sort(([a], [b]) =>
-    a < b ? -1 : a > b ? 1 : 0
-  );
-
-  const dataCheckString = entries
-    .map(([key, value]) => `${key}=${value}`)
-    .join("\n");
-
-  const secretKey = await hmacSha256(
-    encoder.encode("WebAppData"),
-    botToken,
-  );
-
-  const calculatedHash = toHex(
-    await hmacSha256(secretKey, dataCheckString),
-  );
-
-  if (!safeEqual(calculatedHash, receivedHash.toLowerCase())) {
-    throw new Error("Invalid Telegram signature");
-  }
-
-  const authDate = Number(params.get("auth_date"));
-  const now = Math.floor(Date.now() / 1000);
-
-  if (!authDate || now - authDate > 86400 || authDate > now + 60) {
-    throw new Error("Telegram session expired");
-  }
-
-  const userData = params.get("user");
-
-  if (!userData) {
-    throw new Error("Telegram user missing");
-  }
-
-  const user = JSON.parse(userData);
-
-  if (!Number.isSafeInteger(user.id) || user.id <= 0) {
-    throw new Error("Invalid Telegram user");
-  }
-
-  return user;
-}
-
-function randomInt(min: number, max: number): number {
-  const range = max - min + 1;
-  const limit = Math.floor(0x100000000 / range) * range;
-  const value = new Uint32Array(1);
-
-  do {
-    crypto.getRandomValues(value);
-  } while (value[0] >= limit);
-
-  return min + (value[0] % range);
-}
-
-function randomDie(): number {
-  return randomInt(1, 6);
-}
-
-function validRoomId(value: unknown): value is string {
-  return typeof value === "string" &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-      .test(value);
-}
-
-function normalizeWord(value: unknown): string {
-  if (typeof value !== "string") return "";
-
-  return value
-    .trim()
-    .toLocaleUpperCase("ru-RU")
-    .replace(/\s+/g, "");
-}
-
-const WORDS = [
-  { word: "КОМЕТА", hint: "Космический объект" },
-  { word: "РАДУГА", hint: "Цветное природное явление" },
-  { word: "ПИРАТ", hint: "Морской персонаж" },
-  { word: "КНИГА", hint: "Источник историй и знаний" },
-  { word: "ЗЕБРА", hint: "Полосатое животное" },
-  { word: "ПЛАНЕТА", hint: "Небесное тело" },
-  { word: "РОБОТ", hint: "Механический помощник" },
-  { word: "ФОНАРЬ", hint: "Источник света" },
-];
-
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  const respond = (data: unknown, status = 200) =>
-    new Response(JSON.stringify(data), {
-      status,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-      },
-    });
-
-  try {
-    if (req.method !== "POST") {
-      return respond({ error: "Use POST" }, 405);
-    }
-
-    const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!botToken || !supabaseUrl || !serviceKey) {
-      throw new Error("Server environment is not configured");
-    }
-
-    const body: unknown = await req.json();
-
-    if (
-      !isObject(body) ||
-      typeof body.initData !== "string" ||
-      body.initData.length > 10000
-    ) {
-      return respond({ error: "Invalid request" }, 400);
-    }
-
-    const user = await verifyTelegram(body.initData, botToken);
-
-    const supabase = createClient(supabaseUrl, serviceKey, {
-      auth: { persistSession: false },
-    });
-
-    const username = String(
-      user.username || user.first_name || "Игрок",
-    ).slice(0, 64);
-
-    async function ensurePlayer() {
-      const { error } = await supabase
-        .from("players")
-        .upsert(
-          {
-            telegram_id: user.id,
-            username,
-          },
-          {
-            onConflict: "telegram_id",
-          },
-        );
-
-      if (error) throw error;
-    }
-
-    async function settle(
-      sessionId: string,
-      points: number,
-      won: boolean,
-    ) {
-      const { data, error } = await supabase.rpc(
-        "settle_game_session",
-        {
-          p_session_id: sessionId,
-          p_telegram_id: user.id,
-          p_points: points,
-          p_won: won,
-        },
-      );
-
-      if (error) throw error;
-
-      return data;
-    }
-
-    if (body.action === "profile") {
-      await ensurePlayer();
-
-      const { data, error } = await supabase
-        .from("players")
-        .select("username, xp, crumbs, level")
-        .eq("telegram_id", user.id)
-        .single();
-
-      if (error) throw error;
-
-      return respond({ success: true, player: data });
-    }
-
-    if (body.action === "leaderboard") {
-      const { data, error } = await supabase
-        .from("players")
-        .select("username, xp, crumbs, level")
-        .order("xp", { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-
-      return respond({ success: true, leaderboard: data });
-    }
-
-    if (body.action === "quest_status") {
-      await ensurePlayer();
-
-      const { data, error } = await supabase.rpc(
-        "get_skillrush_quest_status",
-        { p_telegram_id: user.id },
-      );
-
-      if (error) throw error;
-
-      return respond({ success: true, quests: data });
-    }
-
-    const gameActions = [
-      "dice_create",
-      "dice_rooms",
-      "dice_join",
-      "dice_state",
-      "dice_roll",
-      "game_start",
-      "game_submit",
-      "game_guess",
-      "quest_claim",
-    ];
-
-    if (gameActions.includes(String(body.action))) {
-      await ensurePlayer();
-    }
-
-    if (body.action === "quest_claim") {
-      const period = body.period;
-      const questKey = body.questKey;
-
-      if (
-        (period !== "daily" && period !== "weekly") ||
-        !["games", "earned", "wins"].includes(String(questKey))
-      ) {
-        return respond({ error: "Invalid quest" }, 400);
-      }
-
-      const { data, error } = await supabase.rpc(
-        "claim_skillrush_quest",
-        {
-          p_telegram_id: user.id,
-          p_period: period,
-          p_quest_key: questKey,
-        },
-      );
-
-      if (error) throw error;
-
-      const { data: player, error: playerError } = await supabase
-        .from("players")
-        .select("username, xp, crumbs, level")
-        .eq("telegram_id", user.id)
-        .single();
-
-      if (playerError) throw playerError;
-
-      return respond({ ...data, player });
-    }
-
-    if (body.action === "game_start") {
-      const game = body.game;
-
-      if (
-        game !== "memory_match" &&
-        game !== "number_guess" &&
-        game !== "word_guess"
-      ) {
-        return respond({ error: "Unknown game" }, 400);
-      }
-
-      let challenge: JsonObject;
-      let publicChallenge: JsonObject;
-      let rewardCrumbs = 10;
-      let rewardXp = 20;
-
-      if (game === "memory_match") {
-        const sequence = Array.from(
-          { length: 5 },
-          () => randomInt(1, 9),
-        );
-
-        challenge = { sequence };
-        publicChallenge = { sequence, displaySeconds: 5 };
-      } else if (game === "number_guess") {
-        challenge = {
-          secret: randomInt(1, 20),
-          attempts: 0,
-          maxAttempts: 7,
-        };
-
-        publicChallenge = {
-          min: 1,
-          max: 20,
-          maxAttempts: 7,
-        };
-      } else {
-        const selected = WORDS[randomInt(0, WORDS.length - 1)];
-
-        challenge = {
-          secret: selected.word,
-          attempts: 0,
-          maxAttempts: 8,
-        };
-
-        publicChallenge = {
-          hint: selected.hint,
-          wordLength: selected.word.length,
-          maxAttempts: 8,
-        };
-
-        rewardCrumbs = 15;
-        rewardXp = 25;
-      }
-
-      const { data, error } = await supabase
-        .from("game_sessions")
-        .insert({
-          telegram_id: user.id,
-          game,
-          challenge,
-          reward_crumbs: rewardCrumbs,
-          reward_xp: rewardXp,
-        })
-        .select("id, expires_at")
-        .single();
-
-      if (error) throw error;
-
-      return respond({
-        success: true,
-        sessionId: data.id,
-        expiresAt: data.expires_at,
-        game,
-        challenge: publicChallenge,
-      });
-    }
-
-    if (body.action === "game_submit") {
-      if (
-        typeof body.sessionId !== "string" ||
-        !Array.isArray(body.answer) ||
-        body.answer.length !== 5 ||
-        !body.answer.every(
-          (value: unknown) =>
-            Number.isSafeInteger(value) &&
-            Number(value) >= 1 &&
-            Number(value) <= 9,
-        )
-      ) {
-        return respond({ error: "Invalid answer" }, 400);
-      }
-
-      const { data: session, error } = await supabase
-        .from("game_sessions")
-        .select("id, game, challenge, status, expires_at")
-        .eq("id", body.sessionId)
-        .eq("telegram_id", user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (!session || session.game !== "memory_match") {
-        return respond({ error: "Session not found" }, 404);
-      }
-
-      if (
-        session.status !== "active" ||
-        new Date(session.expires_at).getTime() < Date.now()
-      ) {
-        return respond({ error: "Session expired" }, 400);
-      }
-
-      const expected = session.challenge?.sequence;
-
-      if (!Array.isArray(expected) || expected.length !== 5) {
-        throw new Error("Invalid memory challenge");
-      }
-
-      const won = expected.every(
-        (value: number, index: number) =>
-          value === body.answer[index],
-      );
-
-      const result = await settle(body.sessionId, won ? 100 : 0, won);
-
-      return respond({ success: true, won, result });
-    }
-
-    if (body.action === "game_guess") {
-      if (
-        typeof body.sessionId !== "string" ||
-        (typeof body.guess !== "string" &&
-          typeof body.guess !== "number")
-      ) {
-        return respond({ error: "Invalid guess" }, 400);
-      }
-
-      const { data: session, error } = await supabase
-        .from("game_sessions")
-        .select("id, game, challenge, status, expires_at")
-        .eq("id", body.sessionId)
-        .eq("telegram_id", user.id)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (
-        !session ||
-        (session.game !== "number_guess" &&
-          session.game !== "word_guess")
-      ) {
-        return respond({ error: "Session not found" }, 404);
-      }
-
-      if (
-        session.status !== "active" ||
-        new Date(session.expires_at).getTime() < Date.now()
-      ) {
-        return respond({ error: "Session expired" }, 400);
-      }
-
-      const challenge = session.challenge;
-
-      if (
-        !isObject(challenge) ||
-        (typeof challenge.secret !== "string" &&
-          typeof challenge.secret !== "number") ||
-        typeof challenge.attempts !== "number" ||
-        typeof challenge.maxAttempts !== "number"
-      ) {
-        throw new Error("Invalid challenge");
-      }
-
-      const maxAttempts = challenge.maxAttempts;
-      const attempts = challenge.attempts + 1;
-
-      let won = false;
-      let hint = "wrong";
-
-      if (session.game === "number_guess") {
-        const guess = Number(body.guess);
-
-        if (
-          !Number.isSafeInteger(guess) ||
-          guess < 1 ||
-          guess > 20
-        ) {
-          return respond({ error: "Enter a number from 1 to 20" }, 400);
-        }
-
-        const secret = Number(challenge.secret);
-        won = guess === secret;
-
-        if (guess < secret) hint = "higher";
-        if (guess > secret) hint = "lower";
-      } else {
-        const guess = normalizeWord(body.guess);
-        const secret = normalizeWord(challenge.secret);
-
-        if (!guess || guess.length > 30) {
-          return respond({ error: "Invalid word" }, 400);
-        }
-
-        won = guess === secret;
-      }
-
-      const updatedChallenge = { ...challenge, attempts };
-
-      const { data: updatedRows, error: updateError } = await supabase
-        .from("game_sessions")
-        .update({ challenge: updatedChallenge })
-        .eq("id", body.sessionId)
-        .eq("telegram_id", user.id)
-        .eq("status", "active")
-        .eq("challenge", challenge)
-        .select("id");
-
-      if (updateError) throw updateError;
-
-      if (!updatedRows || updatedRows.length === 0) {
-        return respond({
-          success: false,
-          error: "Attempt conflict. Please try again.",
-          code: "ATTEMPT_CONFLICT",
-        }, 409);
-      }
-
-      if (won) {
-        const points = Math.max(1, maxAttempts - attempts + 1) * 10;
-        const result = await settle(body.sessionId, points, true);
-
-        return respond({ success: true, status: "won", attempts, result });
-      }
-
-      if (attempts >= maxAttempts) {
-        const result = await settle(body.sessionId, 0, false);
-
-        return respond({ success: true, status: "lost", attempts, result });
-      }
-
-      return respond({
-        success: true,
-        status: "try_again",
-        hint,
-        attempts,
-        attemptsLeft: maxAttempts - attempts,
-      });
-    }
-
-    if (body.action === "dice_create") {
-      const { data, error } = await supabase.rpc(
-        "create_dice_room",
-        { p_telegram_id: user.id },
-      );
-
-      if (error) throw error;
-
-      return respond(data);
-    }
-
-    if (body.action === "dice_rooms") {
-      const { data: rooms, error } = await supabase
-        .from("dice_rooms")
-        .select(
-          "id, creator_telegram_id, status, current_round, created_at, expires_at",
-        )
-        .eq("status", "waiting")
-        .gt("expires_at", new Date().toISOString())
-        .order("created_at", { ascending: false })
-        .limit(30);
-
-      if (error) throw error;
-
-      const ids = [...new Set(
-        (rooms || []).map((room) => room.creator_telegram_id),
-      )];
-
-      const names: Record<string, string> = {};
-
-      if (ids.length > 0) {
-        const { data: players, error: playerError } = await supabase
-          .from("players")
-          .select("telegram_id, username")
-          .in("telegram_id", ids);
-
-        if (playerError) throw playerError;
-
-        for (const player of players || []) {
-          names[String(player.telegram_id)] = player.username;
-        }
-      }
-
-      return respond({
-        success: true,
-        rooms: (rooms || []).map((room) => ({
-          id: room.id,
-          status: room.status,
-          current_round: room.current_round,
-          created_at: room.created_at,
-          expires_at: room.expires_at,
-          creator_username: names[String(room.creator_telegram_id)] || "Игрок",
-        })),
-      });
-    }
-
-    if (body.action === "dice_join") {
-      if (!validRoomId(body.roomId)) {
-        return respond({ error: "Invalid room ID" }, 400);
-      }
-
-      const { data, error } = await supabase.rpc(
-        "join_dice_room",
-        {
-          p_room_id: body.roomId,
-          p_telegram_id: user.id,
-        },
-      );
-
-      if (error) throw error;
-
-      return respond(data);
-    }
-
-    if (body.action === "dice_state") {
-      if (!validRoomId(body.roomId)) {
-        return respond({ error: "Invalid room ID" }, 400);
-      }
-
-      const { data: room, error: roomError } = await supabase
-        .from("dice_rooms")
-        .select(
-          "id, creator_telegram_id, status, current_round, winner_telegram_id, created_at, expires_at, finished_at",
-        )
-        .eq("id", body.roomId)
-        .maybeSingle();
-
-      if (roomError) throw roomError;
-
-      if (!room) {
-        return respond({ error: "Room not found" }, 404);
-      }
-
-      const { data: members, error: membersError } = await supabase
-        .from("dice_room_players")
-        .select("telegram_id, seat, joined_at")
-        .eq("room_id", body.roomId)
-        .order("seat");
-
-      if (membersError) throw membersError;
-
-      if (!(members || []).some((member) => member.telegram_id === user.id)) {
-        return respond({ error: "You are not in this room" }, 403);
-      }
-
-      const { data: rounds, error: roundsError } = await supabase
-        .from("dice_rounds")
-        .select(
-          "round_number, player1_telegram_id, player2_telegram_id, player1_dice1, player1_dice2, player2_dice1, player2_dice2, winner_telegram_id, created_at",
-        )
-        .eq("room_id", body.roomId)
-        .order("round_number");
-
-      if (roundsError) throw roundsError;
-
-      const { data: pendingRoll, error: pendingError } = await supabase
-        .from("dice_player_rolls")
-        .select("round_number")
-        .eq("room_id", body.roomId)
-        .eq("telegram_id", user.id)
-        .order("round_number", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (pendingError) throw pendingError;
-
-      return respond({
-        success: true,
-        room,
-        members,
-        rounds,
-        waiting_for_opponent: Boolean(pendingRoll),
-      });
-    }
-
-    if (body.action === "dice_roll") {
-      if (!validRoomId(body.roomId)) {
-        return respond({ error: "Invalid room ID" }, 400);
-      }
-
-      if (!Number.isSafeInteger(body.round) || Number(body.round) < 1) {
-        return respond({ error: "Invalid round" }, 400);
-      }
-
-      const { data: existing, error: existingError } = await supabase
-        .from("dice_player_rolls")
-        .select("round_number")
-        .eq("room_id", body.roomId)
-        .eq("telegram_id", user.id)
-        .eq("round_number", body.round)
-        .maybeSingle();
-
-      if (existingError) throw existingError;
-
-      if (existing) {
-        return respond({
-          success: true,
-          status: "waiting_for_opponent",
-          round: body.round,
-        });
-      }
-
-      const dice1 = randomDie();
-      const dice2 = randomDie();
-
-      const { data, error } = await supabase.rpc(
-        "roll_dice_for_player",
-        {
-          p_room_id: body.roomId,
-          p_telegram_id: user.id,
-          p_round: body.round,
-          p_dice1: dice1,
-          p_dice2: dice2,
-        },
-      );
-
-      if (error) {
-        const { data: retry, error: retryError } = await supabase
-          .from("dice_player_rolls")
-          .select("round_number")
-          .eq("room_id", body.roomId)
-          .eq("telegram_id", user.id)
-          .eq("round_number", body.round)
-          .maybeSingle();
-
-        if (!retryError && retry) {
-          return respond({
-            success: true,
-            status: "waiting_for_opponent",
-            round: body.round,
-          });
-        }
-
-        throw error;
-      }
-
-      return respond(data);
-    }
-
-    return respond({ error: "Unknown action" }, 400);
-  } catch (error) {
-    console.error("SkillRush API error:", error);
-
-    return respond({ error: "Request failed" }, 400);
-  }
-});
-'''
-
-config = '''# Supabase CLI configuration for the SkillRush Edge Function.
-# verify_jwt=false is required because the function validates Telegram initData itself.
-[functions.index]
-verify_jwt = false
-'''
-
-readme = '''# SkillRush
-
-Telegram Mini App: мини-игры, квесты, профиль, рейтинг и комнаты с кубиками.
-
-## Состав проекта
-
-- `index.html` — клиентское приложение.
-- `supabase/functions/index/index.ts` — Supabase Edge Function.
-- `supabase/config.toml` — настройки функции для Supabase CLI.
-
-## Важно перед запуском
-
-Этот архив собирает два исходных файла, которые предоставил владелец проекта, и минимальные настройки CLI. Он **не содержит SQL-миграций** для таблиц и RPC-функций: они должны уже существовать в Supabase.
-
-Ожидаемые таблицы и RPC включают `players`, `game_sessions`, `dice_rooms`, `dice_room_players`, `dice_rounds`, `dice_player_rolls`, `quest_claims`, `settle_game_session`, `get_skillrush_quest_status`, `claim_skillrush_quest`, `create_dice_room`, `join_dice_room`, `roll_dice_for_player`.
-
-## Настройка Supabase
-
-1. Установи Supabase CLI и выполни `supabase login`.
-2. В корне проекта выполни `supabase link --project-ref dxsekydmpmaskmxafapx`.
-3. Добавь серверные секреты:
-   - `TELEGRAM_BOT_TOKEN` — токен Telegram-бота.
-   - `SUPABASE_SERVICE_ROLE_KEY` — service_role key проекта.
-4. `SUPABASE_URL` обычно автоматически доступен в Supabase Edge Functions; если окружение требует, задай URL проекта.
-5. Опубликуй функцию:
-
-   ```bash
-   supabase functions deploy index
-   ```
-
-`service_role` и токен бота должны храниться только в секретах Supabase. Не вставляй их в `index.html`, GitHub Pages или публичный репозиторий.
-
-## Настройка Telegram
-
-В BotFather укажи URL Mini App / Menu Button:
-
-`https://2222-alex57.github.io/my-telegram-bot/`
-
-В `index.html` уже указан публичный Supabase Publishable key. Публичный ключ предназначен для клиентского использования; он не заменяет проверку Telegram `initData`.
-
-## Публикация фронтенда
-
-Помести `index.html` в корень репозитория GitHub Pages и опубликуй изменения. Остальные файлы можно хранить в репозитории, но для работы сайта достаточно корневого `index.html`.
-
-## Примечания
-
-- Функция проверяет подпись Telegram `initData`.
-- Баланс и опыт читаются с сервера.
-- В кубиках клиент не списывает Хрумсы; серверные RPC должны начислять награду победителю по согласованной логике.
-- Перед публичным запуском проверь SQL-политики доступа к таблицам: клиент не должен получать прямой доступ к приватным данным игроков.
-'''
-
-(root / "index.html").write_text(html, encoding="utf-8")
-(root / "supabase" / "functions" / "index" / "index.ts").write_text(ts, encoding="utf-8")
-(root / "supabase" / "config.toml").write_text(config, encoding="utf-8")
-(root / "README.md").write_text(readme, encoding="utf-8")
-
-zip_path = Path("/mnt/data/SkillRush-project.zip")
-with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
-    for p in root.rglob("*"):
-        if p.is_file():
-            z.write(p, p.relative_to(root.parent))
-
-print(f"Готово: {zip_path}")
-print("Файлы:")
-for p in sorted(root.rglob("*")):
-    if p.is_file():
-        print(p.relative_to(root))
