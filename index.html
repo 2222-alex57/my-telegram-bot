@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,460 +6,199 @@
 <title>SkillRush</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root {
-  --bg:#10101a;
-  --card:#1c1c2b;
-  --purple:#8b5cf6;
-  --text:#fff;
-  --muted:#9999ad;
-  --green:#35d399;
+
+:root{
+  color-scheme:dark;
+  --bg:#100826;--panel:#211044;--panel2:#2b1456;--purple:#8b42f5;
+  --purple2:#bd72ff;--gold:#ffd34e;--gold2:#ff9f1c;
+  --text:#fff9ff;--muted:#c4b3df;--green:#50e0a0;
+  --line:rgba(210,165,255,.22);--shadow:0 12px 30px rgba(0,0,0,.34)
 }
-* {box-sizing:border-box}
-body {
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,sans-serif;
-  padding:18px 16px 90px;
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg)}
+body{
+  min-height:100vh;margin:0;padding:18px 16px calc(112px + env(safe-area-inset-bottom));
+  color:var(--text);font-family:Inter,ui-rounded,"Segoe UI",Arial,sans-serif;
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(140,55,255,.35),transparent 38%),
+    radial-gradient(ellipse at 100% 40%,rgba(92,35,190,.23),transparent 42%),
+    linear-gradient(160deg,#100622 0%,#190a35 52%,#100826 100%);
+  overflow-x:hidden
 }
-header {display:flex;justify-content:space-between;align-items:center}
-.logo {font-size:24px;font-weight:900}
-.logo span {color:var(--purple)}
-.balance {
-  background:#29213e;
-  padding:11px 15px;
-  border-radius:14px;
-  color:#f5c95c;
-  font-weight:bold;
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;
+  background-image:radial-gradient(#fff 1px,transparent 1px);background-size:28px 28px;z-index:-1}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:760px;margin:0 auto}
+.logo{font-size:25px;font-weight:1000;letter-spacing:1.3px;text-shadow:0 3px 16px #9a4cff}
+.logo span{color:var(--gold)}
+.balance{
+  padding:11px 16px;border-radius:16px;color:#fff0a8;font-weight:900;
+  background:linear-gradient(145deg,#563080,#29134e);border:1px solid #a66aff66;
+  box-shadow:inset 0 2px 5px #ffffff20,0 7px 18px #0005
 }
-h2 {font-size:20px;margin:25px 0 13px}
-h3 {margin:0 0 8px}
-p {color:var(--muted);font-size:13px;line-height:1.5}
-.hero {
-  margin-top:22px;
-  padding:22px;
-  border-radius:22px;
-  background:linear-gradient(135deg,#5426a5,#211d49);
+h2{font-size:20px;margin:25px 0 13px;letter-spacing:.2px}
+h3{margin:0 0 8px}
+p{color:var(--muted);font-size:13px;line-height:1.55}
+main{max-width:760px;margin:0 auto}
+.hero{
+  position:relative;isolation:isolate;overflow:hidden;margin:22px auto 0;padding:24px;
+  border-radius:26px;background:linear-gradient(135deg,#7134c9 0%,#3b176e 48%,#211044 100%);
+  border:1px solid #d49aff70;box-shadow:var(--shadow),inset 0 1px 0 #ffffff45
 }
-.hero h1 {font-size:27px;margin:0 0 8px}
-.level {margin-top:18px;color:#e4d5ff;font-size:13px}
-.progress {
-  height:9px;background:#ffffff30;
-  border-radius:10px;margin-top:9px;overflow:hidden;
+.hero:after{content:"🍪";position:absolute;right:12px;bottom:-22px;font-size:100px;opacity:.16;transform:rotate(-20deg);z-index:-1}
+.hero h1{font-size:27px;line-height:1.12;margin:0 0 8px;text-shadow:0 3px 12px #21063d}
+.hero p{max-width:440px}
+.level{margin-top:18px;color:#f0ddff;font-size:13px}
+.progress{height:10px;background:#16072e99;border:1px solid #ffffff20;border-radius:20px;margin-top:9px;overflow:hidden}
+.progress div{height:100%;background:linear-gradient(90deg,#ffb52e,#ffe779);border-radius:20px;box-shadow:0 0 12px #ffce4d;width:0%;transition:width .35s}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{
+  background:linear-gradient(145deg,rgba(57,32,91,.96),rgba(31,19,55,.98));
+  padding:16px;border-radius:20px;border:1px solid var(--line);
+  box-shadow:0 8px 20px #0003,inset 0 1px 0 #ffffff16
 }
-.progress div {height:100%;background:#d7b5ff;width:0%}
-.grid {
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
+.game{min-height:155px;cursor:pointer;position:relative;overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s}
+.game:after{content:"";position:absolute;width:90px;height:90px;right:-35px;top:-38px;border-radius:50%;background:#a75aff22}
+.game:active{transform:scale(.975)}
+.game:hover{transform:translateY(-3px);border-color:#c18bff99;box-shadow:0 12px 26px #0005,0 0 18px #8b42f533}
+.emoji{font-size:34px;margin-bottom:12px;filter:drop-shadow(0 5px 7px #0005)}
+.game strong{display:block;font-size:15px}
+.reward{color:var(--gold);font-size:12px;margin-top:8px;font-weight:800}
+.quest{margin-bottom:10px}
+.quest-top{display:flex;justify-content:space-between;gap:8px}
+.quest-title{font-weight:800;font-size:14px}
+.quest-reward{color:var(--gold);font-size:12px;white-space:nowrap;font-weight:800}
+.quest-progress{height:7px;background:#160d2c;border-radius:10px;margin-top:12px;overflow:hidden}
+.quest-progress div{height:100%;background:linear-gradient(90deg,#45dba0,#b5ff9c);border-radius:10px;transition:width .3s}
+.quest-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+button{
+  border:0;border-radius:14px;padding:11px 15px;
+  background:linear-gradient(145deg,#a75cff,#7132d5);color:white;font-weight:850;
+  cursor:pointer;box-shadow:0 5px 0 #451b88,0 8px 16px #0003,inset 0 1px 0 #ffffff55;
+  transition:transform .14s,filter .14s,box-shadow .14s
 }
-.card {
-  background:var(--card);
-  padding:16px;
-  border-radius:18px;
+button:active{transform:translateY(3px);box-shadow:0 2px 0 #451b88,0 4px 9px #0003}
+button:hover{filter:brightness(1.12)}
+button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
+.claim{padding:8px 12px;font-size:12px}
+.tabs{
+  position:fixed;z-index:4;bottom:0;left:0;right:0;display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;
+  padding:10px 12px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(25,10,47,.9),rgba(13,6,27,.98));
+  border-top:1px solid #bd82ff44;backdrop-filter:blur(18px);
+  box-shadow:0 -10px 30px #0005
 }
-.game {min-height:145px;cursor:pointer}
-.emoji {font-size:34px;margin-bottom:12px}
-.game strong {display:block;font-size:15px}
-.reward {color:#f5c95c;font-size:12px;margin-top:8px}
-.quest {margin-bottom:10px}
-.quest-top {display:flex;justify-content:space-between;gap:8px}
-.quest-title {font-weight:bold;font-size:14px}
-.quest-reward {color:#f5c95c;font-size:12px;white-space:nowrap}
-.quest-progress {
-  height:6px;background:#353548;
-  border-radius:10px;margin-top:12px;overflow:hidden;
+.tabs button{
+  min-width:0;min-height:58px;padding:8px 3px;border-radius:17px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  background:linear-gradient(145deg,#45216f,#281344);color:#d8c4f5;
+  border:1px solid #b77aff44;box-shadow:0 5px 0 #160927,0 8px 14px #0004,inset 0 1px 0 #ffffff20;
+  font-size:11px;white-space:nowrap
 }
-.quest-progress div {
-  height:100%;background:var(--green);width:0%;
+.tabs button.active{
+  color:#4a2600;background:linear-gradient(145deg,#ffe477,#ffad25);
+  border-color:#fff0a5;box-shadow:0 5px 0 #a95c0b,0 0 20px #ffbd3d55,inset 0 2px 0 #ffffffa8;
+  transform:translateY(-5px);font-weight:1000
 }
-.quest-bottom {
-  display:flex;justify-content:space-between;
-  align-items:center;margin-top:9px;
+.page{display:none;animation:pageIn .22s ease}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:.5;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.modal{display:none;position:fixed;inset:0;background:#080313d9;backdrop-filter:blur(8px);z-index:5;align-items:center;justify-content:center;padding:18px}
+.modal-box{
+  width:100%;max-width:400px;max-height:85vh;overflow:auto;
+  background:linear-gradient(145deg,#38205d,#1c1034);padding:23px;
+  border:1px solid #c28aff66;border-radius:25px;text-align:center;box-shadow:0 20px 60px #0009
 }
-button {
-  border:0;border-radius:12px;padding:11px 15px;
-  background:var(--purple);color:white;
-  font-weight:bold;cursor:pointer;
-}
-button:disabled {opacity:.4;cursor:default}
-.claim {padding:8px 12px;font-size:12px}
-.tabs {
-  position:fixed;bottom:0;left:0;right:0;
-  display:flex;justify-content:space-around;
-  background:#191927;padding:12px 4px;
-  border-top:1px solid #303044;
-}
-.tabs button {
-  background:none;color:var(--muted);
-  font-size:12px;padding:8px;
-}
-.tabs button.active {color:#b99aff}
-.page {display:none}
-.page.active {display:block}
-.modal {
-  display:none;position:fixed;inset:0;
-  background:#000c;z-index:5;
-  align-items:center;justify-content:center;padding:18px;
-}
-.modal-box {
-  width:100%;max-width:400px;background:var(--card);
-  padding:23px;border-radius:22px;text-align:center;
-}
-.modal-box h2 {margin-top:0}
-.modal-box input {
-  width:100%;padding:13px;margin:12px 0;
-  border-radius:10px;border:1px solid #555;
-  background:#10101a;color:white;font-size:17px;
-}
-.big {font-size:46px;margin:20px}
-.result {color:var(--green);font-weight:bold;margin:15px}
-.secondary {background:#38384e;margin-top:12px}
-.profile-stat {
-  display:flex;justify-content:space-between;
-  padding:14px 0;border-bottom:1px solid #343447;
-}
+.modal-box h2{margin-top:0}
+.modal-box input{width:100%;padding:13px;margin:12px 0;border-radius:12px;border:1px solid #a875d966;background:#140a28;color:white;font-size:17px;outline:none}
+.modal-box input:focus{border-color:#d5a3ff;box-shadow:0 0 0 3px #a75cff33}
+.big{font-size:46px;margin:20px}
+.result{color:var(--green);font-weight:900;margin:15px}
+.secondary{background:linear-gradient(145deg,#55466d,#332443);margin-top:12px;box-shadow:0 4px 0 #21172f}
+.friend-input{width:100%;padding:13px;border-radius:12px;border:1px solid #a875d966;background:#140a28;color:white;font-size:15px;outline:none;margin:7px 0}.friend-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #ffffff18}.friend-row:last-child{border-bottom:0}.friend-avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#7140a9,#38205d);font-size:20px;flex-shrink:0}.friend-meta{flex:1;min-width:0}.friend-meta strong{display:block;overflow:hidden;text-overflow:ellipsis}.friend-meta small{color:var(--muted)}.friend-actions{display:flex;gap:6px;flex-wrap:wrap}.friend-actions button{padding:8px 10px;font-size:11px}.friend-link{overflow-wrap:anywhere;background:#160a2c;padding:11px;border-radius:10px;color:#e6ceff;font-size:12px;margin:9px 0}.profile-stat{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #ffffff18}
+.profile-stat b{color:#ffe07a}
+@media(max-width:380px){body{padding-left:12px;padding-right:12px}.tabs{gap:5px;padding-left:7px;padding-right:7px}.tabs button{font-size:10px}.hero{padding:19px}.hero h1{font-size:24px}}
+
 </style>
 </head>
 <body>
-
-<header>
-  <div class="logo">SKILL<span>RUSH</span></div>
-  <div class="balance">🍪 <span id="balance">0</span></div>
-</header>
-
-<section class="hero">
-  <h1>Играй. Побеждай. Забирай!</h1>
-  <p>Соревнуйся в мини-играх, выполняй задания и зарабатывай Хрумсы.</p>
-  <div class="level">
-    <div style="display:flex;justify-content:space-between">
-      <span>⭐ Уровень <b id="level">1</b></span>
-      <span id="xp">0 / 500 XP</span>
-    </div>
-    <div class="progress"><div id="xpbar"></div></div>
-  </div>
-</section>
-
+<header><div class="logo">SKILL<span>RUSH</span></div><div class="balance">🍪 <span id="balance">0</span></div></header>
+<section class="hero"><h1>Играй. Побеждай. Забирай!</h1><p>Соревнуйся в мини-играх, выполняй задания и зарабатывай Хрумсы.</p><div class="level"><div style="display:flex;justify-content:space-between"><span>⭐ Уровень <b id="level">1</b></span><span id="xp">0 / 500 XP</span></div><div class="progress"><div id="xpbar"></div></div></div></section>
 <main>
-<section class="page active" id="home">
-  <h2>🔥 Популярные игры</h2>
-  <div class="grid" id="games"></div>
-  <h2>🎯 Твои задания</h2>
-  <div class="card">
-    <div id="homequests"></div>
-    <button onclick="showPage('quests')" style="width:100%;margin-top:12px">Все квесты →</button>
-  </div>
+<section class="page active" id="home"><h2>🔥 Популярные игры</h2><div class="grid" id="games"></div><h2>🎯 Твои задания</h2><div class="card"><div id="homequests"></div><button onclick="showPage('quests')" style="width:100%;margin-top:12px">Все квесты →</button></div></section>
+<section class="page" id="gamespage"><h2>🎮 Все игры</h2><div class="grid" id="allgames"></div></section>
+<section class="page" id="quests"><h2>☀️ Ежедневные квесты</h2><div id="daily"></div><h2>🏆 Еженедельные квесты</h2><div id="weekly"></div></section>
+<section class="page" id="friendspage"><h2>👥 Друзья</h2>
+<div class="card"><h3>🔎 Найти игрока</h3><p>Ищи по игровому никнейму и отправляй заявку в друзья.</p><input class="friend-input" id="friendSearch" maxlength="20" placeholder="Например, Player_123"><button style="width:100%" onclick="searchFriends()">Найти игроков</button><div id="friendSearchResults"></div></div>
+<div class="card" style="margin-top:12px"><h3>🔗 Твоя ссылка-приглашение</h3><p>Поделись ссылкой. Когда другой игрок откроет SkillRush, ему будет предложено добавить тебя в друзья.</p><div class="friend-link" id="friendInviteLink">Сначала загрузим твой профиль...</div><button style="width:100%" onclick="copyFriendLink()">Скопировать ссылку</button></div>
+<div class="card" style="margin-top:12px"><h3>📩 Входящие заявки</h3><div id="friendRequests"><p>Загрузка...</p></div></div>
+<div class="card" style="margin-top:12px"><h3>⭐ Мои друзья</h3><div id="myFriends"><p>Загрузка...</p></div></div>
+<div class="card" style="margin-top:12px"><h3>✏️ Игровой никнейм</h3><p>Латинские буквы, цифры и подчёркивание; от 3 до 20 символов.</p><input class="friend-input" id="myNickname" maxlength="20" placeholder="Твой никнейм"><button style="width:100%" onclick="saveFriendNickname()">Сохранить никнейм</button></div>
+<div id="friendsStatus" role="status"><p>Открой приложение через Telegram, чтобы пользоваться друзьями.</p></div>
 </section>
-
-<section class="page" id="gamespage">
-  <h2>🎮 Все игры</h2>
-  <div class="grid" id="allgames"></div>
-</section>
-
-<section class="page" id="quests">
-  <h2>☀️ Ежедневные квесты</h2>
-  <div id="daily"></div>
-  <h2>🏆 Еженедельные квесты</h2>
-  <div id="weekly"></div>
-</section>
-
-<section class="page" id="profile">
-  <h2>👤 Профиль игрока</h2>
-  <div class="card">
-    <div class="emoji">🎮</div>
-    <h3 id="username">Игрок SkillRush</h3>
-    <p>Участник игровой арены</p>
-    <div class="profile-stat"><span>Уровень</span><b id="plevel">1</b></div>
-    <div class="profile-stat"><span>Хрумсы</span><b id="pcoins">0</b></div>
-    <div class="profile-stat"><span>Всего игр</span><b id="pplays">0</b></div>
-    <div class="profile-stat"><span>Победы</span><b id="pwins">0</b></div>
-    <div class="profile-stat"><span>Всего заработано</span><b id="pearned">0</b></div>
-  </div>
-</section>
+<section class="page" id="profile"><h2>👤 Профиль игрока</h2><div class="card"><div class="emoji">🎮</div><h3 id="username">Игрок SkillRush</h3><p>Участник игровой арены</p><div class="profile-stat"><span>Уровень</span><b id="plevel">1</b></div><div class="profile-stat"><span>Хрумсы</span><b id="pcoins">0</b></div><div class="profile-stat"><span>Всего игр</span><b id="pplays">0</b></div><div class="profile-stat"><span>Победы</span><b id="pwins">0</b></div><div class="profile-stat"><span>Всего заработано</span><b id="pearned">0</b></div></div></section>
 </main>
-
-<nav class="tabs">
-  <button class="active" onclick="showPage('home',this)">🏠 Главная</button>
-  <button onclick="showPage('gamespage',this)">🎮 Игры</button>
-  <button onclick="showPage('quests',this)">🎯 Квесты</button>
-  <button onclick="showPage('profile',this)">👤 Профиль</button>
-</nav>
-
-<div class="modal" id="modal">
-  <div class="modal-box">
-    <h2 id="gameTitle">Игра</h2>
-    <div id="gameContent"></div>
-    <button class="secondary" onclick="closeGame()">Закрыть</button>
-  </div>
-</div>
-
+<nav class="tabs" aria-label="Основная навигация"><button class="active" onclick="showPage('home',this)">🏠 Главная</button><button onclick="showPage('gamespage',this)">🎮 Игры</button><button onclick="showPage('quests',this)">🎯 Квесты</button><button onclick="showPage('profile',this)">👤 Профиль</button><button onclick="showPage('friendspage',this)">👥 Друзья</button></nav>
+<div class="modal" id="modal"><div class="modal-box"><h2 id="gameTitle">Игра</h2><div id="gameContent"></div><button class="secondary" onclick="closeGame()">Закрыть</button></div></div>
 <script>
-const tg = window.Telegram?.WebApp;
-tg?.ready();
-tg?.expand();
-
-const today = () => new Date().toLocaleDateString('en-CA');
-const week = () => {
-  const d = new Date();
-  const jan = new Date(d.getFullYear(),0,1);
-  return `${d.getFullYear()}-${Math.floor((d-jan)/604800000)}`;
-};
-
-const defaultState = () => ({
-  coins:0, earned:0, xp:0, plays:0, wins:0,
-  dailyDate:today(), weeklyDate:week(),
-  daily:{plays:0,earn:0,wins:0},
-  weekly:{plays:0,earn:0,wins:0},
-  claimed:[]
-});
-
-let state;
-try {
-  state = {...defaultState(),...JSON.parse(localStorage.getItem('skillrush'))};
-} catch { state=defaultState(); }
-
-function save() {
-  localStorage.setItem('skillrush',JSON.stringify(state));
+const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
+const today=()=>new Date().toLocaleDateString('en-CA');
+const week=()=>{const d=new Date();const jan=new Date(d.getFullYear(),0,1);return `${d.getFullYear()}-${Math.floor((d-jan)/604800000)}`};
+const defaultState=()=>({coins:0,earned:0,xp:0,plays:0,wins:0,dailyDate:today(),weeklyDate:week(),daily:{plays:0,earn:0,wins:0},weekly:{plays:0,earn:0,wins:0},claimed:[]});
+let state;try{state={...defaultState(),...JSON.parse(localStorage.getItem('skillrush'))}}catch{state=defaultState()}
+function save(){localStorage.setItem('skillrush',JSON.stringify(state))}
+function resetQuests(){if(state.dailyDate!==today()){state.dailyDate=today();state.daily={plays:0,earn:0,wins:0};state.claimed=state.claimed.filter(x=>!x.startsWith('d-'))}if(state.weeklyDate!==week()){state.weeklyDate=week();state.weekly={plays:0,earn:0,wins:0};state.claimed=state.claimed.filter(x=>!x.startsWith('w-'))}}
+const games=[{id:'reaction',name:'Reaction Rush',emoji:'⚡',desc:'Проверь скорость реакции',reward:30},{id:'math',name:'Math Battle',emoji:'🧠',desc:'Решай примеры на время',reward:40},{id:'memory',name:'Memory Match',emoji:'🧩',desc:'Повтори последовательность',reward:35},{id:'guess',name:'Number Guess',emoji:'🎲',desc:'Угадай секретное число',reward:25}];
+const dailyTasks=[{id:'d-plays',name:'Сыграть 3 игры',key:'plays',goal:3,reward:60},{id:'d-earn',name:'Заработать 100 Хрумсов',key:'earn',goal:100,reward:50},{id:'d-wins',name:'Одержать 2 победы',key:'wins',goal:2,reward:70}];
+const weeklyTasks=[{id:'w-plays',name:'Сыграть 15 игр',key:'plays',goal:15,reward:250},{id:'w-earn',name:'Заработать 500 Хрумсов',key:'earn',goal:500,reward:200},{id:'w-wins',name:'Одержать 10 побед',key:'wins',goal:10,reward:300}];
+function addReward(amount,win=false){state.coins+=amount;state.earned+=amount;state.xp+=amount;state.daily.earn+=amount;state.weekly.earn+=amount;if(win){state.wins++;state.daily.wins++;state.weekly.wins++}render()}
+function finishGame(amount,win,message){state.plays++;state.daily.plays++;state.weekly.plays++;addReward(amount,win);document.getElementById('gameContent').innerHTML=`<div class="big">${win?'🏆':'🎮'}</div><h3>${message}</h3><div class="result">+${amount} 🍪 Хрумсов</div><p>${win?'Отличный результат!':'Попробуй ещё раз!'}</p>`}
+function openGame(id){const g=games.find(x=>x.id===id);document.getElementById('modal').style.display='flex';document.getElementById('gameTitle').textContent=g.name;const c=document.getElementById('gameContent');
+if(id==='reaction'){c.innerHTML='<p>Нажми «Старт» и жди зелёный сигнал. Затем нажми как можно быстрее!</p><button id="start">Старт</button><div id="signal" class="big">⏳</div>';document.getElementById('start').onclick=()=>{c.innerHTML='<p>Жди зелёный сигнал...</p><div class="big" id="signal">🔴</div>';const delay=1500+Math.random()*3500;let active=false,started=0,done=false;const timer=setTimeout(()=>{active=true;started=performance.now();document.getElementById('signal').textContent='🟢';document.getElementById('signal').onclick=()=>{if(!active||done)return;done=true;const ms=Math.round(performance.now()-started);finishGame(ms<350?30:ms<550?20:10,ms<550,`Твоя реакция: ${ms} мс`)}},delay);c.onclick=e=>{if(e.target.id==='signal'&&!active&&!done){clearTimeout(timer);done=true;finishGame(0,false,'Слишком рано! Попробуй ещё раз.')}}}}
+if(id==='math'){let round=0,score=0;function question(){if(round===5){finishGame(score*8,score>=3,`Правильных ответов: ${score}/5`);return}const a=2+Math.floor(Math.random()*20),b=2+Math.floor(Math.random()*20),op=Math.random()<.5?'+':'×',answer=op==='+'?a+b:a*b;c.innerHTML=`<p>Вопрос ${round+1} из 5</p><div class="big">${a} ${op} ${b} = ?</div><input id="answer" type="number" placeholder="Твой ответ"><button id="submit">Ответить</button>`;document.getElementById('submit').onclick=()=>{if(document.getElementById('answer').value==='')return;if(Number(document.getElementById('answer').value)===answer)score++;round++;question()}}question()}
+if(id==='memory'){const seq=Array.from({length:4},()=>Math.floor(Math.random()*4)),icons=['🔴','🔵','🟡','🟢'];let shown=0,entered=[];c.innerHTML='<p>Запомни последовательность:</p><div class="big" id="sequence">...</div>';const display=()=>{if(shown<seq.length){document.getElementById('sequence').textContent=icons[seq[shown++]];setTimeout(display,750)}else{c.innerHTML='<p>Повтори последовательность по порядку:</p><div class="grid">'+icons.map((x,i)=>`<button onclick="memoryPick(${i})">${x}</button>`).join('')+'</div>'}};window.memoryPick=i=>{entered.push(i);if(i!==seq[entered.length-1])finishGame(0,false,'Последовательность не совпала!');else if(entered.length===seq.length)finishGame(35,true,'Отличная память!')};setTimeout(display,800)}
+if(id==='guess'){const target=1+Math.floor(Math.random()*10);let attempts=0;c.innerHTML='<p>Угадай число от 1 до 10. У тебя 3 попытки.</p><input id="guess" type="number" min="1" max="10" placeholder="Введи число"><button id="try">Проверить</button><div id="hint"></div>';document.getElementById('try').onclick=()=>{const n=Number(document.getElementById('guess').value);if(!Number.isInteger(n)||n<1||n>10)return;attempts++;if(n===target)finishGame(25,true,'Ты угадал число!');else if(attempts>=3)finishGame(0,false,`Не угадал! Это было число ${target}`);else{document.getElementById('hint').textContent=n<target?'Загаданное число больше ↑':'Загаданное число меньше ↓';document.getElementById('guess').value=''}}}}
+function closeGame(){document.getElementById('modal').style.display='none';render()}
+function showPage(id,button){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];document.querySelectorAll('.tabs button')[index].classList.add('active')}if(id==='friendspage')loadFriends()}
+function taskHTML(t){const period=t.id.startsWith('d-')?'d':'w',data=period==='d'?state.daily:state.weekly,value=data[t.key]||0,done=value>=t.goal,claimed=state.claimed.includes(t.id);return `<div class="card quest"><div class="quest-top"><span class="quest-title">${t.name}</span><span class="quest-reward">+${t.reward} 🍪</span></div><div class="quest-progress"><div style="width:${Math.min(100,value/t.goal*100)}%"></div></div><div class="quest-bottom"><small>${Math.min(value,t.goal)} / ${t.goal}</small><button class="claim" ${!done||claimed?'disabled':''} onclick="claimQuest('${t.id}',${t.reward})">${claimed?'Получено':done?'Забрать':'В процессе'}</button></div></div>`}
+function claimQuest(id,reward){if(state.claimed.includes(id))return;const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks,t=tasks.find(x=>x.id===id),data=id.startsWith('d-')?state.daily:state.weekly;if(!t||data[t.key]<t.goal)return;state.claimed.push(id);addReward(reward,false)}
+function gameCard(g){return `<div class="card game" onclick="openGame('${g.id}')"><div class="emoji">${g.emoji}</div><strong>${g.name}</strong><p>${g.desc}</p><div class="reward">🏆 До ${g.reward} Хрумсов</div></div>`}
+function render(){resetQuests();document.getElementById('balance').textContent=state.coins;const level=Math.floor(state.xp/500)+1,progress=state.xp%500;document.getElementById('level').textContent=level;document.getElementById('xp').textContent=`${progress} / 500 XP`;document.getElementById('xpbar').style.width=progress/500*100+'%';document.getElementById('games').innerHTML=games.map(gameCard).join('');document.getElementById('allgames').innerHTML=games.map(gameCard).join('');document.getElementById('daily').innerHTML=dailyTasks.map(taskHTML).join('');document.getElementById('weekly').innerHTML=weeklyTasks.map(taskHTML).join('');document.getElementById('homequests').innerHTML=[...dailyTasks,...weeklyTasks].slice(0,3).map(taskHTML).join('');const user=tg?.initDataUnsafe?.user;document.getElementById('username').textContent=user?.first_name||'Игрок SkillRush';document.getElementById('plevel').textContent=level;document.getElementById('pcoins').textContent=state.coins;document.getElementById('pplays').textContent=state.plays;document.getElementById('pwins').textContent=state.wins;document.getElementById('pearned').textContent=state.earned;save()}
+// ===== SkillRush Friends: Supabase Edge Function integration =====
+// Заполните два значения после создания Edge Function. Публичный anon key допустим в клиенте.
+const FRIENDS_CONFIG={SUPABASE_URL:'ВСТАВЬТЕ_URL_ПРОЕКТА_SUPABASE',SUPABASE_ANON_KEY:'ВСТАВЬТЕ_ANON_PUBLIC_KEY',BOT_USERNAME:'ВСТАВЬТЕ_USERNAME_БОТА'};
+let friendsMe=null;
+const friendEsc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function friendsConfigured(){return FRIENDS_CONFIG.SUPABASE_URL.startsWith('https://')&&!FRIENDS_CONFIG.SUPABASE_URL.includes('ВСТАВЬТЕ')&&FRIENDS_CONFIG.SUPABASE_ANON_KEY.length>20&&!FRIENDS_CONFIG.SUPABASE_ANON_KEY.includes('ВСТАВЬТЕ')}
+async function friendsApi(action,extra={}){
+  if(!friendsConfigured())throw new Error('Нужно указать URL и anon public key проекта Supabase в FRIENDS_CONFIG в index.html.');
+  if(!tg?.initData)throw new Error('Открой SkillRush через Telegram, чтобы подтвердить аккаунт.');
+  const response=await fetch(`${FRIENDS_CONFIG.SUPABASE_URL}/functions/v1/skillrush-friends`,{method:'POST',headers:{'Content-Type':'application/json','apikey':FRIENDS_CONFIG.SUPABASE_ANON_KEY,'Authorization':`Bearer ${FRIENDS_CONFIG.SUPABASE_ANON_KEY}`},body:JSON.stringify({action,initData:tg.initData,...extra})});
+  const data=await response.json().catch(()=>({error:'Сервер вернул некорректный ответ.'}));
+  if(!response.ok||data.error)throw new Error(data.error||'Не удалось выполнить запрос.');
+  return data;
 }
-
-function resetQuests() {
-  if(state.dailyDate!==today()) {
-    state.dailyDate=today();
-    state.daily={plays:0,earn:0,wins:0};
-    state.claimed=state.claimed.filter(x=>!x.startsWith('d-'));
-  }
-  if(state.weeklyDate!==week()) {
-    state.weeklyDate=week();
-    state.weekly={plays:0,earn:0,wins:0};
-    state.claimed=state.claimed.filter(x=>!x.startsWith('w-'));
-  }
+function friendStatus(message,isError=false){const el=document.getElementById('friendsStatus');if(el)el.innerHTML=`<p style="color:${isError?'#ff9b9b':'#8df0bd'}">${friendEsc(message)}</p>`}
+function friendLink(){if(!friendsMe)return '';const bot=FRIENDS_CONFIG.BOT_USERNAME.replace(/^@/,'').trim();if(!bot||bot.includes('ВСТАВЬТЕ'))return 'Укажи username бота в FRIENDS_CONFIG, чтобы сформировать ссылку.';return `https://t.me/${encodeURIComponent(bot)}?startapp=friend_${friendsMe.telegram_id}`}
+async function copyFriendLink(){const link=friendLink();if(!link.startsWith('https://')){friendStatus(link,true);return}try{await navigator.clipboard.writeText(link);friendStatus('Ссылка скопирована!')}catch{friendStatus('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.',true)}}
+async function loadFriends(){
+  const reqEl=document.getElementById('friendRequests'),listEl=document.getElementById('myFriends');if(reqEl)reqEl.innerHTML='<p>Загрузка...</p>';if(listEl)listEl.innerHTML='<p>Загрузка...</p>';
+  try{
+    const me=await friendsApi('me');friendsMe=me.player;
+    const nick=document.getElementById('myNickname');if(nick&&!nick.value)nick.value=friendsMe.nickname||'';
+    const linkEl=document.getElementById('friendInviteLink');if(linkEl)linkEl.textContent=friendLink();
+    const [requests,friends]=await Promise.all([friendsApi('requests'),friendsApi('friends')]);
+    if(reqEl){const rows=requests.requests||[];reqEl.innerHTML=rows.length?rows.map(r=>{const p=r.player||r.sr_players||{};return `<div class="friend-row"><div class="friend-avatar">👤</div><div class="friend-meta"><strong>${friendEsc(p.nickname||'Игрок')}</strong><small>Хочет добавить тебя в друзья</small></div><div class="friend-actions"><button onclick="handleFriendRequest('${r.id}','accept_request')">Принять</button><button class="secondary" onclick="handleFriendRequest('${r.id}','reject_request')">Отклонить</button></div></div>`}).join(''):'<p>Пока нет входящих заявок.</p>'}
+    if(listEl){const rows=friends.friends||[];listEl.innerHTML=rows.length?rows.map(p=>`<div class="friend-row"><div class="friend-avatar">👤</div><div class="friend-meta"><strong>${friendEsc(p.nickname)}</strong><small>${friendEsc(p.display_name||'Игрок SkillRush')}</small></div><div class="friend-actions"><button class="secondary" onclick="removeFriend(${Number(p.telegram_id)})">Удалить</button></div></div>`).join(''):'<p>Пока нет друзей. Найди игрока или поделись ссылкой!</p>'}
+    friendStatus(`Профиль загружен: @${friendsMe.nickname}`);
+    const start=tg?.initDataUnsafe?.start_param||'';if(/^friend_\d+$/.test(start)&&!sessionStorage.getItem('sr_friend_start_'+start)){sessionStorage.setItem('sr_friend_start_'+start,'1');const targetId=Number(start.slice(7));if(targetId!==Number(friendsMe.telegram_id)){const result=await friendsApi('invite_friend',{targetId});friendStatus(result.message||'Заявка по приглашению отправлена.');}}
+  }catch(e){if(reqEl)reqEl.innerHTML=`<p>${friendEsc(e.message)}</p>`;if(listEl)listEl.innerHTML='<p>Не удалось загрузить список.</p>';friendStatus(e.message,true)}
 }
-
-const games = [
-  {id:'reaction',name:'Reaction Rush',emoji:'⚡',desc:'Проверь скорость реакции',reward:30},
-  {id:'math',name:'Math Battle',emoji:'🧠',desc:'Решай примеры на время',reward:40},
-  {id:'memory',name:'Memory Match',emoji:'🧩',desc:'Повтори последовательность',reward:35},
-  {id:'guess',name:'Number Guess',emoji:'🎲',desc:'Угадай секретное число',reward:25}
-];
-
-const dailyTasks = [
-  {id:'d-plays',name:'Сыграть 3 игры',key:'plays',goal:3,reward:60},
-  {id:'d-earn',name:'Заработать 100 Хрумсов',key:'earn',goal:100,reward:50},
-  {id:'d-wins',name:'Одержать 2 победы',key:'wins',goal:2,reward:70}
-];
-const weeklyTasks = [
-  {id:'w-plays',name:'Сыграть 15 игр',key:'plays',goal:15,reward:250},
-  {id:'w-earn',name:'Заработать 500 Хрумсов',key:'earn',goal:500,reward:200},
-  {id:'w-wins',name:'Одержать 10 побед',key:'wins',goal:10,reward:300}
-];
-
-function addReward(amount,win=false) {
-  state.coins+=amount;
-  state.earned+=amount;
-  state.xp+=amount;
-  state.daily.earn+=amount;
-  state.weekly.earn+=amount;
-  if(win) {
-    state.wins++;
-    state.daily.wins++;
-    state.weekly.wins++;
-  }
-  render();
-}
-
-function finishGame(amount,win,message) {
-  state.plays++;
-  state.daily.plays++;
-  state.weekly.plays++;
-  addReward(amount,win);
-  document.getElementById('gameContent').innerHTML=
-    `<div class="big">${win?'🏆':'🎮'}</div>
-     <h3>${message}</h3>
-     <div class="result">+${amount} 🍪 Хрумсов</div>
-     <p>${win?'Отличный результат!':'Попробуй ещё раз!'}</p>`;
-}
-
-function openGame(id) {
-  const g=games.find(x=>x.id===id);
-  document.getElementById('modal').style.display='flex';
-  document.getElementById('gameTitle').textContent=g.name;
-  const c=document.getElementById('gameContent');
-
-  if(id==='reaction') {
-    c.innerHTML='<p>Нажми «Старт» и жди зелёный сигнал. Затем нажми как можно быстрее!</p><button id="start">Старт</button><div id="signal" class="big">⏳</div>';
-    document.getElementById('start').onclick=()=>{
-      c.innerHTML='<p>Жди зелёный сигнал...</p><div class="big" id="signal">🔴</div>';
-      const delay=1500+Math.random()*3500;
-      let active=false,started=0,done=false;
-      const timer=setTimeout(()=>{
-        active=true;started=performance.now();
-        document.getElementById('signal').textContent='🟢';
-        document.getElementById('signal').onclick=()=>{
-          if(!active||done)return;
-          done=true;
-          const ms=Math.round(performance.now()-started);
-          finishGame(ms<350?30:ms<550?20:10,ms<550,`Твоя реакция: ${ms} мс`);
-        };
-      },delay);
-      c.onclick=e=>{
-        if(e.target.id==='signal'&&!active&&!done){
-          clearTimeout(timer);done=true;
-          finishGame(0,false,'Слишком рано! Попробуй ещё раз.');
-        }
-      };
-    };
-  }
-
-  if(id==='math') {
-    let round=0,score=0;
-    function question() {
-      if(round===5) {
-        finishGame(score*8,score>=3,`Правильных ответов: ${score}/5`);
-        return;
-      }
-      const a=2+Math.floor(Math.random()*20);
-      const b=2+Math.floor(Math.random()*20);
-      const op=Math.random()<.5?'+':'×';
-      const answer=op==='+'?a+b:a*b;
-      c.innerHTML=`<p>Вопрос ${round+1} из 5</p>
-      <div class="big">${a} ${op} ${b} = ?</div>
-      <input id="answer" type="number" placeholder="Твой ответ">
-      <button id="submit">Ответить</button>`;
-      document.getElementById('submit').onclick=()=>{
-        if(document.getElementById('answer').value==='')return;
-        if(Number(document.getElementById('answer').value)===answer)score++;
-        round++;question();
-      };
-    }
-    question();
-  }
-
-  if(id==='memory') {
-    const seq=Array.from({length:4},()=>Math.floor(Math.random()*4));
-    const icons=['🔴','🔵','🟡','🟢'];
-    let shown=0,entered=[];
-    c.innerHTML='<p>Запомни последовательность:</p><div class="big" id="sequence">...</div>';
-    const display=()=>{
-      if(shown<seq.length) {
-        document.getElementById('sequence').textContent=icons[seq[shown++]];
-        setTimeout(display,750);
-      } else {
-        c.innerHTML='<p>Повтори последовательность по порядку:</p><div class="grid">'+icons.map((x,i)=>`<button onclick="memoryPick(${i})">${x}</button>`).join('')+'</div>';
-      }
-    };
-    window.memoryPick=(i)=>{
-      entered.push(i);
-      if(i!==seq[entered.length-1]) {
-        finishGame(0,false,'Последовательность не совпала!');
-      } else if(entered.length===seq.length) {
-        finishGame(35,true,'Отличная память!');
-      }
-    };
-    setTimeout(display,800);
-  }
-
-  if(id==='guess') {
-    const target=1+Math.floor(Math.random()*10);
-    let attempts=0;
-    c.innerHTML='<p>Угадай число от 1 до 10. У тебя 3 попытки.</p><input id="guess" type="number" min="1" max="10" placeholder="Введи число"><button id="try">Проверить</button><div id="hint"></div>';
-    document.getElementById('try').onclick=()=>{
-      const n=Number(document.getElementById('guess').value);
-      if(!Number.isInteger(n)||n<1||n>10)return;
-      attempts++;
-      if(n===target) {
-        finishGame(25,true,'Ты угадал число!');
-      } else if(attempts>=3) {
-        finishGame(0,false,`Не угадал! Это было число ${target}`);
-      } else {
-        document.getElementById('hint').textContent=n<target?'Загаданное число больше ↑':'Загаданное число меньше ↓';
-        document.getElementById('guess').value='';
-      }
-    };
-  }
-}
-
-function closeGame() {
-  document.getElementById('modal').style.display='none';
-  render();
-}
-
-function showPage(id,button) {
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
-  if(button)button.classList.add('active');
-  else {
-    const index={home:0,gamespage:1,quests:2,profile:3}[id];
-    document.querySelectorAll('.tabs button')[index].classList.add('active');
-  }
-}
-
-function taskHTML(t,period) {
-  const data=period==='d'?state.daily:state.weekly;
-  const value=data[t.key]||0;
-  const done=value>=t.goal;
-  const claimed=state.claimed.includes(t.id);
-  return `<div class="card quest">
-    <div class="quest-top">
-      <span class="quest-title">${t.name}</span>
-      <span class="quest-reward">+${t.reward} 🍪</span>
-    </div>
-    <div class="quest-progress"><div style="width:${Math.min(100,value/t.goal*100)}%"></div></div>
-    <div class="quest-bottom">
-      <small>${Math.min(value,t.goal)} / ${t.goal}</small>
-      <button class="claim" ${!done||claimed?'disabled':''}
-        onclick="claimQuest('${t.id}',${t.reward})">
-        ${claimed?'Получено':done?'Забрать':'В процессе'}
-      </button>
-    </div>
-  </div>`;
-}
-
-function claimQuest(id,reward) {
-  if(state.claimed.includes(id))return;
-  const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks;
-  const t=tasks.find(x=>x.id===id);
-  const data=id.startsWith('d-')?state.daily:state.weekly;
-  if(!t||data[t.key]<t.goal)return;
-  state.claimed.push(id);
-  addReward(reward,false);
-}
-
-function render() {
-  resetQuests();
-  document.getElementById('balance').textContent=state.coins;
-  const level=Math.floor(state.xp/500)+1;
-  const progress=state.xp%500;
-  document.getElementById('level').textContent=level;
-  document.getElementById('xp').textContent=`${progress} / 500 XP`;
-  document.getElementById('xpbar').style.width=(progress/500*100)+'%';
-
-  document.getElementById('games').innerHTML=games.slice(0,4).map(gameCard).join('');
-  document.getElementById('allgames').innerHTML=games.map(gameCard).join('');
-  document.getElementById('daily').innerHTML=dailyTasks.map(t=>taskHTML(t,'d')).join('');
-  document.getElementById('weekly').innerHTML=weeklyTasks.map(t=>taskHTML(t,'w')).join('');
-  document.getElementById('homequests').innerHTML=
-    [...dailyTasks,...weeklyTasks].slice(0,3).map(t=>taskHTML(t,t.id.startsWith('d-')?'d':'w')).join('');
-
-  const user=tg?.initDataUnsafe?.user;
-  document.getElementById('username').textContent=user?.first_name||'Игрок SkillRush';
-  document.getElementById('plevel').textContent=level;
-  document.getElementById('pcoins').textContent=state.coins;
-  document.getElementById('pplays').textContent=state.plays;
-  document.getElementById('pwins').textContent=state.wins;
-  document.getElementById('pearned').textContent=state.earned;
-  save();
-}
-
-function gameCard(g) {
-  return `<div class="card game" onclick="openGame('${g.id}')">
-    <div class="emoji">${g.emoji}</div>
-    <strong>${g.name}</strong>
-    <p>${g.desc}</p>
-    <div class="reward">🏆 До ${g.reward} Хрумсов</div>
-  </div>`;
-}
-
+async function searchFriends(){const query=document.getElementById('friendSearch').value.trim(),el=document.getElementById('friendSearchResults');if(query.length<2){el.innerHTML='<p>Введи хотя бы 2 символа.</p>';return}el.innerHTML='<p>Ищем...</p>';try{const data=await friendsApi('search',{query});const rows=data.players||[];el.innerHTML=rows.length?rows.map(p=>`<div class="friend-row"><div class="friend-avatar">👤</div><div class="friend-meta"><strong>${friendEsc(p.nickname)}</strong><small>${friendEsc(p.display_name||'Игрок SkillRush')}</small></div><div class="friend-actions">${p.isFriend?'<small>Уже в друзьях</small>':`<button onclick="sendFriendRequest(${Number(p.telegram_id)})">Добавить</button>`}</div></div>`).join(''):'<p>Игроки не найдены. Пользователь должен хотя бы один раз открыть SkillRush.</p>'}catch(e){el.innerHTML=`<p>${friendEsc(e.message)}</p>`}}
+async function sendFriendRequest(targetId){try{const r=await friendsApi('send_request',{targetId});friendStatus(r.message||'Заявка отправлена.');await searchFriends()}catch(e){friendStatus(e.message,true)}}
+async function handleFriendRequest(requestId,action){try{const r=await friendsApi(action,{requestId});friendStatus(r.message);await loadFriends()}catch(e){friendStatus(e.message,true)}}
+async function removeFriend(targetId){if(!confirm('Удалить этого игрока из друзей?'))return;try{const r=await friendsApi('remove_friend',{targetId});friendStatus(r.message);await loadFriends()}catch(e){friendStatus(e.message,true)}}
+async function saveFriendNickname(){const nickname=document.getElementById('myNickname').value.trim();try{const r=await friendsApi('set_nickname',{nickname});friendsMe=r.player;document.getElementById('username').textContent=friendsMe.nickname;document.getElementById('friendInviteLink').textContent=friendLink();friendStatus('Никнейм сохранён.')}catch(e){friendStatus(e.message,true)}}
 render();
 </script>
 </body>
