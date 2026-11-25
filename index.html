@@ -277,6 +277,15 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .avatar-option.bg-swatch{width:48px;height:42px;min-width:48px;border:2px solid #ffffff55}
 .avatar-option.bg-swatch.selected{border-color:#ffe477;box-shadow:0 0 0 2px #ffdc6844}
 .avatar-builder-status{min-height:20px;margin:9px 0 0;font-size:12px;color:#bca9d6}
+.avatar-mode-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.avatar-mode-option{min-height:44px;padding:10px 12px;font-size:13px;gap:7px}
+.avatar-mode-option.selected{border-color:#ffe477;background:linear-gradient(145deg,#684095,#3b205e);box-shadow:0 0 0 2px #ffdc6844,0 3px 0 #160927}
+.avatar-mode-hint{min-height:18px;margin:7px 0 0;font-size:11px;color:#bca9d6}
+.avatar-custom-options[hidden]{display:none!important}
+.avatar-telegram-photo-shell{background:linear-gradient(145deg,#3b235e,#180d2b)}
+.avatar-telegram-photo{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.avatar-telegram-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:32px;color:#fff}
+.avatar-portrait.small .avatar-telegram-fallback{font-size:15px}
 .avatar-display{display:flex;justify-content:center;margin:8px 0 14px}
 
 /* Show illustrated character thumbnails in the picker instead of system emoji glyphs. */
@@ -318,9 +327,16 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 <section class="page" id="profile"><h2>👤 Профиль игрока</h2>
 <div class="card avatar-builder">
   <div class="avatar-builder-head"><div class="avatar-preview-wrap" id="avatarPreview"></div><div><h3>🎨 Моя аватарка</h3><p>Создай своего персонажа SkillRush и сохрани его в профиле.</p></div></div>
-  <div class="avatar-group"><div class="avatar-group-title">1. Выбери персонажа</div><div class="avatar-options" id="avatarBaseOptions"></div></div>
-  <div class="avatar-group"><div class="avatar-group-title">2. Добавь аксессуар</div><div class="avatar-options" id="avatarAccessoryOptions"></div></div>
-  <div class="avatar-group"><div class="avatar-group-title">3. Выбери фон</div><div class="avatar-options" id="avatarBackgroundOptions"></div></div>
+  <div class="avatar-group">
+    <div class="avatar-group-title">Какую аватарку использовать?</div>
+    <div class="avatar-mode-options" id="avatarModeOptions"></div>
+    <div class="avatar-mode-hint" id="avatarModeHint">Можно выбрать нарисованного героя или фото профиля Telegram.</div>
+  </div>
+  <div class="avatar-custom-options" id="avatarCustomOptions">
+    <div class="avatar-group"><div class="avatar-group-title">1. Выбери персонажа</div><div class="avatar-options" id="avatarBaseOptions"></div></div>
+    <div class="avatar-group"><div class="avatar-group-title">2. Добавь аксессуар</div><div class="avatar-options" id="avatarAccessoryOptions"></div></div>
+    <div class="avatar-group"><div class="avatar-group-title">3. Выбери фон</div><div class="avatar-options" id="avatarBackgroundOptions"></div></div>
+  </div>
   <button id="saveAvatarButton" style="width:100%;margin-top:17px" onclick="saveAvatar()">Сохранить аватарку</button>
   <div id="avatarBuilderStatus" class="avatar-builder-status" role="status">Аватарка загружается из профиля…</div>
 </div>
@@ -356,7 +372,7 @@ function render(){resetQuests();document.getElementById('balance').textContent=s
 // Заполните два значения после создания Edge Function. Публичный anon key допустим в клиенте.
 const FRIENDS_CONFIG={SUPABASE_URL:'https://dxsekydmpmaskmxafapx.supabase.co',SUPABASE_ANON_KEY:'sb_publishable_OWmjCdIYWm24udIT0PSkmA_qPhBU96X',BOT_USERNAME:'SkillRushGameBot'};
 let friendsMe=null;
-const AVATAR_DEFAULT={base:'cat',accessory:'none',background:'purple'};
+const AVATAR_DEFAULT={type:'character',base:'cat',accessory:'none',background:'purple'};
 // Individual eye coordinates for each emoji character (SVG viewBox: 0-100).
 // Frog eyes are naturally higher; ghost/fox/robot faces sit at slightly different levels.
 // These eye centers are shared by the vector character artwork and glasses.
@@ -377,7 +393,23 @@ const AVATAR_ACCESSORIES=[{id:'none',label:'Без аксессуара',emoji:'
 const AVATAR_BACKGROUNDS=[{id:'purple',label:'Фиолетовый',color:'linear-gradient(145deg,#b77cff,#6024a8)'},{id:'gold',label:'Золотой',color:'linear-gradient(145deg,#fff0a0,#e99b24)'},{id:'blue',label:'Синий',color:'linear-gradient(145deg,#9be8ff,#2876c9)'},{id:'pink',label:'Розовый',color:'linear-gradient(145deg,#ffc3e8,#ce579e)'},{id:'green',label:'Зелёный',color:'linear-gradient(145deg,#b7ffc9,#35a879)'}];
 let avatarDraft={...AVATAR_DEFAULT};
 let avatarSaved={...AVATAR_DEFAULT};
-function safeAvatar(value){const a=value&&typeof value==='object'?value:{};const legacyBases={cookie:'cat',donut:'fox',cupcake:'panda',choco:'robot'};const requestedBase=legacyBases[a.base]||a.base;return {base:AVATAR_BASES.some(x=>x.id===requestedBase)?requestedBase:'cat',accessory:AVATAR_ACCESSORIES.some(x=>x.id===a.accessory)?a.accessory:'none',background:AVATAR_BACKGROUNDS.some(x=>x.id===a.background)?a.background:'purple'};}
+function isHttpsPhotoUrl(value){
+  if(typeof value!=='string'||value.length>2048)return false;
+  try{return new URL(value).protocol==='https:';}catch{return false;}
+}
+function escapeAvatarAttribute(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function currentTelegramPhotoUrl(){
+  const value=tg?.initDataUnsafe?.user?.photo_url;
+  return isHttpsPhotoUrl(value)?value:'';
+}
+function safeAvatar(value){
+  const a=value&&typeof value==='object'?value:{};
+  const legacyBases={cookie:'cat',donut:'fox',cupcake:'panda',choco:'robot'};
+  const requestedBase=legacyBases[a.base]||a.base;
+  const result={type:'character',base:AVATAR_BASES.some(x=>x.id===requestedBase)?requestedBase:'cat',accessory:AVATAR_ACCESSORIES.some(x=>x.id===a.accessory)?a.accessory:'none',background:AVATAR_BACKGROUNDS.some(x=>x.id===a.background)?a.background:'purple'};
+  if(a.type==='telegram'&&isHttpsPhotoUrl(a.photo_url))return {...result,type:'telegram',photo_url:a.photo_url};
+  return result;
+}
 function avatarCharacterMarkup(id){
   const eyes=(fit, color='#fff')=>`<g class="face-eyes">
     <ellipse cx="${fit.left}" cy="${fit.y}" rx="5.2" ry="6.4" fill="${color}"/>
@@ -457,6 +489,10 @@ function avatarCharacterMarkup(id){
 
 function avatarMarkup(value,size='large'){
   const a=safeAvatar(value);
+  if(a.type==='telegram'&&isHttpsPhotoUrl(a.photo_url)){
+    const photo=escapeAvatarAttribute(a.photo_url);
+    return `<div class="avatar-portrait ${size} avatar-telegram-photo-shell" aria-label="Фото профиля Telegram"><span class="avatar-telegram-fallback">👤</span><img class="avatar-telegram-photo" src="${photo}" alt="Фото профиля Telegram" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'"></div>`;
+  }
   const base=AVATAR_BASES.find(x=>x.id===a.base)||AVATAR_BASES[0];
   const accessory=AVATAR_ACCESSORIES.find(x=>x.id===a.accessory)||AVATAR_ACCESSORIES[0];
   // Eye positions are tuned per character rather than using one generic glasses height.
@@ -514,6 +550,22 @@ function avatarStatus(message,isError=false){const el=document.getElementById('a
 function renderAvatarBuilder(){
   const preview=document.getElementById('avatarPreview');if(!preview)return;
   preview.innerHTML=avatarMarkup(avatarDraft,'large');
+  const modeEl=document.getElementById('avatarModeOptions');
+  const customEl=document.getElementById('avatarCustomOptions');
+  const hintEl=document.getElementById('avatarModeHint');
+  const usingTelegram=avatarDraft.type==='telegram';
+  const photoAvailable=!!currentTelegramPhotoUrl()||(usingTelegram&&isHttpsPhotoUrl(avatarDraft.photo_url));
+  if(modeEl){
+    modeEl.innerHTML=`<button class="avatar-option avatar-mode-option ${!usingTelegram?'selected':''}" onclick="chooseAvatarMode('character')">🎨 Персонаж</button><button class="avatar-option avatar-mode-option ${usingTelegram?'selected':''}" onclick="chooseAvatarMode('telegram')" ${!photoAvailable&&!usingTelegram?'disabled':''}>📷 Фото Telegram</button>`;
+  }
+  if(customEl)customEl.hidden=usingTelegram;
+  if(hintEl){
+    hintEl.textContent=usingTelegram
+      ?'Используется фотография твоего Telegram-профиля. Она будет видна другим игрокам в SkillRush.'
+      :photoAvailable
+        ?'Можно выбрать нарисованного героя или фотографию своего Telegram-профиля.'
+        :'Telegram пока не передал фото профиля. Можно продолжить с нарисованным персонажем.';
+  }
   const baseEl=document.getElementById('avatarBaseOptions');
   const accessoryEl=document.getElementById('avatarAccessoryOptions');
   const backgroundEl=document.getElementById('avatarBackgroundOptions');
@@ -521,16 +573,30 @@ function renderAvatarBuilder(){
   if(accessoryEl)accessoryEl.innerHTML=AVATAR_ACCESSORIES.map(x=>`<button class="avatar-option ${avatarDraft.accessory===x.id?'selected':''}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('accessory','${x.id}')">${x.emoji}</button>`).join('');
   if(backgroundEl)backgroundEl.innerHTML=AVATAR_BACKGROUNDS.map(x=>`<button class="avatar-option bg-swatch ${avatarDraft.background===x.id?'selected':''}" style="background:${x.color}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('background','${x.id}')"></button>`).join('');
 }
-function pickAvatar(part,value){if(!['base','accessory','background'].includes(part))return;const allowed={base:AVATAR_BASES,accessory:AVATAR_ACCESSORIES,background:AVATAR_BACKGROUNDS};if(!allowed[part].some(x=>x.id===value))return;avatarDraft={...avatarDraft,[part]:value};renderAvatarBuilder();avatarStatus('Предпросмотр обновлён. Нажми «Сохранить аватарку», чтобы применить изменения.');}
+function chooseAvatarMode(mode){
+  if(mode==='telegram'){
+    const photo=currentTelegramPhotoUrl()||(avatarDraft.type==='telegram'&&isHttpsPhotoUrl(avatarDraft.photo_url)?avatarDraft.photo_url:'');
+    if(!photo){avatarStatus('Telegram не передал фотографию профиля. Оставь персонажа SkillRush или попробуй открыть приложение позже.',true);return;}
+    avatarDraft={...avatarDraft,type:'telegram',photo_url:photo};
+    renderAvatarBuilder();
+    avatarStatus('Фото Telegram выбрано. Нажми «Сохранить аватарку», чтобы показать его в SkillRush.');
+    return;
+  }
+  avatarDraft={...avatarDraft,type:'character'};
+  delete avatarDraft.photo_url;
+  renderAvatarBuilder();
+  avatarStatus('Персонаж SkillRush выбран. Нажми «Сохранить аватарку», чтобы применить его.');
+}
+function pickAvatar(part,value){if(!['base','accessory','background'].includes(part))return;const allowed={base:AVATAR_BASES,accessory:AVATAR_ACCESSORIES,background:AVATAR_BACKGROUNDS};if(!allowed[part].some(x=>x.id===value))return;avatarDraft={...avatarDraft,type:'character',[part]:value};delete avatarDraft.photo_url;renderAvatarBuilder();avatarStatus('Предпросмотр обновлён. Нажми «Сохранить аватарку», чтобы применить изменения.');}
 async function loadAvatarProfile(){
   avatarStatus('Загружаем аватарку…');
-  try{const data=await friendsApi('me');friendsMe=data.player;avatarSaved=safeAvatar(data.player?.avatar);avatarDraft={...avatarSaved};if(data.player?.nickname)document.getElementById('username').textContent=data.player.nickname;renderAvatarBuilder();avatarStatus('Аватарка загружена. Выбери детали и сохрани изменения.');}
+  try{const data=await friendsApi('me');friendsMe=data.player;avatarSaved=safeAvatar(data.player?.avatar);avatarDraft={...avatarSaved};if(avatarDraft.type==='telegram'&&currentTelegramPhotoUrl())avatarDraft.photo_url=currentTelegramPhotoUrl();if(data.player?.nickname)document.getElementById('username').textContent=data.player.nickname;renderAvatarBuilder();avatarStatus('Аватарка загружена. Выбери фото Telegram или нарисованного персонажа.');}
   catch(e){renderAvatarBuilder();avatarStatus(e.message||'Не удалось загрузить аватарку.',true);}
 }
 async function saveAvatar(){
   const button=document.getElementById('saveAvatarButton');if(button)button.disabled=true;
   avatarStatus('Сохраняем аватарку…');
-  try{const data=await friendsApi('set_avatar',{avatar:safeAvatar(avatarDraft)});friendsMe=data.player;avatarSaved=safeAvatar(data.player?.avatar);avatarDraft={...avatarSaved};renderAvatarBuilder();avatarStatus('Готово! Аватарка сохранена в твоём профиле.');}
+  try{const data=await friendsApi('set_avatar',{avatar:safeAvatar(avatarDraft)});friendsMe=data.player;avatarSaved=safeAvatar(data.player?.avatar);avatarDraft={...avatarSaved};renderAvatarBuilder();avatarStatus(avatarSaved.type==='telegram'?'Готово! Фото Telegram сохранено и будет видно другим игрокам.':'Готово! Аватарка сохранена в твоём профиле.');}
   catch(e){avatarStatus(e.message||'Не удалось сохранить аватарку.',true);}
   finally{if(button)button.disabled=false;}
 }
