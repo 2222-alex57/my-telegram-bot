@@ -284,8 +284,6 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .avatar-custom-options[hidden]{display:none!important}
 .avatar-telegram-photo-shell{background:linear-gradient(145deg,#3b235e,#180d2b)}
 .avatar-telegram-photo{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
-.avatar-telegram-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:32px;color:#fff}
-.avatar-portrait.small .avatar-telegram-fallback{font-size:15px}
 .avatar-display{display:flex;justify-content:center;margin:8px 0 14px}
 
 /* Show illustrated character thumbnails in the picker instead of system emoji glyphs. */
@@ -491,7 +489,7 @@ function avatarMarkup(value,size='large'){
   const a=safeAvatar(value);
   if(a.type==='telegram'&&isHttpsPhotoUrl(a.photo_url)){
     const photo=escapeAvatarAttribute(a.photo_url);
-    return `<div class="avatar-portrait ${size} avatar-telegram-photo-shell" aria-label="Фото профиля Telegram"><span class="avatar-telegram-fallback">👤</span><img class="avatar-telegram-photo" src="${photo}" alt="Фото профиля Telegram" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'"></div>`;
+    return `<div class="avatar-portrait ${size} avatar-telegram-photo-shell" aria-label="Фото профиля Telegram"><img class="avatar-telegram-photo" src="${photo}" alt="Фото профиля Telegram" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'"></div>`;
   }
   const base=AVATAR_BASES.find(x=>x.id===a.base)||AVATAR_BASES[0];
   const accessory=AVATAR_ACCESSORIES.find(x=>x.id===a.accessory)||AVATAR_ACCESSORIES[0];
