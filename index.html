@@ -350,6 +350,7 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .draw-readonly #drawCanvas{cursor:default;touch-action:pan-y}
 
 
+.balance-sync-status{max-width:760px;margin:2px auto 0;padding:0 18px;text-align:right;color:#bca9d6;font-size:10px;min-height:0}
 .daily-rewards{position:relative;margin:18px 0 8px;padding:16px;border-radius:20px;background:linear-gradient(145deg,rgba(57,32,91,.96),rgba(31,19,55,.98));border:1px solid var(--line);box-shadow:0 8px 20px #0003,inset 0 1px 0 #ffffff16}
 .daily-rewards-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .daily-rewards-head h2{margin:0;font-size:18px;padding-right:0}
@@ -372,7 +373,7 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 </style>
 </head>
 <body>
-<header><div class="logo">SKILL<span>RUSH</span></div><div class="balance">🍪 <span id="balance">0</span></div></header>
+<header><div class="logo">SKILL<span>RUSH</span></div><div class="balance">🍪 <span id="balance">0</span></div></header><div class="balance-sync-status" id="balanceSyncStatus" role="status"></div>
 <section class="hero"><h1>Играй. Побеждай. Забирай!</h1><p>Соревнуйся в мини-играх, выполняй задания и зарабатывай Хрумсы.</p><div class="level"><div style="display:flex;justify-content:space-between"><span>⭐ Уровень <b id="level">1</b></span><span id="xp">0 / 500 XP</span></div><div class="progress"><div id="xpbar"></div></div></div></section>
 <main>
 <section class="page active" id="home"><div class="daily-rewards"><div class="daily-rewards-head"><h2>🎁 Ежедневные призы</h2><span class="daily-streak" id="dailyStreak">🔥 Серия: 0 дней</span><div class="daily-help"><button class="daily-help-button" type="button" aria-label="Как работают ежедневные призы" aria-expanded="false" onclick="toggleDailyHelp()">?</button><div class="daily-help-panel" id="dailyHelpPanel"><strong>Как это работает?</strong><br>Каждый день забирай свой приз, чтобы продолжить серию. Если пропустишь хотя бы один день, серия сбросится и начнётся с 1-го дня. После 7-го дня за каждый следующий день начисляется по 100 Хрумсов. Полученные ранее Хрумсы не пропадают.</div></div></div><div class="daily-reward-grid" id="dailyRewardGrid"></div><button class="daily-reward-action" id="dailyRewardButton" onclick="claimDailyReward()">Забрать приз</button><p class="daily-reward-note" id="dailyRewardNote"></p></div><h2>🔥 Популярные игры</h2><div class="grid" id="games"></div><h2>🎯 Твои задания</h2><div class="card"><div id="homequests"></div><button onclick="showPage('quests')" style="width:100%;margin-top:12px">Все квесты →</button></div></section>
@@ -417,7 +418,7 @@ function resetQuests(){if(state.dailyDate!==today()){state.dailyDate=today();sta
 const games=[{id:'reaction',name:'Reaction Rush',emoji:'⚡',desc:'Проверь скорость реакции',reward:30},{id:'draw',name:'Угадай рисунок',emoji:'🎨',desc:'Нарисуй слово для друга или угадай его за минуту',reward:0},{id:'memory',name:'Memory Match',emoji:'🧩',desc:'Повтори последовательность',reward:35},{id:'guess',name:'Number Guess',emoji:'🎲',desc:'Угадай секретное число',reward:25}];
 const dailyTasks=[{id:'d-plays',name:'Сыграть 3 игры',key:'plays',goal:3,reward:60},{id:'d-earn',name:'Заработать 100 Хрумсов',key:'earn',goal:100,reward:50},{id:'d-wins',name:'Одержать 2 победы',key:'wins',goal:2,reward:70}];
 const weeklyTasks=[{id:'w-plays',name:'Сыграть 15 игр',key:'plays',goal:15,reward:250},{id:'w-earn',name:'Заработать 500 Хрумсов',key:'earn',goal:500,reward:200},{id:'w-wins',name:'Одержать 10 побед',key:'wins',goal:10,reward:300}];
-function addReward(amount,win=false){state.coins+=amount;state.earned+=amount;state.xp+=amount;state.daily.earn+=amount;state.weekly.earn+=amount;if(win){state.wins++;state.daily.wins++;state.weekly.wins++}render()}
+function addReward(amount,win=false){const reward=Math.max(0,Math.floor(Number(amount)||0));state.coins=(Number(state.coins)||0)+reward;state.earned+=reward;state.xp+=reward;state.daily.earn+=reward;state.weekly.earn+=reward;if(win){state.wins++;state.daily.wins++;state.weekly.wins++}render();queueBalanceIncrease(reward)}
 function finishGame(amount,win,message){state.plays++;state.daily.plays++;state.weekly.plays++;addReward(amount,win);document.getElementById('gameContent').innerHTML=`<div class="big">${win?'🏆':'🎮'}</div><h3>${message}</h3><div class="result">+${amount} 🍪 Хрумсов</div><p>${win?'Отличный результат!':'Попробуй ещё раз!'}</p>`}
 function openGame(id){const g=games.find(x=>x.id===id);document.getElementById('modal').style.display='flex';document.getElementById('gameTitle').textContent=g.name;const c=document.getElementById('gameContent');
 if(id==='draw'){openDrawLobby();return;}
@@ -446,13 +447,18 @@ function toggleDailyHelp(){
   if(!panel||!button)return;
   const opened=panel.classList.toggle('open');button.setAttribute('aria-expanded',String(opened));
 }
-function applyDailyRewardsFromServer(serverRewards){
+let queuedBalanceEvents=[];
+let balanceSyncQueue=Promise.resolve();
+let balanceSyncError='';
+let resolveBalanceCloudInit;
+const balanceCloudInitPromise=new Promise(resolve=>{resolveBalanceCloudInit=resolve;});
+function applyDailyRewardsFromServer(serverRewards,serverBalance){
   const rewards=serverRewards&&typeof serverRewards==='object'?serverRewards:{};
   const syncedBefore=Math.max(0,Math.floor(Number(state.dailyRewards?.syncedTotal)||0));
   const totalAwarded=Math.max(0,Math.floor(Number(rewards.totalAwarded)||0));
   const newAwards=Math.max(0,totalAwarded-syncedBefore);
+  // Старые локальные Хрумсы не переносим: баланс теперь начинается с нуля и берётся с сервера.
   if(newAwards>0){
-    state.coins=(Number(state.coins)||0)+newAwards;
     state.earned=(Number(state.earned)||0)+newAwards;
     state.xp=(Number(state.xp)||0)+newAwards;
     state.daily=state.daily||{plays:0,earn:0,wins:0};
@@ -460,6 +466,7 @@ function applyDailyRewardsFromServer(serverRewards){
     state.daily.earn=(Number(state.daily.earn)||0)+newAwards;
     state.weekly.earn=(Number(state.weekly.earn)||0)+newAwards;
   }
+  state.coins=Math.max(0,Math.floor(Number(serverBalance)||0));
   state.dailyRewards={
     streak:Math.max(0,Math.floor(Number(rewards.streak)||0)),
     lastClaimDate:typeof rewards.lastClaimDate==='string'?rewards.lastClaimDate:null,
@@ -467,12 +474,53 @@ function applyDailyRewardsFromServer(serverRewards){
   };
   save();
 }
+function newBalanceEventId(){
+  if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
+  const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);
+  bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+  const hex=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
+function queueBalanceIncrease(amount){
+  const value=Math.floor(Number(amount)||0);
+  if(value>0)queuedBalanceEvents.push({amount:value,eventId:newBalanceEventId()});
+  balanceSyncQueue=balanceSyncQueue.then(async()=>{
+    await balanceCloudInitPromise;
+    if(!dailyRewardsCloudReady||!queuedBalanceEvents.length)return;
+    while(queuedBalanceEvents.length){
+      const event=queuedBalanceEvents[0];
+      try{
+        const data=await friendsApi('balance_add',{amount:event.amount,eventId:event.eventId});
+        queuedBalanceEvents.shift();
+        state.coins=Math.max(0,Math.floor(Number(data.balance)||0));
+        balanceSyncError='';
+        render();
+      }catch(error){
+        balanceSyncError=error?.message||'Не удалось сохранить баланс в облаке.';
+        const status=document.getElementById('balanceSyncStatus');
+        if(status)status.textContent='Не удалось синхронизировать баланс. Повторим при следующем подключении.';
+        break;
+      }
+    }
+  }).catch(error=>{balanceSyncError=error?.message||'Не удалось синхронизировать баланс.';});
+}
+async function refreshCloudBalance(){
+  if(!dailyRewardsCloudReady)return;
+  if(queuedBalanceEvents.length)queueBalanceIncrease(0);
+  await balanceSyncQueue;
+  if(queuedBalanceEvents.length)return;
+  try{
+    const data=await friendsApi('balance_get');
+    state.coins=Math.max(0,Math.floor(Number(data.balance)||0));
+    save();render();
+  }catch(error){balanceSyncError=error?.message||'Не удалось обновить баланс.';}
+}
 async function initializeDailyRewardsCloud(){
   dailyRewardsCloudBusy=true;renderDailyRewards();
   try{
     const legacy={streak:Number(state.dailyRewards?.streak)||0,lastClaimDate:state.dailyRewards?.lastClaimDate||null};
     const data=await friendsApi('daily_rewards_get',{legacyDailyRewards:legacy});
-    applyDailyRewardsFromServer(data.dailyRewards);
+    applyDailyRewardsFromServer(data.dailyRewards,data.balance);
     dailyRewardsCloudReady=true;dailyRewardsCloudError='';
     render();
   }catch(error){
@@ -481,6 +529,7 @@ async function initializeDailyRewardsCloud(){
     renderDailyRewards();
   }finally{
     dailyRewardsCloudBusy=false;
+    resolveBalanceCloudInit();
     renderDailyRewards();
   }
 }
@@ -498,7 +547,7 @@ async function claimDailyReward(){
   dailyRewardsCloudBusy=true;dailyRewardsCloudError='';renderDailyRewards();
   try{
     const data=await friendsApi('claim_daily_reward');
-    applyDailyRewardsFromServer(data.dailyRewards);
+    applyDailyRewardsFromServer(data.dailyRewards,data.balance);
     dailyRewardsCloudReady=true;
     render();
   }catch(error){
@@ -1190,7 +1239,14 @@ function drawRecordResultOnce(room,won){
 }
 
 render();
-initializeDailyRewardsCloud();
+initializeDailyRewardsCloud().then(()=>{
+  const status=document.getElementById('balanceSyncStatus');
+  if(status)status.textContent=dailyRewardsCloudReady?'Облачный баланс подключён к Telegram-аккаунту.':'Облачный баланс пока не подключён — проверь SQL и публикацию функции Supabase.';
+  queueBalanceIncrease(0);
+});
+window.addEventListener('focus',()=>{if(dailyRewardsCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud().then(()=>queueBalanceIncrease(0));});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dailyRewardsCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud().then(()=>queueBalanceIncrease(0));}});
+setInterval(()=>{if(!document.hidden&&dailyRewardsCloudReady)refreshCloudBalance();},20000);
 </script>
 </body>
 </html>
