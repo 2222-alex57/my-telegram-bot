@@ -1209,7 +1209,7 @@ function drawRecordResultOnce(room,won){
 render();
 initializeDailyRewardsCloud().then(()=>{
   const status=document.getElementById('balanceSyncStatus');
-  if(status)status.textContent=(dailyRewardsCloudReady&&progressCloudReady)?'Облачный профиль подключён к Telegram-аккаунту.':'Облачный баланс пока не подключён — проверь SQL и публикацию функции Supabase.';
+  if(status)status.textContent=(dailyRewardsCloudReady&&progressCloudReady)?'':'Облачный баланс пока не подключён — проверь SQL и публикацию функции Supabase.';
   queueBalanceIncrease(0);
 });
 window.addEventListener('focus',()=>{if(progressCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud();});
