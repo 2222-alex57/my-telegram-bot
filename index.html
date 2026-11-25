@@ -278,6 +278,12 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .avatar-option.bg-swatch.selected{border-color:#ffe477;box-shadow:0 0 0 2px #ffdc6844}
 .avatar-builder-status{min-height:20px;margin:9px 0 0;font-size:12px;color:#bca9d6}
 .avatar-display{display:flex;justify-content:center;margin:8px 0 14px}
+
+/* Show illustrated character thumbnails in the picker instead of system emoji glyphs. */
+.avatar-option.avatar-character-option{width:58px;height:58px;min-width:58px;min-height:58px;padding:5px;border-radius:15px}
+.avatar-picker-avatar{width:44px;height:44px;display:inline-grid;place-items:center;overflow:hidden;border-radius:50%;border:1px solid #ffffff66;box-shadow:inset 0 1px 4px #ffffff55,0 2px 5px #0004}
+.avatar-picker-avatar .avatar-character{display:block;width:100%;height:100%}
+
 /* Controlled vector faces: eye positions are stable across platforms and font sets. */
 .avatar-portrait .avatar-base{
   position:absolute;inset:0;z-index:2;display:block;width:100%;height:100%;
@@ -511,7 +517,7 @@ function renderAvatarBuilder(){
   const baseEl=document.getElementById('avatarBaseOptions');
   const accessoryEl=document.getElementById('avatarAccessoryOptions');
   const backgroundEl=document.getElementById('avatarBackgroundOptions');
-  if(baseEl)baseEl.innerHTML=AVATAR_BASES.map(x=>`<button class="avatar-option ${avatarDraft.base===x.id?'selected':''}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('base','${x.id}')">${x.emoji}</button>`).join('');
+  if(baseEl)baseEl.innerHTML=AVATAR_BASES.map(x=>`<button class="avatar-option avatar-character-option ${avatarDraft.base===x.id?'selected':''}" title="${x.label}" aria-label="Выбрать персонажа: ${x.label}" onclick="pickAvatar('base','${x.id}')"><span class="avatar-picker-avatar bg-purple">${avatarCharacterMarkup(x.id)}</span></button>`).join('');
   if(accessoryEl)accessoryEl.innerHTML=AVATAR_ACCESSORIES.map(x=>`<button class="avatar-option ${avatarDraft.accessory===x.id?'selected':''}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('accessory','${x.id}')">${x.emoji}</button>`).join('');
   if(backgroundEl)backgroundEl.innerHTML=AVATAR_BACKGROUNDS.map(x=>`<button class="avatar-option bg-swatch ${avatarDraft.background===x.id?'selected':''}" style="background:${x.color}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('background','${x.id}')"></button>`).join('');
 }
