@@ -892,22 +892,39 @@ function drawSetupCanvas(isArtist){
     if(!drawCurrentState||drawCurrentState.status!=='active')return;
     const p=drawCanvasPoint(e);if(!p)return;
     if(drawLocalStrokes.length>=80){drawStatus('На одном раунде можно сделать не больше 80 штрихов.',true);return;}
-    drawPointerDown=true;drawCanvas.setPointerCapture(e.pointerId);
+    drawPointerDown=true;
+    try{drawCanvas.setPointerCapture(e.pointerId);}catch(_){/* Pointer capture may be unavailable in older Telegram WebViews. */}
     drawLocalStrokes.push({color:String(drawIsEraser?'#ffffff':drawBrushColor).toLowerCase(),width:drawBrushWidth,points:[p]});
     drawRenderCanvas(drawLocalStrokes);scheduleDrawCanvasSave(true);
   });
   drawCanvas.addEventListener('pointermove',e=>{
     if(!drawPointerDown)return;
     const events=typeof e.getCoalescedEvents==='function'?e.getCoalescedEvents():[e];
-    const stroke=drawLocalStrokes[drawLocalStrokes.length-1];
+    let changed=false;
     for(const pointEvent of events){
-      const p=drawCanvasPoint(pointEvent);if(p&&stroke&&stroke.points.length<120)stroke.points.push(p);
+      const p=drawCanvasPoint(pointEvent);if(p&&drawAppendCanvasPoint(p))changed=true;
     }
-    drawRenderCanvas(drawLocalStrokes);scheduleDrawCanvasSave(false);
+    if(changed){drawRenderCanvas(drawLocalStrokes);scheduleDrawCanvasSave(false);}
   });
   const end=()=>{if(!drawPointerDown)return;drawPointerDown=false;const stroke=drawLocalStrokes[drawLocalStrokes.length-1];if(stroke&&stroke.points.length===1)stroke.points.push([Math.min(1,stroke.points[0][0]+0.001),stroke.points[0][1]]);drawRenderCanvas(drawLocalStrokes);scheduleDrawCanvasSave(true);};
   drawCanvas.addEventListener('pointerup',end);
   drawCanvas.addEventListener('pointercancel',end);
+  drawCanvas.addEventListener('lostpointercapture',end);
+}
+function drawAppendCanvasPoint(point){
+  let stroke=drawLocalStrokes[drawLocalStrokes.length-1];
+  if(!stroke)return false;
+  const previous=stroke.points[stroke.points.length-1];
+  if(previous&&Math.hypot(point[0]-previous[0],point[1]-previous[1])<0.0007)return false;
+  // The server stores up to 120 points per stroke. Start a connected segment
+  // before that limit so long continuous drawing is never silently truncated.
+  if(stroke.points.length>=110){
+    if(drawLocalStrokes.length>=80){drawStatus('Достигнут лимит линий в этом раунде.',true);return false;}
+    stroke={color:stroke.color,width:stroke.width,points:[previous]};
+    drawLocalStrokes.push(stroke);
+  }
+  stroke.points.push(point);
+  return true;
 }
 function drawCanvasPoint(e){
   const rect=drawCanvas.getBoundingClientRect();
