@@ -569,6 +569,9 @@ window.applyDailyRewardsFromServer=function(dailyRewards,balance){
     state.dailyRewards={
       streak:Math.max(0,Number(dailyRewards.streak)||0),
       lastClaimDate:typeof dailyRewards.lastClaimDate==='string'?dailyRewards.lastClaimDate:null,
+      lastClaimAt:typeof dailyRewards.lastClaimAt==='string'?dailyRewards.lastClaimAt:null,
+      nextClaimAt:typeof dailyRewards.nextClaimAt==='string'?dailyRewards.nextClaimAt:null,
+      canClaim:typeof dailyRewards.canClaim==='boolean'?dailyRewards.canClaim:null,
       totalAwarded:Math.max(0,Number(dailyRewards.totalAwarded)||0)
     };
   }
@@ -576,11 +579,17 @@ window.applyDailyRewardsFromServer=function(dailyRewards,balance){
   save();
 }
 function dailyRewardInfo(){
-  if(!state.dailyRewards||typeof state.dailyRewards!=='object')state.dailyRewards={streak:0,lastClaimDate:null,syncedTotal:0};
-  const last=state.dailyRewards.lastClaimDate,now=today(),gap=dayNumberBetween(last,now),streak=Math.max(0,Number(state.dailyRewards.streak)||0);
-  if(last===now)return {day:Math.min(7,Math.max(1,streak)),claimed:true,streak};
-  if(gap===1)return {day:Math.min(7,Math.max(1,streak+1)),claimed:false,streak};
-  return {day:1,claimed:false,streak:0,reset:!!last&&gap>1};
+  if(!state.dailyRewards||typeof state.dailyRewards!=='object')state.dailyRewards={streak:0,lastClaimDate:null,lastClaimAt:null,nextClaimAt:null,canClaim:null};
+  const rewards=state.dailyRewards,nowMs=Date.now(),nextMs=rewards.nextClaimAt?Date.parse(rewards.nextClaimAt):NaN;
+  let streak=Math.max(0,Number(rewards.streak)||0);
+  const lastMs=rewards.lastClaimAt?Date.parse(rewards.lastClaimAt):NaN;
+  const reset=Number.isFinite(lastMs)&&nowMs-lastMs>48*60*60*1000;
+  if(reset)streak=0;
+  const cooldown=Number.isFinite(nextMs)&&nextMs>nowMs;
+  const canClaim=typeof rewards.canClaim==='boolean'?rewards.canClaim:!cooldown;
+  const claimed=!canClaim;
+  const day=claimed?Math.min(7,Math.max(1,streak)):Math.min(7,Math.max(1,streak+1));
+  return {day,claimed,streak:reset?0:streak,reset:reset&&!!rewards.lastClaimAt,nextClaimAt:rewards.nextClaimAt||null,cooldown};
 }
 function toggleDailyHelp(){
   const panel=document.getElementById('dailyHelpPanel'),button=document.querySelector('.daily-help-button');
@@ -629,14 +638,43 @@ async function initializeDailyRewardsCloud(){
     renderDailyRewards();
   }
 }
+function formatDailyCountdown(ms){
+  const total=Math.max(0,Math.ceil(ms/1000)),hours=Math.floor(total/3600),minutes=Math.floor((total%3600)/60),seconds=total%60;
+  return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+}
+let dailyRewardRefreshBusy=false;
+async function refreshDailyRewardsAvailability(){
+  if(dailyRewardRefreshBusy||!dailyRewardsCloudReady||dailyRewardsCloudBusy)return;
+  dailyRewardRefreshBusy=true;
+  try{
+    const legacy={streak:Number(state.dailyRewards?.streak)||0,lastClaimDate:state.dailyRewards?.lastClaimDate||null};
+    const data=await friendsApi('daily_rewards_get',{legacyDailyRewards:legacy});
+    window.applyDailyRewardsFromServer(data.dailyRewards,data.balance);
+    dailyRewardsCloudError='';
+  }catch(error){dailyRewardsCloudError=error?.message||'Не удалось проверить доступность приза.';}
+  finally{dailyRewardRefreshBusy=false;renderDailyRewards();}
+}
+function updateDailyRewardCountdown(){
+  const rewards=state.dailyRewards||{},nextMs=rewards.nextClaimAt?Date.parse(rewards.nextClaimAt):NaN;
+  if(!Number.isFinite(nextMs))return;
+  const remaining=nextMs-Date.now();
+  if(remaining>0){
+    const note=document.getElementById('dailyRewardNote');
+    if(note&&dailyRewardsCloudReady&&!dailyRewardsCloudBusy)note.textContent=`⏳ Следующий приз через: ${formatDailyCountdown(remaining)}`;
+  }else if(dailyRewardsCloudReady&&rewards.canClaim!==true){
+    const note=document.getElementById('dailyRewardNote');
+    if(note&&!dailyRewardRefreshBusy)note.textContent='Проверяем доступность следующего приза…';
+    refreshDailyRewardsAvailability();
+  }
+}
 function renderDailyRewards(){
   const info=dailyRewardInfo(),grid=document.getElementById('dailyRewardGrid');if(!grid)return;
   document.getElementById('dailyStreak').textContent=`🔥 Серия: ${info.streak} ${info.streak===1?'день':info.streak>=2&&info.streak<=4?'дня':'дней'}`;
-  grid.innerHTML=DAILY_REWARD_AMOUNTS.map((amount,i)=>{const day=i+1,received=info.claimed&&day<=info.day,current=day===info.day;return `<div class="daily-reward-day ${received?'received':''} ${current?'current':''}"><b>День ${day}</b><strong>+${amount}</strong><small>${received?'✓ Получено':current?(info.claimed?'Забрано сегодня':'Твой приз'):'🍪 Хрумсы'}</small></div>`}).join('');
+  grid.innerHTML=DAILY_REWARD_AMOUNTS.map((amount,i)=>{const day=i+1,received=info.claimed&&day<=info.day,current=day===info.day;return `<div class="daily-reward-day ${received?'received':''} ${current?'current':''}"><b>День ${day}</b><strong>+${amount}</strong><small>${received?'✓ Получено':current?(info.claimed?'Ожидание':'Твой приз'):'🍪 Хрумсы'}</small></div>`}).join('');
   const button=document.getElementById('dailyRewardButton'),note=document.getElementById('dailyRewardNote');
   button.disabled=!dailyRewardsCloudReady||dailyRewardsCloudBusy||info.claimed;
   button.textContent=!dailyRewardsCloudReady?(dailyRewardsCloudBusy?'Подключаем…':'Призы не загружены'):dailyRewardsCloudBusy?'Сохраняем…':info.claimed?'✅ Приз получен':'🎁 Забрать '+DAILY_REWARD_AMOUNTS[info.day-1]+' Хрумсов';
-  note.textContent=dailyRewardsCloudError?`Не удалось подключиться: ${dailyRewardsCloudError}`:!dailyRewardsCloudReady?'Подключаем ежедневные призы к аккаунту Telegram…':info.claimed?'Возвращайся завтра за следующим призом!':info.reset?'Ты пропустил день — серия начнётся заново с первого дня.':'Забирай приз каждый день, чтобы продолжать серию!';
+  note.textContent=dailyRewardsCloudError?`Не удалось подключиться: ${dailyRewardsCloudError}`:!dailyRewardsCloudReady?'Подключаем ежедневные призы к аккаунту Telegram…':info.cooldown&&info.nextClaimAt?`⏳ Следующий приз через: ${formatDailyCountdown(Date.parse(info.nextClaimAt)-Date.now())}`:info.claimed?'Проверяем доступность следующего приза…':info.reset?'Ты пропустил более 48 часов — серия начнётся заново с первого дня.':'Забирай приз! Следующий станет доступен через 24 часа.';
 }
 async function claimDailyReward(){
   if(!dailyRewardsCloudReady||dailyRewardsCloudBusy)return;
@@ -1344,6 +1382,7 @@ initializeDailyRewardsCloud().then(()=>{
 window.addEventListener('focus',()=>{if(progressCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(progressCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud();}});
 setInterval(()=>{if(!document.hidden&&progressCloudReady)refreshCloudBalance();},20000);
+setInterval(()=>{if(!document.hidden)updateDailyRewardCountdown();},1000);
 </script>
 </body>
 </html>
