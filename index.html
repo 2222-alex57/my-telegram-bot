@@ -117,6 +117,39 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .secondary{background:linear-gradient(145deg,#55466d,#332443);margin-top:12px;box-shadow:0 4px 0 #21172f}
 .friend-input{width:100%;padding:13px;border-radius:12px;border:1px solid #a875d966;background:#140a28;color:white;font-size:15px;outline:none;margin:7px 0}.friend-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #ffffff18}.friend-row:last-child{border-bottom:0}.friend-avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#7140a9,#38205d);font-size:20px;flex-shrink:0}.friend-meta{flex:1;min-width:0}.friend-meta strong{display:block;overflow:hidden;text-overflow:ellipsis}.friend-meta small{color:var(--muted)}.friend-actions{display:flex;gap:6px;flex-wrap:wrap}.friend-actions button{padding:8px 10px;font-size:11px}.friend-link{overflow-wrap:anywhere;background:#160a2c;padding:11px;border-radius:10px;color:#e6ceff;font-size:12px;margin:9px 0}.profile-stat{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #ffffff18}
 .profile-stat b{color:#ffe07a}
+
+/* ===== SkillRush avatar creator ===== */
+.avatar-builder{margin:14px 0 18px}
+.avatar-builder-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.avatar-preview-wrap{display:flex;align-items:center;justify-content:center;min-width:116px}
+.avatar-portrait{position:relative;width:104px;height:104px;border-radius:50%;display:grid;place-items:center;border:3px solid #ffffff55;box-shadow:0 9px 24px #0006,inset 0 2px 8px #ffffff55;overflow:hidden}
+.avatar-portrait.large{width:116px;height:116px}
+.avatar-portrait.small{width:42px;height:42px;border-width:2px;box-shadow:0 3px 9px #0005}
+.avatar-portrait.bg-purple{background:radial-gradient(circle at 35% 25%,#b77cff,#6024a8 65%,#321052)}
+.avatar-portrait.bg-gold{background:radial-gradient(circle at 35% 25%,#fff0a0,#e99b24 65%,#8d4b0b)}
+.avatar-portrait.bg-blue{background:radial-gradient(circle at 35% 25%,#9be8ff,#2876c9 65%,#133b78)}
+.avatar-portrait.bg-pink{background:radial-gradient(circle at 35% 25%,#ffc3e8,#ce579e 65%,#71275e)}
+.avatar-portrait.bg-green{background:radial-gradient(circle at 35% 25%,#b7ffc9,#35a879 65%,#14533e)}
+.avatar-portrait .avatar-base{font-size:62px;line-height:1;filter:drop-shadow(0 5px 3px #0005);transform:translateY(5px)}
+.avatar-portrait.large .avatar-base{font-size:68px}
+.avatar-portrait.small .avatar-base{font-size:27px;transform:translateY(2px)}
+.avatar-portrait .avatar-accessory{position:absolute;top:2px;right:7px;font-size:30px;line-height:1;filter:drop-shadow(0 3px 2px #0008);transform:rotate(8deg)}
+.avatar-portrait.small .avatar-accessory{top:-1px;right:0;font-size:13px}
+.avatar-portrait.accessory-glasses .avatar-accessory{top:34px;right:18px;transform:none;font-size:25px}
+.avatar-portrait.large.accessory-glasses .avatar-accessory{top:39px;right:22px;font-size:29px}
+.avatar-portrait.small.accessory-glasses .avatar-accessory{top:13px;right:5px;font-size:12px}
+.avatar-portrait.accessory-headphones .avatar-accessory{top:8px;right:1px;transform:none}
+.avatar-portrait.small.accessory-headphones .avatar-accessory{top:1px;right:-1px}
+.avatar-group{margin-top:14px}
+.avatar-group-title{font-size:13px;font-weight:850;color:#f0ddff;margin-bottom:8px}
+.avatar-options{display:flex;gap:8px;flex-wrap:wrap}
+.avatar-option{min-width:48px;min-height:46px;padding:8px 10px;border:1px solid #b77aff55;border-radius:13px;background:#25113f;color:#fff;font-size:21px;box-shadow:0 3px 0 #160927;display:inline-flex;align-items:center;justify-content:center}
+.avatar-option.selected{border-color:#ffe477;background:linear-gradient(145deg,#684095,#3b205e);box-shadow:0 0 0 2px #ffdc6844,0 3px 0 #160927}
+.avatar-option.bg-swatch{width:48px;height:42px;min-width:48px;border:2px solid #ffffff55}
+.avatar-option.bg-swatch.selected{border-color:#ffe477;box-shadow:0 0 0 2px #ffdc6844}
+.avatar-builder-status{min-height:20px;margin:9px 0 0;font-size:12px;color:#bca9d6}
+.avatar-display{display:flex;justify-content:center;margin:8px 0 14px}
+.friend-avatar{width:auto;height:auto;background:none;border-radius:0;display:block;flex-shrink:0;font-size:inherit}
 @media(max-width:380px){body{padding-left:12px;padding-right:12px}.tabs{gap:5px;padding-left:7px;padding-right:7px}.tabs button{font-size:10px}.hero{padding:19px}.hero h1{font-size:24px}}
 
 </style>
@@ -136,7 +169,16 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 <div class="card" style="margin-top:12px"><h3>✏️ Игровой никнейм</h3><p>Латинские буквы, цифры и подчёркивание; от 3 до 20 символов.</p><input class="friend-input" id="myNickname" maxlength="20" placeholder="Твой никнейм"><button style="width:100%" onclick="saveFriendNickname()">Сохранить никнейм</button></div>
 <div id="friendsStatus" role="status"><p>Открой приложение через Telegram, чтобы пользоваться друзьями.</p></div>
 </section>
-<section class="page" id="profile"><h2>👤 Профиль игрока</h2><div class="card"><div class="emoji">🎮</div><h3 id="username">Игрок SkillRush</h3><p>Участник игровой арены</p><div class="profile-stat"><span>Уровень</span><b id="plevel">1</b></div><div class="profile-stat"><span>Хрумсы</span><b id="pcoins">0</b></div><div class="profile-stat"><span>Всего игр</span><b id="pplays">0</b></div><div class="profile-stat"><span>Победы</span><b id="pwins">0</b></div><div class="profile-stat"><span>Всего заработано</span><b id="pearned">0</b></div></div></section>
+<section class="page" id="profile"><h2>👤 Профиль игрока</h2>
+<div class="card avatar-builder">
+  <div class="avatar-builder-head"><div class="avatar-preview-wrap" id="avatarPreview"></div><div><h3>🎨 Моя аватарка</h3><p>Создай своего персонажа SkillRush и сохрани его в профиле.</p></div></div>
+  <div class="avatar-group"><div class="avatar-group-title">1. Выбери персонажа</div><div class="avatar-options" id="avatarBaseOptions"></div></div>
+  <div class="avatar-group"><div class="avatar-group-title">2. Добавь аксессуар</div><div class="avatar-options" id="avatarAccessoryOptions"></div></div>
+  <div class="avatar-group"><div class="avatar-group-title">3. Выбери фон</div><div class="avatar-options" id="avatarBackgroundOptions"></div></div>
+  <button id="saveAvatarButton" style="width:100%;margin-top:17px" onclick="saveAvatar()">Сохранить аватарку</button>
+  <div id="avatarBuilderStatus" class="avatar-builder-status" role="status">Аватарка загружается из профиля…</div>
+</div>
+<div class="card"><div class="emoji">🎮</div><h3 id="username">Игрок SkillRush</h3><p>Участник игровой арены</p><div class="profile-stat"><span>Уровень</span><b id="plevel">1</b></div><div class="profile-stat"><span>Хрумсы</span><b id="pcoins">0</b></div><div class="profile-stat"><span>Всего игр</span><b id="pplays">0</b></div><div class="profile-stat"><span>Победы</span><b id="pwins">0</b></div><div class="profile-stat"><span>Всего заработано</span><b id="pearned">0</b></div></div></section>
 </main>
 <nav class="tabs" aria-label="Основная навигация"><button class="active" onclick="showPage('home',this)">🏠 Главная</button><button onclick="showPage('gamespage',this)">🎮 Игры</button><button onclick="showPage('quests',this)">🎯 Квесты</button><button onclick="showPage('profile',this)">👤 Профиль</button><button onclick="showPage('friendspage',this)">👥 Друзья</button></nav>
 <div class="modal" id="modal"><div class="modal-box"><h2 id="gameTitle">Игра</h2><div id="gameContent"></div><button class="secondary" onclick="closeGame()">Закрыть</button></div></div>
@@ -159,7 +201,7 @@ if(id==='math'){let round=0,score=0;function question(){if(round===5){finishGame
 if(id==='memory'){const seq=Array.from({length:4},()=>Math.floor(Math.random()*4)),icons=['🔴','🔵','🟡','🟢'];let shown=0,entered=[];c.innerHTML='<p>Запомни последовательность:</p><div class="big" id="sequence">...</div>';const display=()=>{if(shown<seq.length){document.getElementById('sequence').textContent=icons[seq[shown++]];setTimeout(display,750)}else{c.innerHTML='<p>Повтори последовательность по порядку:</p><div class="grid">'+icons.map((x,i)=>`<button onclick="memoryPick(${i})">${x}</button>`).join('')+'</div>'}};window.memoryPick=i=>{entered.push(i);if(i!==seq[entered.length-1])finishGame(0,false,'Последовательность не совпала!');else if(entered.length===seq.length)finishGame(35,true,'Отличная память!')};setTimeout(display,800)}
 if(id==='guess'){const target=1+Math.floor(Math.random()*10);let attempts=0;c.innerHTML='<p>Угадай число от 1 до 10. У тебя 3 попытки.</p><input id="guess" type="number" min="1" max="10" placeholder="Введи число"><button id="try">Проверить</button><div id="hint"></div>';document.getElementById('try').onclick=()=>{const n=Number(document.getElementById('guess').value);if(!Number.isInteger(n)||n<1||n>10)return;attempts++;if(n===target)finishGame(25,true,'Ты угадал число!');else if(attempts>=3)finishGame(0,false,`Не угадал! Это было число ${target}`);else{document.getElementById('hint').textContent=n<target?'Загаданное число больше ↑':'Загаданное число меньше ↓';document.getElementById('guess').value=''}}}}
 function closeGame(){document.getElementById('modal').style.display='none';render()}
-function showPage(id,button){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];document.querySelectorAll('.tabs button')[index].classList.add('active')}if(id==='friendspage')loadFriends()}
+function showPage(id,button){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];document.querySelectorAll('.tabs button')[index].classList.add('active')}if(id==='friendspage')loadFriends();if(id==='profile')loadAvatarProfile()}
 function taskHTML(t){const period=t.id.startsWith('d-')?'d':'w',data=period==='d'?state.daily:state.weekly,value=data[t.key]||0,done=value>=t.goal,claimed=state.claimed.includes(t.id);return `<div class="card quest"><div class="quest-top"><span class="quest-title">${t.name}</span><span class="quest-reward">+${t.reward} 🍪</span></div><div class="quest-progress"><div style="width:${Math.min(100,value/t.goal*100)}%"></div></div><div class="quest-bottom"><small>${Math.min(value,t.goal)} / ${t.goal}</small><button class="claim" ${!done||claimed?'disabled':''} onclick="claimQuest('${t.id}',${t.reward})">${claimed?'Получено':done?'Забрать':'В процессе'}</button></div></div>`}
 function claimQuest(id,reward){if(state.claimed.includes(id))return;const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks,t=tasks.find(x=>x.id===id),data=id.startsWith('d-')?state.daily:state.weekly;if(!t||data[t.key]<t.goal)return;state.claimed.push(id);addReward(reward,false)}
 function gameCard(g){return `<div class="card game" onclick="openGame('${g.id}')"><div class="emoji">${g.emoji}</div><strong>${g.name}</strong><p>${g.desc}</p><div class="reward">🏆 До ${g.reward} Хрумсов</div></div>`}
@@ -168,6 +210,41 @@ function render(){resetQuests();document.getElementById('balance').textContent=s
 // Заполните два значения после создания Edge Function. Публичный anon key допустим в клиенте.
 const FRIENDS_CONFIG={SUPABASE_URL:'https://dxsekydmpmaskmxafapx.supabase.co',SUPABASE_ANON_KEY:'sb_publishable_OWmjCdIYWm24udIT0PSkmA_qPhBU96X',BOT_USERNAME:'SkillRushGameBot'};
 let friendsMe=null;
+const AVATAR_DEFAULT={base:'cookie',accessory:'none',background:'purple'};
+const AVATAR_BASES=[{id:'cookie',label:'Печенька',emoji:'🍪'},{id:'donut',label:'Пончик',emoji:'🍩'},{id:'cupcake',label:'Кекс',emoji:'🧁'},{id:'choco',label:'Шоколад',emoji:'🍫'}];
+const AVATAR_ACCESSORIES=[{id:'none',label:'Без аксессуара',emoji:'🚫'},{id:'crown',label:'Корона',emoji:'👑'},{id:'glasses',label:'Очки',emoji:'🕶️'},{id:'cap',label:'Кепка',emoji:'🧢'},{id:'headphones',label:'Наушники',emoji:'🎧'},{id:'star',label:'Звезда',emoji:'⭐'}];
+const AVATAR_BACKGROUNDS=[{id:'purple',label:'Фиолетовый',color:'linear-gradient(145deg,#b77cff,#6024a8)'},{id:'gold',label:'Золотой',color:'linear-gradient(145deg,#fff0a0,#e99b24)'},{id:'blue',label:'Синий',color:'linear-gradient(145deg,#9be8ff,#2876c9)'},{id:'pink',label:'Розовый',color:'linear-gradient(145deg,#ffc3e8,#ce579e)'},{id:'green',label:'Зелёный',color:'linear-gradient(145deg,#b7ffc9,#35a879)'}];
+let avatarDraft={...AVATAR_DEFAULT};
+let avatarSaved={...AVATAR_DEFAULT};
+function safeAvatar(value){const a=value&&typeof value==='object'?value:{};return {base:AVATAR_BASES.some(x=>x.id===a.base)?a.base:'cookie',accessory:AVATAR_ACCESSORIES.some(x=>x.id===a.accessory)?a.accessory:'none',background:AVATAR_BACKGROUNDS.some(x=>x.id===a.background)?a.background:'purple'};}
+function avatarMarkup(value,size='large'){
+  const a=safeAvatar(value);const base=AVATAR_BASES.find(x=>x.id===a.base)||AVATAR_BASES[0];const accessory=AVATAR_ACCESSORIES.find(x=>x.id===a.accessory)||AVATAR_ACCESSORIES[0];
+  return `<div class="avatar-portrait ${size} bg-${a.background} accessory-${a.accessory}" aria-label="Аватарка: ${base.label}"><span class="avatar-base">${base.emoji}</span>${a.accessory!=='none'?`<span class="avatar-accessory">${accessory.emoji}</span>`:''}</div>`;
+}
+function avatarStatus(message,isError=false){const el=document.getElementById('avatarBuilderStatus');if(el){el.textContent=message;el.style.color=isError?'#ff9b9b':'#bca9d6';}}
+function renderAvatarBuilder(){
+  const preview=document.getElementById('avatarPreview');if(!preview)return;
+  preview.innerHTML=avatarMarkup(avatarDraft,'large');
+  const baseEl=document.getElementById('avatarBaseOptions');
+  const accessoryEl=document.getElementById('avatarAccessoryOptions');
+  const backgroundEl=document.getElementById('avatarBackgroundOptions');
+  if(baseEl)baseEl.innerHTML=AVATAR_BASES.map(x=>`<button class="avatar-option ${avatarDraft.base===x.id?'selected':''}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('base','${x.id}')">${x.emoji}</button>`).join('');
+  if(accessoryEl)accessoryEl.innerHTML=AVATAR_ACCESSORIES.map(x=>`<button class="avatar-option ${avatarDraft.accessory===x.id?'selected':''}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('accessory','${x.id}')">${x.emoji}</button>`).join('');
+  if(backgroundEl)backgroundEl.innerHTML=AVATAR_BACKGROUNDS.map(x=>`<button class="avatar-option bg-swatch ${avatarDraft.background===x.id?'selected':''}" style="background:${x.color}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('background','${x.id}')"></button>`).join('');
+}
+function pickAvatar(part,value){if(!['base','accessory','background'].includes(part))return;const allowed={base:AVATAR_BASES,accessory:AVATAR_ACCESSORIES,background:AVATAR_BACKGROUNDS};if(!allowed[part].some(x=>x.id===value))return;avatarDraft={...avatarDraft,[part]:value};renderAvatarBuilder();avatarStatus('Предпросмотр обновлён. Нажми «Сохранить аватарку», чтобы применить изменения.');}
+async function loadAvatarProfile(){
+  avatarStatus('Загружаем аватарку…');
+  try{const data=await friendsApi('me');friendsMe=data.player;avatarSaved=safeAvatar(data.player?.avatar);avatarDraft={...avatarSaved};if(data.player?.nickname)document.getElementById('username').textContent=data.player.nickname;renderAvatarBuilder();avatarStatus('Аватарка загружена. Выбери детали и сохрани изменения.');}
+  catch(e){renderAvatarBuilder();avatarStatus(e.message||'Не удалось загрузить аватарку.',true);}
+}
+async function saveAvatar(){
+  const button=document.getElementById('saveAvatarButton');if(button)button.disabled=true;
+  avatarStatus('Сохраняем аватарку…');
+  try{const data=await friendsApi('set_avatar',{avatar:safeAvatar(avatarDraft)});friendsMe=data.player;avatarSaved=safeAvatar(data.player?.avatar);avatarDraft={...avatarSaved};renderAvatarBuilder();avatarStatus('Готово! Аватарка сохранена в твоём профиле.');}
+  catch(e){avatarStatus(e.message||'Не удалось сохранить аватарку.',true);}
+  finally{if(button)button.disabled=false;}
+}
 const friendEsc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function friendsConfigured(){return FRIENDS_CONFIG.SUPABASE_URL.startsWith('https://')&&!FRIENDS_CONFIG.SUPABASE_URL.includes('ВСТАВЬТЕ')&&FRIENDS_CONFIG.SUPABASE_ANON_KEY.length>20&&!FRIENDS_CONFIG.SUPABASE_ANON_KEY.includes('ВСТАВЬТЕ')}
 async function friendsApi(action,extra={}){
@@ -188,13 +265,13 @@ async function loadFriends(){
     const nick=document.getElementById('myNickname');if(nick&&!nick.value)nick.value=friendsMe.nickname||'';
     const linkEl=document.getElementById('friendInviteLink');if(linkEl)linkEl.textContent=friendLink();
     const [requests,friends]=await Promise.all([friendsApi('requests'),friendsApi('friends')]);
-    if(reqEl){const rows=requests.requests||[];reqEl.innerHTML=rows.length?rows.map(r=>{const p=r.player||r.sr_players||{};return `<div class="friend-row"><div class="friend-avatar">👤</div><div class="friend-meta"><strong>${friendEsc(p.nickname||'Игрок')}</strong><small>Хочет добавить тебя в друзья</small></div><div class="friend-actions"><button onclick="handleFriendRequest('${r.id}','accept_request')">Принять</button><button class="secondary" onclick="handleFriendRequest('${r.id}','reject_request')">Отклонить</button></div></div>`}).join(''):'<p>Пока нет входящих заявок.</p>'}
-    if(listEl){const rows=friends.friends||[];listEl.innerHTML=rows.length?rows.map(p=>`<div class="friend-row"><div class="friend-avatar">👤</div><div class="friend-meta"><strong>${friendEsc(p.nickname)}</strong><small>${friendEsc(p.display_name||'Игрок SkillRush')}</small></div><div class="friend-actions"><button class="secondary" onclick="removeFriend(${Number(p.telegram_id)})">Удалить</button></div></div>`).join(''):'<p>Пока нет друзей. Найди игрока или поделись ссылкой!</p>'}
+    if(reqEl){const rows=requests.requests||[];reqEl.innerHTML=rows.length?rows.map(r=>{const p=r.player||r.sr_players||{};return `<div class="friend-row"><div class="friend-avatar">${avatarMarkup(p.avatar,'small')}</div><div class="friend-meta"><strong>${friendEsc(p.nickname||'Игрок')}</strong><small>Хочет добавить тебя в друзья</small></div><div class="friend-actions"><button onclick="handleFriendRequest('${r.id}','accept_request')">Принять</button><button class="secondary" onclick="handleFriendRequest('${r.id}','reject_request')">Отклонить</button></div></div>`}).join(''):'<p>Пока нет входящих заявок.</p>'}
+    if(listEl){const rows=friends.friends||[];listEl.innerHTML=rows.length?rows.map(p=>`<div class="friend-row"><div class="friend-avatar">${avatarMarkup(p.avatar,'small')}</div><div class="friend-meta"><strong>${friendEsc(p.nickname)}</strong><small>${friendEsc(p.display_name||'Игрок SkillRush')}</small></div><div class="friend-actions"><button class="secondary" onclick="removeFriend(${Number(p.telegram_id)})">Удалить</button></div></div>`).join(''):'<p>Пока нет друзей. Найди игрока или поделись ссылкой!</p>'}
     friendStatus(`Профиль загружен: @${friendsMe.nickname}`);
     const start=tg?.initDataUnsafe?.start_param||'';if(/^friend_\d+$/.test(start)&&!sessionStorage.getItem('sr_friend_start_'+start)){sessionStorage.setItem('sr_friend_start_'+start,'1');const targetId=Number(start.slice(7));if(targetId!==Number(friendsMe.telegram_id)){const result=await friendsApi('invite_friend',{targetId});friendStatus(result.message||'Заявка по приглашению отправлена.');}}
   }catch(e){if(reqEl)reqEl.innerHTML=`<p>${friendEsc(e.message)}</p>`;if(listEl)listEl.innerHTML='<p>Не удалось загрузить список.</p>';friendStatus(e.message,true)}
 }
-async function searchFriends(){const query=document.getElementById('friendSearch').value.trim(),el=document.getElementById('friendSearchResults');if(query.length<2){el.innerHTML='<p>Введи хотя бы 2 символа.</p>';return}el.innerHTML='<p>Ищем...</p>';try{const data=await friendsApi('search',{query});const rows=data.players||[];el.innerHTML=rows.length?rows.map(p=>`<div class="friend-row"><div class="friend-avatar">👤</div><div class="friend-meta"><strong>${friendEsc(p.nickname)}</strong><small>${friendEsc(p.display_name||'Игрок SkillRush')}</small></div><div class="friend-actions">${p.isFriend?'<small>Уже в друзьях</small>':`<button onclick="sendFriendRequest(${Number(p.telegram_id)})">Добавить</button>`}</div></div>`).join(''):'<p>Игроки не найдены. Пользователь должен хотя бы один раз открыть SkillRush.</p>'}catch(e){el.innerHTML=`<p>${friendEsc(e.message)}</p>`}}
+async function searchFriends(){const query=document.getElementById('friendSearch').value.trim(),el=document.getElementById('friendSearchResults');if(query.length<2){el.innerHTML='<p>Введи хотя бы 2 символа.</p>';return}el.innerHTML='<p>Ищем...</p>';try{const data=await friendsApi('search',{query});const rows=data.players||[];el.innerHTML=rows.length?rows.map(p=>`<div class="friend-row"><div class="friend-avatar">${avatarMarkup(p.avatar,'small')}</div><div class="friend-meta"><strong>${friendEsc(p.nickname)}</strong><small>${friendEsc(p.display_name||'Игрок SkillRush')}</small></div><div class="friend-actions">${p.isFriend?'<small>Уже в друзьях</small>':`<button onclick="sendFriendRequest(${Number(p.telegram_id)})">Добавить</button>`}</div></div>`).join(''):'<p>Игроки не найдены. Пользователь должен хотя бы один раз открыть SkillRush.</p>'}catch(e){el.innerHTML=`<p>${friendEsc(e.message)}</p>`}}
 async function sendFriendRequest(targetId){try{const r=await friendsApi('send_request',{targetId});friendStatus(r.message||'Заявка отправлена.');await searchFriends()}catch(e){friendStatus(e.message,true)}}
 async function handleFriendRequest(requestId,action){try{const r=await friendsApi(action,{requestId});friendStatus(r.message);await loadFriends()}catch(e){friendStatus(e.message,true)}}
 async function removeFriend(targetId){if(!confirm('Удалить этого игрока из друзей?'))return;try{const r=await friendsApi('remove_friend',{targetId});friendStatus(r.message);await loadFriends()}catch(e){friendStatus(e.message,true)}}
