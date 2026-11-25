@@ -105,7 +105,7 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 @keyframes pageIn{from{opacity:.5;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .modal{display:none;position:fixed;inset:0;background:#080313d9;backdrop-filter:blur(8px);z-index:5;align-items:center;justify-content:center;padding:18px}
 .modal-box{
-  width:100%;max-width:400px;max-height:85vh;overflow:auto;
+  width:100%;max-width:440px;max-height:85vh;overflow:auto;
   background:linear-gradient(145deg,#38205d,#1c1034);padding:23px;
   border:1px solid #c28aff66;border-radius:25px;text-align:center;box-shadow:0 20px 60px #0009
 }
@@ -305,6 +305,45 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .friend-avatar{width:auto;height:auto;background:none;border-radius:0;display:block;flex-shrink:0;font-size:inherit}
 @media(max-width:380px){body{padding-left:12px;padding-right:12px}.tabs{gap:5px;padding-left:7px;padding-right:7px}.tabs button{font-size:10px}.hero{padding:19px}.hero h1{font-size:24px}}
 
+
+/* ===== SkillRush: Guess the Drawing ===== */
+.draw-intro{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 12px}
+.draw-panel{background:linear-gradient(145deg,rgba(57,32,91,.96),rgba(31,19,55,.98));border:1px solid var(--line);border-radius:16px;padding:13px;margin:10px 0}
+.draw-panel h3{font-size:15px;margin:0 0 8px}
+.draw-field{width:100%;min-height:43px;padding:11px 12px;border-radius:11px;border:1px solid #a875d966;background:#140a28;color:#fff;font-size:14px;outline:none;margin:6px 0}
+.draw-action{width:100%;margin-top:8px}
+.draw-list-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff18}
+.draw-list-row:last-child{border-bottom:0}
+.draw-row-meta{flex:1;min-width:0}
+.draw-row-meta strong{display:block;overflow:hidden;text-overflow:ellipsis}
+.draw-row-meta small{color:var(--muted)}
+.draw-row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.draw-row-actions button{padding:8px 10px;font-size:11px}
+.draw-room-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.draw-role{font-weight:900;color:#ffe17a;font-size:14px}
+.draw-timer{font-weight:1000;font-size:24px;font-variant-numeric:tabular-nums;color:#fff0a8;background:#160a2c;border:1px solid #a875d966;border-radius:12px;padding:7px 12px;min-width:84px;text-align:center}
+.draw-timer.urgent{color:#ff9b9b;border-color:#ff696966}
+.draw-word{border:1px dashed #ffda70aa;background:#3b245b;border-radius:12px;padding:10px;text-align:center;color:#ffe9a5;font-weight:850;margin:8px 0 12px}
+.draw-word-hint{font-size:11px;line-height:1.4;margin:7px 0 12px;color:#bca9d6}
+.draw-canvas-wrap{width:100%;background:#fff;border-radius:14px;overflow:hidden;border:2px solid #d8c8ed;box-shadow:0 5px 16px #0004;touch-action:none}
+#drawCanvas{display:block;width:100%;height:auto;aspect-ratio:5/3;touch-action:none;cursor:crosshair}
+.draw-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:10px 0}
+.draw-color{width:30px;height:30px;min-width:30px;min-height:30px;padding:0;border:2px solid #ffffff88;border-radius:50%;box-shadow:0 2px 0 #160927}
+.draw-color.selected{outline:2px solid #ffe477;outline-offset:2px}
+.draw-tool-btn{padding:8px 10px;font-size:12px}
+.draw-chat{background:#160a2c;border:1px solid #ffffff20;border-radius:13px;padding:10px;margin-top:12px;max-height:190px;overflow:auto;text-align:left}
+.draw-chat-line{padding:6px 2px;border-bottom:1px solid #ffffff12;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.draw-chat-line:last-child{border-bottom:0}
+.draw-chat-line strong{color:#e9c9ff}
+.draw-chat-line.correct strong{color:#8df0bd}
+.draw-chat-form{display:flex;gap:7px;margin-top:9px}
+.draw-chat-form input{flex:1;min-width:0;padding:11px;border-radius:10px;border:1px solid #a875d966;background:#140a28;color:#fff;font-size:14px}
+.draw-chat-form button{padding:10px 13px}
+.draw-status{min-height:18px;color:#bca9d6;font-size:12px;margin:8px 0 0}
+.draw-result{text-align:center;padding:15px 8px}
+.draw-result .big{margin:8px}
+.draw-readonly #drawCanvas{cursor:default;touch-action:pan-y}
+
 </style>
 </head>
 <body>
@@ -350,21 +389,21 @@ const defaultState=()=>({coins:0,earned:0,xp:0,plays:0,wins:0,dailyDate:today(),
 let state;try{state={...defaultState(),...JSON.parse(localStorage.getItem('skillrush'))}}catch{state=defaultState()}
 function save(){localStorage.setItem('skillrush',JSON.stringify(state))}
 function resetQuests(){if(state.dailyDate!==today()){state.dailyDate=today();state.daily={plays:0,earn:0,wins:0};state.claimed=state.claimed.filter(x=>!x.startsWith('d-'))}if(state.weeklyDate!==week()){state.weeklyDate=week();state.weekly={plays:0,earn:0,wins:0};state.claimed=state.claimed.filter(x=>!x.startsWith('w-'))}}
-const games=[{id:'reaction',name:'Reaction Rush',emoji:'⚡',desc:'Проверь скорость реакции',reward:30},{id:'math',name:'Math Battle',emoji:'🧠',desc:'Решай примеры на время',reward:40},{id:'memory',name:'Memory Match',emoji:'🧩',desc:'Повтори последовательность',reward:35},{id:'guess',name:'Number Guess',emoji:'🎲',desc:'Угадай секретное число',reward:25}];
+const games=[{id:'reaction',name:'Reaction Rush',emoji:'⚡',desc:'Проверь скорость реакции',reward:30},{id:'draw',name:'Угадай рисунок',emoji:'🎨',desc:'Нарисуй слово для друга или угадай его за минуту',reward:0},{id:'memory',name:'Memory Match',emoji:'🧩',desc:'Повтори последовательность',reward:35},{id:'guess',name:'Number Guess',emoji:'🎲',desc:'Угадай секретное число',reward:25}];
 const dailyTasks=[{id:'d-plays',name:'Сыграть 3 игры',key:'plays',goal:3,reward:60},{id:'d-earn',name:'Заработать 100 Хрумсов',key:'earn',goal:100,reward:50},{id:'d-wins',name:'Одержать 2 победы',key:'wins',goal:2,reward:70}];
 const weeklyTasks=[{id:'w-plays',name:'Сыграть 15 игр',key:'plays',goal:15,reward:250},{id:'w-earn',name:'Заработать 500 Хрумсов',key:'earn',goal:500,reward:200},{id:'w-wins',name:'Одержать 10 побед',key:'wins',goal:10,reward:300}];
 function addReward(amount,win=false){state.coins+=amount;state.earned+=amount;state.xp+=amount;state.daily.earn+=amount;state.weekly.earn+=amount;if(win){state.wins++;state.daily.wins++;state.weekly.wins++}render()}
 function finishGame(amount,win,message){state.plays++;state.daily.plays++;state.weekly.plays++;addReward(amount,win);document.getElementById('gameContent').innerHTML=`<div class="big">${win?'🏆':'🎮'}</div><h3>${message}</h3><div class="result">+${amount} 🍪 Хрумсов</div><p>${win?'Отличный результат!':'Попробуй ещё раз!'}</p>`}
 function openGame(id){const g=games.find(x=>x.id===id);document.getElementById('modal').style.display='flex';document.getElementById('gameTitle').textContent=g.name;const c=document.getElementById('gameContent');
+if(id==='draw'){openDrawLobby();return;}
 if(id==='reaction'){c.innerHTML='<p>Нажми «Старт» и жди зелёный сигнал. Затем нажми как можно быстрее!</p><button id="start">Старт</button><div id="signal" class="big">⏳</div>';document.getElementById('start').onclick=()=>{c.innerHTML='<p>Жди зелёный сигнал...</p><div class="big" id="signal">🔴</div>';const delay=1500+Math.random()*3500;let active=false,started=0,done=false;const timer=setTimeout(()=>{active=true;started=performance.now();document.getElementById('signal').textContent='🟢';document.getElementById('signal').onclick=()=>{if(!active||done)return;done=true;const ms=Math.round(performance.now()-started);finishGame(ms<350?30:ms<550?20:10,ms<550,`Твоя реакция: ${ms} мс`)}},delay);c.onclick=e=>{if(e.target.id==='signal'&&!active&&!done){clearTimeout(timer);done=true;finishGame(0,false,'Слишком рано! Попробуй ещё раз.')}}}}
-if(id==='math'){let round=0,score=0;function question(){if(round===5){finishGame(score*8,score>=3,`Правильных ответов: ${score}/5`);return}const a=2+Math.floor(Math.random()*20),b=2+Math.floor(Math.random()*20),op=Math.random()<.5?'+':'×',answer=op==='+'?a+b:a*b;c.innerHTML=`<p>Вопрос ${round+1} из 5</p><div class="big">${a} ${op} ${b} = ?</div><input id="answer" type="number" placeholder="Твой ответ"><button id="submit">Ответить</button>`;document.getElementById('submit').onclick=()=>{if(document.getElementById('answer').value==='')return;if(Number(document.getElementById('answer').value)===answer)score++;round++;question()}}question()}
 if(id==='memory'){const seq=Array.from({length:4},()=>Math.floor(Math.random()*4)),icons=['🔴','🔵','🟡','🟢'];let shown=0,entered=[];c.innerHTML='<p>Запомни последовательность:</p><div class="big" id="sequence">...</div>';const display=()=>{if(shown<seq.length){document.getElementById('sequence').textContent=icons[seq[shown++]];setTimeout(display,750)}else{c.innerHTML='<p>Повтори последовательность по порядку:</p><div class="grid">'+icons.map((x,i)=>`<button onclick="memoryPick(${i})">${x}</button>`).join('')+'</div>'}};window.memoryPick=i=>{entered.push(i);if(i!==seq[entered.length-1])finishGame(0,false,'Последовательность не совпала!');else if(entered.length===seq.length)finishGame(35,true,'Отличная память!')};setTimeout(display,800)}
 if(id==='guess'){const target=1+Math.floor(Math.random()*10);let attempts=0;c.innerHTML='<p>Угадай число от 1 до 10. У тебя 3 попытки.</p><input id="guess" type="number" min="1" max="10" placeholder="Введи число"><button id="try">Проверить</button><div id="hint"></div>';document.getElementById('try').onclick=()=>{const n=Number(document.getElementById('guess').value);if(!Number.isInteger(n)||n<1||n>10)return;attempts++;if(n===target)finishGame(25,true,'Ты угадал число!');else if(attempts>=3)finishGame(0,false,`Не угадал! Это было число ${target}`);else{document.getElementById('hint').textContent=n<target?'Загаданное число больше ↑':'Загаданное число меньше ↓';document.getElementById('guess').value=''}}}}
-function closeGame(){document.getElementById('modal').style.display='none';render()}
+function closeGame(){stopDrawTimers();drawCurrentRoomId=null;document.getElementById('modal').style.display='none';render()}
 function showPage(id,button){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];document.querySelectorAll('.tabs button')[index].classList.add('active')}if(id==='friendspage')loadFriends();if(id==='profile')loadAvatarProfile()}
 function taskHTML(t){const period=t.id.startsWith('d-')?'d':'w',data=period==='d'?state.daily:state.weekly,value=data[t.key]||0,done=value>=t.goal,claimed=state.claimed.includes(t.id);return `<div class="card quest"><div class="quest-top"><span class="quest-title">${t.name}</span><span class="quest-reward">+${t.reward} 🍪</span></div><div class="quest-progress"><div style="width:${Math.min(100,value/t.goal*100)}%"></div></div><div class="quest-bottom"><small>${Math.min(value,t.goal)} / ${t.goal}</small><button class="claim" ${!done||claimed?'disabled':''} onclick="claimQuest('${t.id}',${t.reward})">${claimed?'Получено':done?'Забрать':'В процессе'}</button></div></div>`}
 function claimQuest(id,reward){if(state.claimed.includes(id))return;const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks,t=tasks.find(x=>x.id===id),data=id.startsWith('d-')?state.daily:state.weekly;if(!t||data[t.key]<t.goal)return;state.claimed.push(id);addReward(reward,false)}
-function gameCard(g){return `<div class="card game" onclick="openGame('${g.id}')"><div class="emoji">${g.emoji}</div><strong>${g.name}</strong><p>${g.desc}</p><div class="reward">🏆 До ${g.reward} Хрумсов</div></div>`}
+function gameCard(g){return `<div class="card game" onclick="openGame('${g.id}')"><div class="emoji">${g.emoji}</div><strong>${g.name}</strong><p>${g.desc}</p><div class="reward">${g.id==='draw'?'🎨 С другом · 60 секунд':`🏆 До ${g.reward} Хрумсов`}</div></div>`}
 function render(){resetQuests();document.getElementById('balance').textContent=state.coins;const level=Math.floor(state.xp/500)+1,progress=state.xp%500;document.getElementById('level').textContent=level;document.getElementById('xp').textContent=`${progress} / 500 XP`;document.getElementById('xpbar').style.width=progress/500*100+'%';document.getElementById('games').innerHTML=games.map(gameCard).join('');document.getElementById('allgames').innerHTML=games.map(gameCard).join('');document.getElementById('daily').innerHTML=dailyTasks.map(taskHTML).join('');document.getElementById('weekly').innerHTML=weeklyTasks.map(taskHTML).join('');document.getElementById('homequests').innerHTML=[...dailyTasks,...weeklyTasks].slice(0,3).map(taskHTML).join('');const user=tg?.initDataUnsafe?.user;document.getElementById('username').textContent=user?.first_name||'Игрок SkillRush';document.getElementById('plevel').textContent=level;document.getElementById('pcoins').textContent=state.coins;document.getElementById('pplays').textContent=state.plays;document.getElementById('pwins').textContent=state.wins;document.getElementById('pearned').textContent=state.earned;save()}
 // ===== SkillRush Friends: Supabase Edge Function integration =====
 // Заполните два значения после создания Edge Function. Публичный anon key допустим в клиенте.
@@ -629,6 +668,309 @@ async function sendFriendRequest(targetId){try{const r=await friendsApi('send_re
 async function handleFriendRequest(requestId,action){try{const r=await friendsApi(action,{requestId});friendStatus(r.message);await loadFriends()}catch(e){friendStatus(e.message,true)}}
 async function removeFriend(targetId){if(!confirm('Удалить этого игрока из друзей?'))return;try{const r=await friendsApi('remove_friend',{targetId});friendStatus(r.message);await loadFriends()}catch(e){friendStatus(e.message,true)}}
 async function saveFriendNickname(){const nickname=document.getElementById('myNickname').value.trim();try{const r=await friendsApi('set_nickname',{nickname});friendsMe=r.player;document.getElementById('username').textContent=friendsMe.nickname;document.getElementById('friendInviteLink').textContent=friendLink();friendStatus('Никнейм сохранён.')}catch(e){friendStatus(e.message,true)}}
+
+
+// ===== SkillRush: multiplayer "Угадай рисунок" =====
+// Initiator is the artist and chooses the secret word; the invited friend guesses.
+let drawLobbyTimer = null;
+let drawRoomTimer = null;
+let drawCurrentRoomId = null;
+let drawCurrentRole = null;
+let drawCurrentState = null;
+let drawLocalStrokes = [];
+let drawCanvas = null;
+let drawCtx = null;
+let drawBrushColor = '#20152f';
+let drawPointerDown = false;
+let drawLobbyBusy = false;
+let drawRoomBusy = false;
+let drawCanvasKey = '';
+const DRAW_PALETTE = ['#20152f','#e84b4b','#2878e8','#22a06b','#f0a51a','#ffffff'];
+const DRAW_WORD_CATEGORIES = {
+  'Животные': ['кот','собака','слон','жираф','пингвин','черепаха','бабочка','кенгуру','крокодил','обезьяна'],
+  'Еда': ['пицца','мороженое','арбуз','банан','морковь','бутерброд','торт','клубника'],
+  'Предметы': ['телефон','велосипед','часы','зонт','гитара','очки','чемодан','ключ'],
+  'Природа': ['радуга','вулкан','облако','снежинка','молния','дерево','цветок','остров'],
+  'Транспорт': ['самолет','вертолет','корабль','автобус','ракета','самокат'],
+  'Фантазия': ['дракон','робот','инопланетянин','замок','пират','космонавт','привидение','единорог']
+};
+const DRAW_WORDS = Object.values(DRAW_WORD_CATEGORIES).flat();
+function drawWordOptionsHTML(){
+  return '<option value="">Выбери слово из списка</option>'+Object.entries(DRAW_WORD_CATEGORIES).map(([category,words])=>
+    `<optgroup label="${category}">${words.map(word=>`<option value="${word}">${word[0].toLocaleUpperCase('ru-RU')+word.slice(1)}</option>`).join('')}</optgroup>`
+  ).join('');
+}
+function drawLetterLabel(count){
+  const n=Math.abs(Number(count)||0),lastTwo=n%100,last=n%10;
+  if(lastTwo>=11&&lastTwo<=14)return 'букв';
+  if(last===1)return 'буква';
+  if(last>=2&&last<=4)return 'буквы';
+  return 'букв';
+}
+
+function stopDrawTimers(){
+  if(drawLobbyTimer){clearInterval(drawLobbyTimer);drawLobbyTimer=null;}
+  if(drawRoomTimer){clearInterval(drawRoomTimer);drawRoomTimer=null;}
+  drawLobbyBusy=false;drawRoomBusy=false;drawPointerDown=false;
+}
+function drawStatus(message,isError=false){
+  const el=document.getElementById('drawStatus');
+  if(el){el.textContent=message;el.style.color=isError?'#ff9b9b':'#bca9d6';}
+}
+function drawFormatTime(seconds){
+  const n=Math.max(0,Number(seconds)||0);
+  return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
+}
+function drawEscape(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+async function openDrawLobby(){
+  stopDrawTimers();drawCurrentRoomId=null;drawCurrentRole=null;drawCurrentState=null;
+  const c=document.getElementById('gameContent');
+  c.innerHTML=`
+    <p class="draw-intro">Позови друга на раунд. Ты выберешь секретное слово и нарисуешь его, а друг попробует угадать за 60 секунд.</p>
+    <div class="draw-panel">
+      <h3>🎨 Создать вызов</h3>
+      <label for="drawFriendSelect">Кого пригласить угадывать?</label>
+      <select class="draw-field" id="drawFriendSelect"><option value="">Загрузка друзей…</option></select>
+      <label for="drawSecretWord">Выбери слово, которое будешь рисовать</label>
+      <select class="draw-field" id="drawSecretWord">${drawWordOptionsHTML()}</select>
+      <p class="draw-word-hint">Друг не увидит слово — ему покажем только количество букв.</p>
+      <button class="draw-action" id="drawCreateButton" onclick="sendDrawChallenge()">Отправить вызов</button>
+      <div class="draw-status" id="drawStatus">Слово увидишь только ты. Друг его не узнает до конца раунда.</div>
+    </div>
+    <div class="draw-panel"><h3>📩 Входящие вызовы</h3><div id="drawIncoming"><p>Загрузка…</p></div></div>
+    <div class="draw-panel"><h3>⏳ Отправленные вызовы</h3><div id="drawOutgoing"><p>Загрузка…</p></div></div>
+    <div class="draw-panel"><h3>🖌️ Активные раунды</h3><div id="drawActive"><p>Нет активных раундов.</p></div></div>
+    <div class="draw-panel"><h3>🏁 Последние результаты</h3><div id="drawFinished"><p>Завершённых раундов пока нет.</p></div></div>`;
+  await refreshDrawLobby();
+  drawLobbyTimer=setInterval(refreshDrawLobby,3000);
+}
+
+async function refreshDrawLobby(){
+  if(drawLobbyBusy||!document.getElementById('drawIncoming')||drawCurrentRoomId)return;
+  drawLobbyBusy=true;
+  try{
+    const [friendData,roomData]=await Promise.all([friendsApi('friends'),friendsApi('draw_list')]);
+    const friends=friendData.friends||[];
+    const rooms=roomData.rooms||[];
+    const select=document.getElementById('drawFriendSelect');
+    if(select){
+      const current=select.value;
+      select.innerHTML='<option value="">Выбери друга</option>'+friends.map(p=>`<option value="${Number(p.telegram_id)}">${drawEscape(p.nickname||p.display_name||'Игрок')}</option>`).join('');
+      if(friends.some(p=>String(p.telegram_id)===current))select.value=current;
+      if(!friends.length)select.innerHTML='<option value="">Сначала добавь друга</option>';
+    }
+    const incoming=rooms.filter(r=>r.status==='pending'&&r.role==='guesser');
+    const outgoing=rooms.filter(r=>r.status==='pending'&&r.role==='artist');
+    const active=rooms.filter(r=>r.status==='active');
+    const finished=rooms.filter(r=>r.status==='guessed'||r.status==='timeout');
+    const incomingEl=document.getElementById('drawIncoming');
+    const outgoingEl=document.getElementById('drawOutgoing');
+    const activeEl=document.getElementById('drawActive');
+    const finishedEl=document.getElementById('drawFinished');
+    if(incomingEl)incomingEl.innerHTML=incoming.length?incoming.map(r=>`<div class="draw-list-row"><div class="friend-avatar">🎨</div><div class="draw-row-meta"><strong>${drawEscape(r.other?.nickname||'Друг')}</strong><small>Зовёт угадать рисунок</small></div><div class="draw-row-actions"><button onclick="acceptDrawChallenge('${r.id}')">Принять</button><button class="secondary" onclick="rejectDrawChallenge('${r.id}')">Отклонить</button></div></div>`).join(''):'<p>Пока нет входящих вызовов.</p>';
+    if(outgoingEl)outgoingEl.innerHTML=outgoing.length?outgoing.map(r=>`<div class="draw-list-row"><div class="friend-avatar">⏳</div><div class="draw-row-meta"><strong>${drawEscape(r.other?.nickname||'Друг')}</strong><small>Ожидаем принятия вызова</small></div></div>`).join(''):'<p>Ты пока никого не вызвал.</p>';
+    if(activeEl)activeEl.innerHTML=active.length?active.map(r=>`<div class="draw-list-row"><div class="friend-avatar">🖌️</div><div class="draw-row-meta"><strong>${drawEscape(r.other?.nickname||'Друг')}</strong><small>${r.role==='artist'?'Ты рисуешь':'Ты угадываешь'}</small></div><div class="draw-row-actions"><button onclick="openDrawRoom('${r.id}')">Открыть</button></div></div>`).join(''):'<p>Нет активных раундов.</p>';
+    if(finishedEl)finishedEl.innerHTML=finished.length?finished.map(r=>`<div class="draw-list-row"><div class="friend-avatar">🏁</div><div class="draw-row-meta"><strong>${drawEscape(r.other?.nickname||'Друг')}</strong><small>${r.status==='guessed'?'Слово угадано':'Время вышло'}</small></div><div class="draw-row-actions"><button onclick="openDrawRoom('${r.id}')">Результат</button></div></div>`).join(''):'<p>Завершённых раундов пока нет.</p>';
+    if(active.length)await openDrawRoom(active[0].id);
+  }catch(e){drawStatus(e.message||'Не удалось загрузить вызовы.',true);}
+  finally{drawLobbyBusy=false;}
+}
+
+async function sendDrawChallenge(){
+  const select=document.getElementById('drawFriendSelect');
+  const input=document.getElementById('drawSecretWord');
+  const button=document.getElementById('drawCreateButton');
+  const targetId=Number(select?.value||0);
+  const word=String(input?.value||'').trim();
+  if(!targetId){drawStatus('Сначала выбери друга.',true);return;}
+  if(!DRAW_WORDS.includes(word)){drawStatus('Выбери слово из предложенного списка.',true);return;}
+  if(button)button.disabled=true;
+  try{
+    const result=await friendsApi('draw_create',{targetId,word});
+    if(input)input.value='';
+    drawStatus(result.message||'Вызов отправлен!');
+    await refreshDrawLobby();
+  }catch(e){drawStatus(e.message||'Не удалось отправить вызов.',true);}
+  finally{if(button)button.disabled=false;}
+}
+async function acceptDrawChallenge(roomId){
+  try{await friendsApi('draw_accept',{roomId});await openDrawRoom(roomId);}
+  catch(e){drawStatus(e.message||'Не удалось принять вызов.',true);await refreshDrawLobby();}
+}
+async function rejectDrawChallenge(roomId){
+  try{await friendsApi('draw_reject',{roomId});await refreshDrawLobby();}
+  catch(e){drawStatus(e.message||'Не удалось отклонить вызов.',true);}
+}
+
+async function openDrawRoom(roomId){
+  if(drawLobbyTimer){clearInterval(drawLobbyTimer);drawLobbyTimer=null;}
+  if(drawRoomTimer){clearInterval(drawRoomTimer);drawRoomTimer=null;}
+  drawCurrentRoomId=roomId;drawCanvasKey='';drawLocalStrokes=[];
+  try{
+    const data=await friendsApi('draw_state',{roomId});
+    drawCurrentState=data.room;
+    if(data.room.status==='pending'){
+      document.getElementById('gameContent').innerHTML='<div class="draw-result"><div class="big">⏳</div><h3>Ждём второго игрока</h3><p>Как только друг примет вызов, начнётся минутный раунд.</p><button onclick="openDrawLobby()">Назад к вызовам</button></div>';
+      drawRoomTimer=setInterval(pollDrawRoom,1600);return;
+    }
+    renderDrawRoom(data);
+    if(data.room.status==='active')drawRoomTimer=setInterval(pollDrawRoom,1200);
+  }catch(e){drawCurrentRoomId=null;document.getElementById('gameContent').innerHTML=`<p>${drawEscape(e.message||'Не удалось открыть раунд.')}</p><button onclick="openDrawLobby()">Назад</button>`;}
+}
+
+function renderDrawRoom(data){
+  const room=data.room;
+  if(room.status==='guessed'||room.status==='timeout'){
+    showDrawResult(room);return;
+  }
+  if(room.status==='rejected'){
+    document.getElementById('gameContent').innerHTML='<div class="draw-result"><div class="big">✉️</div><h3>Вызов отклонён</h3><button onclick="openDrawLobby()">Вернуться</button></div>';return;
+  }
+  drawCurrentRole=Number(room.artist_id)===Number(tg?.initDataUnsafe?.user?.id)?'artist':'guesser';
+  drawLocalStrokes=Array.isArray(room.strokes)?room.strokes:[];
+  const isArtist=drawCurrentRole==='artist';
+  const wordBlock=isArtist
+    ? `<div class="draw-word">Твоё слово: ${drawEscape(room.secretWord||'…')}</div>`
+    : `<div class="draw-word">Угадай рисунок · ${Number(room.wordLength)||'?'} ${drawLetterLabel(room.wordLength)} в слове</div>`;
+  const toolbar=isArtist?`<div class="draw-toolbar" id="drawToolbar">${DRAW_PALETTE.map(color=>`<button class="draw-color ${color===drawBrushColor?'selected':''}" style="background:${color}" aria-label="Цвет ${color}" onclick="setDrawColor('${color}')"></button>`).join('')}<button class="secondary draw-tool-btn" onclick="clearDrawCanvas()">Очистить</button></div>`:'';
+  const guessForm=!isArtist?`<form class="draw-chat-form" id="drawGuessForm" onsubmit="event.preventDefault();sendDrawGuess();"><input id="drawGuessInput" maxlength="80" autocomplete="off" placeholder="Напиши свою догадку…"><button type="submit">Отправить</button></form>`:'';
+  document.getElementById('gameContent').innerHTML=`
+    <div class="draw-room-top"><div class="draw-role">${isArtist?'🖌️ Ты рисуешь':'🔎 Ты угадываешь'}</div><div class="draw-timer" id="drawTimer">01:00</div></div>
+    ${wordBlock}
+    <div class="draw-canvas-wrap ${isArtist?'':'draw-readonly'}"><canvas id="drawCanvas" width="900" height="540" aria-label="Холст для рисунка"></canvas></div>
+    ${toolbar}
+    <div class="draw-chat" id="drawChat"><div class="draw-chat-line">${isArtist?'Здесь будут появляться догадки друга.':'Пиши варианты в чат. У тебя 60 секунд!'}</div></div>
+    ${guessForm}
+    <div class="draw-status" id="drawStatus">${isArtist?'Нарисуй выбранное слово так, чтобы друг смог его узнать.':'Посмотри на рисунок и отправь догадку.'}</div>`;
+  drawSetupCanvas(isArtist);
+  drawRenderCanvas(drawLocalStrokes);
+  drawRenderMessages(data.messages||[]);
+  drawUpdateTimer(room.deadline_at);
+  if(!isArtist){const input=document.getElementById('drawGuessInput');if(input)input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendDrawGuess();}});}
+}
+
+function drawSetupCanvas(isArtist){
+  drawCanvas=document.getElementById('drawCanvas');
+  if(!drawCanvas)return;
+  drawCtx=drawCanvas.getContext('2d');
+  drawCanvas.style.pointerEvents=isArtist?'auto':'none';
+  if(!isArtist)return;
+  drawCanvas.addEventListener('pointerdown',e=>{
+    if(!drawCurrentState||drawCurrentState.status!=='active')return;
+    const p=drawCanvasPoint(e);if(!p)return;
+    if(drawLocalStrokes.length>=80){drawStatus('На одном раунде можно сделать не больше 80 штрихов.',true);return;}
+    drawPointerDown=true;drawCanvas.setPointerCapture(e.pointerId);
+    drawLocalStrokes.push({color:drawBrushColor,width:0.006,points:[p]});
+    drawRenderCanvas(drawLocalStrokes);
+  });
+  drawCanvas.addEventListener('pointermove',e=>{
+    if(!drawPointerDown)return;
+    const p=drawCanvasPoint(e);if(!p)return;
+    const stroke=drawLocalStrokes[drawLocalStrokes.length-1];
+    if(stroke&&stroke.points.length<120)stroke.points.push(p);
+    drawRenderCanvas(drawLocalStrokes);
+  });
+  const end=()=>{if(!drawPointerDown)return;drawPointerDown=false;const stroke=drawLocalStrokes[drawLocalStrokes.length-1];if(stroke&&stroke.points.length===1)stroke.points.push([Math.min(1,stroke.points[0][0]+0.001),stroke.points[0][1]]);drawRenderCanvas(drawLocalStrokes);saveDrawCanvas();};
+  drawCanvas.addEventListener('pointerup',end);
+  drawCanvas.addEventListener('pointercancel',end);
+}
+function drawCanvasPoint(e){
+  const rect=drawCanvas.getBoundingClientRect();
+  if(!rect.width||!rect.height)return null;
+  return [Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width)),Math.max(0,Math.min(1,(e.clientY-rect.top)/rect.height))];
+}
+function drawRenderCanvas(strokes){
+  if(!drawCanvas||!drawCtx)return;
+  const w=drawCanvas.width,h=drawCanvas.height;
+  drawCtx.clearRect(0,0,w,h);drawCtx.fillStyle='#ffffff';drawCtx.fillRect(0,0,w,h);
+  for(const stroke of (strokes||[])){
+    const points=stroke.points||[];if(!points.length)continue;
+    drawCtx.beginPath();drawCtx.strokeStyle=stroke.color||'#20152f';drawCtx.lineWidth=Math.max(2,(Number(stroke.width)||0.006)*w);drawCtx.lineCap='round';drawCtx.lineJoin='round';
+    drawCtx.moveTo(points[0][0]*w,points[0][1]*h);
+    for(let i=1;i<points.length;i++)drawCtx.lineTo(points[i][0]*w,points[i][1]*h);
+    if(points.length===1){drawCtx.lineTo(points[0][0]*w+0.1,points[0][1]*h+0.1);}
+    drawCtx.stroke();
+  }
+}
+function setDrawColor(color){if(!DRAW_PALETTE.includes(color))return;drawBrushColor=color;document.querySelectorAll('.draw-color').forEach(el=>el.classList.toggle('selected',el.getAttribute('aria-label')===`Цвет ${color}`));}
+async function saveDrawCanvas(){
+  if(!drawCurrentRoomId)return;
+  try{await friendsApi('draw_save',{roomId:drawCurrentRoomId,strokes:drawLocalStrokes});drawStatus('Рисунок синхронизирован с другом.');}
+  catch(e){drawStatus(e.message||'Не удалось сохранить рисунок.',true);}
+}
+async function clearDrawCanvas(){
+  if(drawCurrentRole!=='artist')return;
+  drawLocalStrokes=[];drawRenderCanvas(drawLocalStrokes);await saveDrawCanvas();
+}
+function drawRenderMessages(messages){
+  const el=document.getElementById('drawChat');if(!el)return;
+  if(!messages.length){el.innerHTML='<div class="draw-chat-line">Пока нет сообщений.</div>';return;}
+  el.innerHTML=messages.map(m=>`<div class="draw-chat-line ${m.is_correct?'correct':''}"><strong>${drawEscape(m.nickname||'Игрок')}:</strong> ${drawEscape(m.text)}</div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+async function sendDrawGuess(){
+  const input=document.getElementById('drawGuessInput');
+  const text=String(input?.value||'').trim();
+  if(!text)return;
+  const button=document.querySelector('#drawGuessForm button');if(button)button.disabled=true;
+  try{
+    const result=await friendsApi('draw_guess',{roomId:drawCurrentRoomId,text});
+    if(input)input.value='';
+    if(result.finished)await pollDrawRoom();
+    else if(result.correct)await pollDrawRoom();
+    else drawStatus('Догадка отправлена. Попробуй ещё!');
+  }catch(e){drawStatus(e.message||'Не удалось отправить догадку.',true);}
+  finally{if(button)button.disabled=false;}
+}
+function drawUpdateTimer(deadline){
+  const el=document.getElementById('drawTimer');if(!el)return;
+  const seconds=Math.max(0,Math.ceil((new Date(deadline).getTime()-Date.now())/1000));
+  el.textContent=drawFormatTime(seconds);el.classList.toggle('urgent',seconds<=10);
+}
+async function pollDrawRoom(){
+  if(drawRoomBusy||!drawCurrentRoomId)return;
+  drawRoomBusy=true;
+  try{
+    const data=await friendsApi('draw_state',{roomId:drawCurrentRoomId});
+    drawCurrentState=data.room;
+    if(data.room.status==='guessed'||data.room.status==='timeout'||data.room.status==='rejected'){
+      if(drawRoomTimer){clearInterval(drawRoomTimer);drawRoomTimer=null;}
+      renderDrawRoom(data);return;
+    }
+    drawUpdateTimer(data.room.deadline_at);
+    const serverStrokes=Array.isArray(data.room.strokes)?data.room.strokes:[];
+    const key=JSON.stringify(serverStrokes);
+    if(drawCurrentRole==='guesser'&&key!==drawCanvasKey){drawLocalStrokes=serverStrokes;drawCanvasKey=key;drawRenderCanvas(drawLocalStrokes);}
+    if(drawCurrentRole==='artist'&&!drawPointerDown&&key!==drawCanvasKey){
+      // On first response or after a reconnect, restore the last server-saved drawing.
+      if(!drawCanvasKey){drawLocalStrokes=serverStrokes;drawRenderCanvas(drawLocalStrokes);}
+      drawCanvasKey=key;
+    }
+    drawRenderMessages(data.messages||[]);
+  }catch(e){drawStatus(e.message||'Проблема соединения. Переподключаемся…',true);}
+  finally{drawRoomBusy=false;}
+}
+function showDrawResult(room){
+  stopDrawTimers();
+  const mine=Number(tg?.initDataUnsafe?.user?.id||0);
+  const winner=Number(room.winner_id||0);
+  const won=winner===mine;
+  const word=room.revealWord||room.secretWord||'—';
+  const timeout=room.status==='timeout';
+  drawRecordResultOnce(room,won);
+  document.getElementById('gameContent').innerHTML=`<div class="draw-result"><div class="big">${won?'🏆':'🎨'}</div><h3>${won?'Ты победил!':'Раунд завершён'}</h3><p>${timeout?'Время вышло — угадывающий не успел.':won?'Ты первым угадал слово!':'Друг правильно угадал рисунок.'}</p><div class="draw-word">Загаданное слово: ${drawEscape(word)}</div><button onclick="openDrawLobby()">Вернуться к вызовам</button></div>`;
+}
+function drawRecordResultOnce(room,won){
+  if(!room?.id)return;
+  let done=[];try{done=JSON.parse(localStorage.getItem('skillrush_draw_results')||'[]');if(!Array.isArray(done))done=[];}catch{done=[];}
+  if(done.includes(room.id))return;
+  done.push(room.id);localStorage.setItem('skillrush_draw_results',JSON.stringify(done.slice(-100)));
+  state.plays=(Number(state.plays)||0)+1;state.daily.plays=(Number(state.daily.plays)||0)+1;state.weekly.plays=(Number(state.weekly.plays)||0)+1;
+  if(won){state.wins=(Number(state.wins)||0)+1;state.daily.wins=(Number(state.daily.wins)||0)+1;state.weekly.wins=(Number(state.weekly.wins)||0)+1;}
+  save();render();
+}
+
 render();
 </script>
 </body>
