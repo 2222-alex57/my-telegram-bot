@@ -435,6 +435,17 @@ let dailyRewardsCloudReady=false;
 let dailyRewardsCloudBusy=false;
 let dailyRewardsCloudError='';
 function dayNumberBetween(a,b){if(!a||!b)return Infinity;const [ay,am,ad]=a.split('-').map(Number),[by,bm,bd]=b.split('-').map(Number);return Math.round((Date.UTC(by,bm-1,bd)-Date.UTC(ay,am-1,ad))/86400000)}
+window.applyDailyRewardsFromServer=function(dailyRewards,balance){
+  if(dailyRewards&&typeof dailyRewards==='object'){
+    state.dailyRewards={
+      streak:Math.max(0,Number(dailyRewards.streak)||0),
+      lastClaimDate:typeof dailyRewards.lastClaimDate==='string'?dailyRewards.lastClaimDate:null,
+      totalAwarded:Math.max(0,Number(dailyRewards.totalAwarded)||0)
+    };
+  }
+  if(Number.isFinite(Number(balance)))state.coins=Math.max(0,Number(balance));
+  save();
+}
 function dailyRewardInfo(){
   if(!state.dailyRewards||typeof state.dailyRewards!=='object')state.dailyRewards={streak:0,lastClaimDate:null,syncedTotal:0};
   const last=state.dailyRewards.lastClaimDate,now=today(),gap=dayNumberBetween(last,now),streak=Math.max(0,Number(state.dailyRewards.streak)||0);
@@ -475,7 +486,7 @@ async function initializeDailyRewardsCloud(){
   try{
     const legacy={streak:Number(state.dailyRewards?.streak)||0,lastClaimDate:state.dailyRewards?.lastClaimDate||null};
     const data=await friendsApi('daily_rewards_get',{legacyDailyRewards:legacy});
-    applyDailyRewardsFromServer(data.dailyRewards,data.balance);
+    window.applyDailyRewardsFromServer(data.dailyRewards,data.balance);
     dailyRewardsCloudReady=true;dailyRewardsCloudError='';
     await initializeProgressCloud();
     render();
@@ -503,7 +514,7 @@ async function claimDailyReward(){
   dailyRewardsCloudBusy=true;dailyRewardsCloudError='';renderDailyRewards();
   try{
     const data=await friendsApi('claim_daily_reward');
-    applyDailyRewardsFromServer(data.dailyRewards,data.balance);
+    window.applyDailyRewardsFromServer(data.dailyRewards,data.balance);
     dailyRewardsCloudReady=true;
     await refreshCloudBalance();
     render();
