@@ -408,7 +408,7 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 <div class="modal" id="modal"><div class="modal-box"><h2 id="gameTitle">Игра</h2><div id="gameContent"></div><button class="secondary" onclick="closeGame()">Закрыть</button></div></div>
 <script>
 const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();try{tg?.disableVerticalSwipes?.();}catch(e){}
-const today=()=>new Date().toLocaleDateString('en-CA');
+const today=()=>{const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const values={};for(const part of parts)values[part.type]=part.value;return `${values.year}-${values.month}-${values.day}`};
 const week=()=>{const d=new Date();const jan=new Date(d.getFullYear(),0,1);return `${d.getFullYear()}-${Math.floor((d-jan)/604800000)}`};
 const defaultState=()=>({coins:0,earned:0,xp:0,plays:0,wins:0,dailyDate:today(),weeklyDate:week(),daily:{plays:0,earn:0,wins:0},weekly:{plays:0,earn:0,wins:0},claimed:[],dailyRewards:{streak:0,lastClaimDate:null}});
 let state;try{state={...defaultState(),...JSON.parse(localStorage.getItem('skillrush'))}}catch{state=defaultState()}
@@ -430,9 +430,12 @@ function taskHTML(t){const period=t.id.startsWith('d-')?'d':'w',data=period==='d
 function claimQuest(id,reward){if(state.claimed.includes(id))return;const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks,t=tasks.find(x=>x.id===id),data=id.startsWith('d-')?state.daily:state.weekly;if(!t||data[t.key]<t.goal)return;state.claimed.push(id);addReward(reward,false)}
 function gameCard(g){return `<div class="card game" onclick="openGame('${g.id}')"><div class="emoji">${g.emoji}</div><strong>${g.name}</strong><p>${g.desc}</p><div class="reward">${g.id==='draw'?'🎨 С другом · 60 секунд':`🏆 До ${g.reward} Хрумсов`}</div></div>`}
 const DAILY_REWARD_AMOUNTS=[20,30,40,50,60,80,100];
+let dailyRewardsCloudReady=false;
+let dailyRewardsCloudBusy=false;
+let dailyRewardsCloudError='';
 function dayNumberBetween(a,b){if(!a||!b)return Infinity;const [ay,am,ad]=a.split('-').map(Number),[by,bm,bd]=b.split('-').map(Number);return Math.round((Date.UTC(by,bm-1,bd)-Date.UTC(ay,am-1,ad))/86400000)}
 function dailyRewardInfo(){
-  if(!state.dailyRewards||typeof state.dailyRewards!=='object')state.dailyRewards={streak:0,lastClaimDate:null};
+  if(!state.dailyRewards||typeof state.dailyRewards!=='object')state.dailyRewards={streak:0,lastClaimDate:null,syncedTotal:0};
   const last=state.dailyRewards.lastClaimDate,now=today(),gap=dayNumberBetween(last,now),streak=Math.max(0,Number(state.dailyRewards.streak)||0);
   if(last===now)return {day:Math.min(7,Math.max(1,streak)),claimed:true,streak};
   if(gap===1)return {day:Math.min(7,Math.max(1,streak+1)),claimed:false,streak};
@@ -443,18 +446,67 @@ function toggleDailyHelp(){
   if(!panel||!button)return;
   const opened=panel.classList.toggle('open');button.setAttribute('aria-expanded',String(opened));
 }
+function applyDailyRewardsFromServer(serverRewards){
+  const rewards=serverRewards&&typeof serverRewards==='object'?serverRewards:{};
+  const syncedBefore=Math.max(0,Math.floor(Number(state.dailyRewards?.syncedTotal)||0));
+  const totalAwarded=Math.max(0,Math.floor(Number(rewards.totalAwarded)||0));
+  const newAwards=Math.max(0,totalAwarded-syncedBefore);
+  if(newAwards>0){
+    state.coins=(Number(state.coins)||0)+newAwards;
+    state.earned=(Number(state.earned)||0)+newAwards;
+    state.xp=(Number(state.xp)||0)+newAwards;
+    state.daily=state.daily||{plays:0,earn:0,wins:0};
+    state.weekly=state.weekly||{plays:0,earn:0,wins:0};
+    state.daily.earn=(Number(state.daily.earn)||0)+newAwards;
+    state.weekly.earn=(Number(state.weekly.earn)||0)+newAwards;
+  }
+  state.dailyRewards={
+    streak:Math.max(0,Math.floor(Number(rewards.streak)||0)),
+    lastClaimDate:typeof rewards.lastClaimDate==='string'?rewards.lastClaimDate:null,
+    syncedTotal:totalAwarded
+  };
+  save();
+}
+async function initializeDailyRewardsCloud(){
+  dailyRewardsCloudBusy=true;renderDailyRewards();
+  try{
+    const legacy={streak:Number(state.dailyRewards?.streak)||0,lastClaimDate:state.dailyRewards?.lastClaimDate||null};
+    const data=await friendsApi('daily_rewards_get',{legacyDailyRewards:legacy});
+    applyDailyRewardsFromServer(data.dailyRewards);
+    dailyRewardsCloudReady=true;dailyRewardsCloudError='';
+    render();
+  }catch(error){
+    dailyRewardsCloudReady=false;
+    dailyRewardsCloudError=error?.message||'Не удалось загрузить ежедневные призы из облака.';
+    renderDailyRewards();
+  }finally{
+    dailyRewardsCloudBusy=false;
+    renderDailyRewards();
+  }
+}
 function renderDailyRewards(){
   const info=dailyRewardInfo(),grid=document.getElementById('dailyRewardGrid');if(!grid)return;
   document.getElementById('dailyStreak').textContent=`🔥 Серия: ${info.streak} ${info.streak===1?'день':info.streak>=2&&info.streak<=4?'дня':'дней'}`;
   grid.innerHTML=DAILY_REWARD_AMOUNTS.map((amount,i)=>{const day=i+1,received=info.claimed&&day<=info.day,current=day===info.day;return `<div class="daily-reward-day ${received?'received':''} ${current?'current':''}"><b>День ${day}</b><strong>+${amount}</strong><small>${received?'✓ Получено':current?(info.claimed?'Забрано сегодня':'Твой приз'):'🍪 Хрумсы'}</small></div>`}).join('');
   const button=document.getElementById('dailyRewardButton'),note=document.getElementById('dailyRewardNote');
-  button.disabled=info.claimed;button.textContent=info.claimed?'✅ Приз получен':'🎁 Забрать '+DAILY_REWARD_AMOUNTS[info.day-1]+' Хрумсов';
-  note.textContent=info.claimed?'Возвращайся завтра за следующим призом!':info.reset?'Ты пропустил день — серия начнётся заново с первого дня.':'Забирай приз каждый день, чтобы продолжать серию!';
+  button.disabled=!dailyRewardsCloudReady||dailyRewardsCloudBusy||info.claimed;
+  button.textContent=!dailyRewardsCloudReady?(dailyRewardsCloudBusy?'Подключаем…':'Призы не загружены'):dailyRewardsCloudBusy?'Сохраняем…':info.claimed?'✅ Приз получен':'🎁 Забрать '+DAILY_REWARD_AMOUNTS[info.day-1]+' Хрумсов';
+  note.textContent=dailyRewardsCloudError?`Не удалось подключиться: ${dailyRewardsCloudError}`:!dailyRewardsCloudReady?'Подключаем ежедневные призы к аккаунту Telegram…':info.claimed?'Возвращайся завтра за следующим призом!':info.reset?'Ты пропустил день — серия начнётся заново с первого дня.':'Забирай приз каждый день, чтобы продолжать серию!';
 }
-function claimDailyReward(){
-  const info=dailyRewardInfo();if(info.claimed)return;
-  const amount=DAILY_REWARD_AMOUNTS[info.day-1];state.dailyRewards={streak:info.streak+1,lastClaimDate:today()};
-  state.coins+=amount;state.earned+=amount;state.xp+=amount;state.daily.earn+=amount;state.weekly.earn+=amount;render();
+async function claimDailyReward(){
+  if(!dailyRewardsCloudReady||dailyRewardsCloudBusy)return;
+  dailyRewardsCloudBusy=true;dailyRewardsCloudError='';renderDailyRewards();
+  try{
+    const data=await friendsApi('claim_daily_reward');
+    applyDailyRewardsFromServer(data.dailyRewards);
+    dailyRewardsCloudReady=true;
+    render();
+  }catch(error){
+    dailyRewardsCloudError=error?.message||'Не удалось сохранить приз.';
+  }finally{
+    dailyRewardsCloudBusy=false;
+    renderDailyRewards();
+  }
 }
 function render(){resetQuests();renderDailyRewards();document.getElementById('balance').textContent=state.coins;const level=Math.floor(state.xp/500)+1,progress=state.xp%500;document.getElementById('level').textContent=level;document.getElementById('xp').textContent=`${progress} / 500 XP`;document.getElementById('xpbar').style.width=progress/500*100+'%';document.getElementById('games').innerHTML=games.map(gameCard).join('');document.getElementById('allgames').innerHTML=games.map(gameCard).join('');document.getElementById('daily').innerHTML=dailyTasks.map(taskHTML).join('');document.getElementById('weekly').innerHTML=weeklyTasks.map(taskHTML).join('');document.getElementById('homequests').innerHTML=[...dailyTasks,...weeklyTasks].slice(0,3).map(taskHTML).join('');const user=tg?.initDataUnsafe?.user;document.getElementById('username').textContent=user?.first_name||'Игрок SkillRush';document.getElementById('plevel').textContent=level;document.getElementById('pcoins').textContent=state.coins;document.getElementById('pplays').textContent=state.plays;document.getElementById('pwins').textContent=state.wins;document.getElementById('pearned').textContent=state.earned;save()}
 // ===== SkillRush Friends: Supabase Edge Function integration =====
@@ -1138,6 +1190,7 @@ function drawRecordResultOnce(room,won){
 }
 
 render();
+initializeDailyRewardsCloud();
 </script>
 </body>
 </html>
