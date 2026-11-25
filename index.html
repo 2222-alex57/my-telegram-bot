@@ -693,6 +693,7 @@ let drawBrushColor = '#20152f';
 let drawBrushWidth = 0.007;
 let drawIsEraser = false;
 let drawPointerDown = false;
+let drawPointLimitShown = false;
 let drawLobbyBusy = false;
 let drawRoomBusy = false;
 let drawCanvasKey = '';
@@ -893,6 +894,7 @@ function drawSetupCanvas(isArtist){
     const p=drawCanvasPoint(e);if(!p)return;
     if(drawLocalStrokes.length>=80){drawStatus('На одном раунде можно сделать не больше 80 штрихов.',true);return;}
     drawPointerDown=true;
+    drawPointLimitShown=false;
     try{drawCanvas.setPointerCapture(e.pointerId);}catch(_){/* Pointer capture may be unavailable in older Telegram WebViews. */}
     drawLocalStrokes.push({color:String(drawIsEraser?'#ffffff':drawBrushColor).toLowerCase(),width:drawBrushWidth,points:[p]});
     drawRenderCanvas(drawLocalStrokes);scheduleDrawCanvasSave(true);
@@ -912,16 +914,15 @@ function drawSetupCanvas(isArtist){
   drawCanvas.addEventListener('lostpointercapture',end);
 }
 function drawAppendCanvasPoint(point){
-  let stroke=drawLocalStrokes[drawLocalStrokes.length-1];
+  const stroke=drawLocalStrokes[drawLocalStrokes.length-1];
   if(!stroke)return false;
   const previous=stroke.points[stroke.points.length-1];
-  if(previous&&Math.hypot(point[0]-previous[0],point[1]-previous[1])<0.0007)return false;
-  // The server stores up to 120 points per stroke. Start a connected segment
-  // before that limit so long continuous drawing is never silently truncated.
-  if(stroke.points.length>=110){
-    if(drawLocalStrokes.length>=80){drawStatus('Достигнут лимит линий в этом раунде.',true);return false;}
-    stroke={color:stroke.color,width:stroke.width,points:[previous]};
-    drawLocalStrokes.push(stroke);
+  if(previous&&Math.hypot(point[0]-previous[0],point[1]-previous[1])<0.00035)return false;
+  // Keep the entire gesture inside ONE stroke. The server accepts up to
+  // 15,000 points per stroke, so ordinary long gestures are never split.
+  if(stroke.points.length>=15000){
+    if(!drawPointLimitShown){drawPointLimitShown=true;drawStatus('Достигнута очень большая длина одного штриха. Отпусти кисть и начни следующий.',true);}
+    return false;
   }
   stroke.points.push(point);
   return true;
