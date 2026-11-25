@@ -410,16 +410,16 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 <script>
 const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();try{tg?.disableVerticalSwipes?.();}catch(e){}
 const today=()=>{const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const values={};for(const part of parts)values[part.type]=part.value;return `${values.year}-${values.month}-${values.day}`};
-const week=()=>{const d=new Date();const jan=new Date(d.getFullYear(),0,1);return `${d.getFullYear()}-${Math.floor((d-jan)/604800000)}`};
+const week=()=>{const [y,m,d]=today().split('-').map(Number);const date=new Date(Date.UTC(y,m-1,d));date.setUTCDate(date.getUTCDate()-((date.getUTCDay()+6)%7));return date.toISOString().slice(0,10)};
 const defaultState=()=>({coins:0,earned:0,xp:0,plays:0,wins:0,dailyDate:today(),weeklyDate:week(),daily:{plays:0,earn:0,wins:0},weekly:{plays:0,earn:0,wins:0},claimed:[],dailyRewards:{streak:0,lastClaimDate:null}});
-let state;try{state={...defaultState(),...JSON.parse(localStorage.getItem('skillrush'))}}catch{state=defaultState()}
+let state;try{const saved=JSON.parse(localStorage.getItem('skillrush'))||{};state={...defaultState(),...saved,coins:0,earned:0,xp:0,plays:0,wins:0,dailyDate:today(),weeklyDate:week(),daily:{plays:0,earn:0,wins:0},weekly:{plays:0,earn:0,wins:0},claimed:[]};}catch{state=defaultState()}
 function save(){localStorage.setItem('skillrush',JSON.stringify(state))}
 function resetQuests(){if(state.dailyDate!==today()){state.dailyDate=today();state.daily={plays:0,earn:0,wins:0};state.claimed=state.claimed.filter(x=>!x.startsWith('d-'))}if(state.weeklyDate!==week()){state.weeklyDate=week();state.weekly={plays:0,earn:0,wins:0};state.claimed=state.claimed.filter(x=>!x.startsWith('w-'))}}
 const games=[{id:'reaction',name:'Reaction Rush',emoji:'⚡',desc:'Проверь скорость реакции',reward:30},{id:'draw',name:'Угадай рисунок',emoji:'🎨',desc:'Нарисуй слово для друга или угадай его за минуту',reward:0},{id:'memory',name:'Memory Match',emoji:'🧩',desc:'Повтори последовательность',reward:35},{id:'guess',name:'Number Guess',emoji:'🎲',desc:'Угадай секретное число',reward:25}];
 const dailyTasks=[{id:'d-plays',name:'Сыграть 3 игры',key:'plays',goal:3,reward:60},{id:'d-earn',name:'Заработать 100 Хрумсов',key:'earn',goal:100,reward:50},{id:'d-wins',name:'Одержать 2 победы',key:'wins',goal:2,reward:70}];
 const weeklyTasks=[{id:'w-plays',name:'Сыграть 15 игр',key:'plays',goal:15,reward:250},{id:'w-earn',name:'Заработать 500 Хрумсов',key:'earn',goal:500,reward:200},{id:'w-wins',name:'Одержать 10 побед',key:'wins',goal:10,reward:300}];
-function addReward(amount,win=false){const reward=Math.max(0,Math.floor(Number(amount)||0));state.coins=(Number(state.coins)||0)+reward;state.earned+=reward;state.xp+=reward;state.daily.earn+=reward;state.weekly.earn+=reward;if(win){state.wins++;state.daily.wins++;state.weekly.wins++}render();queueBalanceIncrease(reward)}
-function finishGame(amount,win,message){state.plays++;state.daily.plays++;state.weekly.plays++;addReward(amount,win);document.getElementById('gameContent').innerHTML=`<div class="big">${win?'🏆':'🎮'}</div><h3>${message}</h3><div class="result">+${amount} 🍪 Хрумсов</div><p>${win?'Отличный результат!':'Попробуй ещё раз!'}</p>`}
+function addReward(amount,win=false){const reward=Math.max(0,Math.floor(Number(amount)||0));state.coins+=reward;state.earned+=reward;state.xp+=reward;state.daily.earn+=reward;state.weekly.earn+=reward;if(win){state.wins++;state.daily.wins++;state.weekly.wins++}render()}
+function finishGame(amount,win,message){state.plays++;state.daily.plays++;state.weekly.plays++;addReward(amount,win);queueGameProgress(amount,win);document.getElementById('gameContent').innerHTML=`<div class="big">${win?'🏆':'🎮'}</div><h3>${message}</h3><div class="result">+${amount} 🍪 Хрумсов</div><p>${win?'Отличный результат!':'Попробуй ещё раз!'}</p>`}
 function openGame(id){const g=games.find(x=>x.id===id);document.getElementById('modal').style.display='flex';document.getElementById('gameTitle').textContent=g.name;const c=document.getElementById('gameContent');
 if(id==='draw'){openDrawLobby();return;}
 if(id==='reaction'){c.innerHTML='<p>Нажми «Старт» и жди зелёный сигнал. Затем нажми как можно быстрее!</p><button id="start">Старт</button><div id="signal" class="big">⏳</div>';document.getElementById('start').onclick=()=>{c.innerHTML='<p>Жди зелёный сигнал...</p><div class="big" id="signal">🔴</div>';const delay=1500+Math.random()*3500;let active=false,started=0,done=false;const timer=setTimeout(()=>{active=true;started=performance.now();document.getElementById('signal').textContent='🟢';document.getElementById('signal').onclick=()=>{if(!active||done)return;done=true;const ms=Math.round(performance.now()-started);finishGame(ms<350?30:ms<550?20:10,ms<550,`Твоя реакция: ${ms} мс`)}},delay);c.onclick=e=>{if(e.target.id==='signal'&&!active&&!done){clearTimeout(timer);done=true;finishGame(0,false,'Слишком рано! Попробуй ещё раз.')}}}}
@@ -428,7 +428,7 @@ if(id==='guess'){const target=1+Math.floor(Math.random()*10);let attempts=0;c.in
 function closeGame(){stopDrawTimers();drawCurrentRoomId=null;document.getElementById('modal').style.display='none';render()}
 function showPage(id,button){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];document.querySelectorAll('.tabs button')[index].classList.add('active')}if(id==='friendspage')loadFriends();if(id==='profile')loadAvatarProfile()}
 function taskHTML(t){const period=t.id.startsWith('d-')?'d':'w',data=period==='d'?state.daily:state.weekly,value=data[t.key]||0,done=value>=t.goal,claimed=state.claimed.includes(t.id);return `<div class="card quest"><div class="quest-top"><span class="quest-title">${t.name}</span><span class="quest-reward">+${t.reward} 🍪</span></div><div class="quest-progress"><div style="width:${Math.min(100,value/t.goal*100)}%"></div></div><div class="quest-bottom"><small>${Math.min(value,t.goal)} / ${t.goal}</small><button class="claim" ${!done||claimed?'disabled':''} onclick="claimQuest('${t.id}',${t.reward})">${claimed?'Получено':done?'Забрать':'В процессе'}</button></div></div>`}
-function claimQuest(id,reward){if(state.claimed.includes(id))return;const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks,t=tasks.find(x=>x.id===id),data=id.startsWith('d-')?state.daily:state.weekly;if(!t||data[t.key]<t.goal)return;state.claimed.push(id);addReward(reward,false)}
+async function claimQuest(id,reward){if(!progressCloudReady||progressCloudBusy||state.claimed.includes(id))return;const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks,t=tasks.find(x=>x.id===id),data=id.startsWith('d-')?state.daily:state.weekly;if(!t||data[t.key]<t.goal)return;progressCloudBusy=true;render();try{const result=await friendsApi('progress_quest_claim',{taskId:id});applyCloudProgress(result.progress)}catch(e){alert(e.message||'Не удалось забрать награду.')}finally{progressCloudBusy=false;render()}}
 function gameCard(g){return `<div class="card game" onclick="openGame('${g.id}')"><div class="emoji">${g.emoji}</div><strong>${g.name}</strong><p>${g.desc}</p><div class="reward">${g.id==='draw'?'🎨 С другом · 60 секунд':`🏆 До ${g.reward} Хрумсов`}</div></div>`}
 const DAILY_REWARD_AMOUNTS=[20,30,40,50,60,80,100];
 let dailyRewardsCloudReady=false;
@@ -452,69 +452,24 @@ let balanceSyncQueue=Promise.resolve();
 let balanceSyncError='';
 let resolveBalanceCloudInit;
 const balanceCloudInitPromise=new Promise(resolve=>{resolveBalanceCloudInit=resolve;});
-function applyDailyRewardsFromServer(serverRewards,serverBalance){
-  const rewards=serverRewards&&typeof serverRewards==='object'?serverRewards:{};
-  const syncedBefore=Math.max(0,Math.floor(Number(state.dailyRewards?.syncedTotal)||0));
-  const totalAwarded=Math.max(0,Math.floor(Number(rewards.totalAwarded)||0));
-  const newAwards=Math.max(0,totalAwarded-syncedBefore);
-  // Старые локальные Хрумсы не переносим: баланс теперь начинается с нуля и берётся с сервера.
-  if(newAwards>0){
-    state.earned=(Number(state.earned)||0)+newAwards;
-    state.xp=(Number(state.xp)||0)+newAwards;
-    state.daily=state.daily||{plays:0,earn:0,wins:0};
-    state.weekly=state.weekly||{plays:0,earn:0,wins:0};
-    state.daily.earn=(Number(state.daily.earn)||0)+newAwards;
-    state.weekly.earn=(Number(state.weekly.earn)||0)+newAwards;
-  }
-  state.coins=Math.max(0,Math.floor(Number(serverBalance)||0));
-  state.dailyRewards={
-    streak:Math.max(0,Math.floor(Number(rewards.streak)||0)),
-    lastClaimDate:typeof rewards.lastClaimDate==='string'?rewards.lastClaimDate:null,
-    syncedTotal:totalAwarded
-  };
+let progressCloudReady=false,progressCloudBusy=false;
+function applyCloudProgress(p){
+  if(!p||typeof p!=='object')return;
+  state.coins=Number(p.coins)||0;state.earned=Number(p.earned)||0;state.xp=Number(p.xp)||0;state.plays=Number(p.plays)||0;state.wins=Number(p.wins)||0;
+  state.daily=p.daily||{plays:0,earn:0,wins:0};state.weekly=p.weekly||{plays:0,earn:0,wins:0};
+  state.dailyDate=p.dailyDate||today();state.weeklyDate=p.weeklyDate||week();state.claimed=Array.isArray(p.claimed)?p.claimed:[];
   save();
 }
-function newBalanceEventId(){
-  if(typeof crypto.randomUUID==='function')return crypto.randomUUID();
-  const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);
-  bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
-  const hex=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+function newBalanceEventId(){if(typeof crypto.randomUUID==='function')return crypto.randomUUID();const b=new Uint8Array(16);crypto.getRandomValues(b);return Array.from(b,x=>x.toString(16).padStart(2,'0')).join('')+'-'+Date.now().toString(16).slice(-12)}
+async function queueGameProgress(amount,win){
+  if(!progressCloudReady){balanceSyncError='Облачный профиль ещё загружается. Повтори действие после подключения.';return;}
+  try{const data=await friendsApi('progress_game',{amount:Math.max(0,Math.floor(Number(amount)||0)),win:!!win,eventId:newBalanceEventId()});applyCloudProgress(data.progress);render();}
+  catch(e){balanceSyncError=e.message||'Не удалось сохранить игровой результат.';const el=document.getElementById('balanceSyncStatus');if(el)el.textContent='Не удалось сохранить прогресс в облаке. Открой приложение снова для проверки.';}
 }
-function queueBalanceIncrease(amount){
-  const value=Math.floor(Number(amount)||0);
-  if(value>0)queuedBalanceEvents.push({amount:value,eventId:newBalanceEventId()});
-  balanceSyncQueue=balanceSyncQueue.then(async()=>{
-    await balanceCloudInitPromise;
-    if(!dailyRewardsCloudReady||!queuedBalanceEvents.length)return;
-    while(queuedBalanceEvents.length){
-      const event=queuedBalanceEvents[0];
-      try{
-        const data=await friendsApi('balance_add',{amount:event.amount,eventId:event.eventId});
-        queuedBalanceEvents.shift();
-        state.coins=Math.max(0,Math.floor(Number(data.balance)||0));
-        balanceSyncError='';
-        render();
-      }catch(error){
-        balanceSyncError=error?.message||'Не удалось сохранить баланс в облаке.';
-        const status=document.getElementById('balanceSyncStatus');
-        if(status)status.textContent='Не удалось синхронизировать баланс. Повторим при следующем подключении.';
-        break;
-      }
-    }
-  }).catch(error=>{balanceSyncError=error?.message||'Не удалось синхронизировать баланс.';});
-}
-async function refreshCloudBalance(){
-  if(!dailyRewardsCloudReady)return;
-  if(queuedBalanceEvents.length)queueBalanceIncrease(0);
-  await balanceSyncQueue;
-  if(queuedBalanceEvents.length)return;
-  try{
-    const data=await friendsApi('balance_get');
-    state.coins=Math.max(0,Math.floor(Number(data.balance)||0));
-    save();render();
-  }catch(error){balanceSyncError=error?.message||'Не удалось обновить баланс.';}
-}
+async function refreshCloudBalance(){if(!progressCloudReady)return;try{const data=await friendsApi('progress_get');applyCloudProgress(data.progress);render();}catch(e){balanceSyncError=e.message||'Не удалось обновить профиль.';}}
+async function initializeProgressCloud(){progressCloudBusy=true;try{const data=await friendsApi('progress_get');applyCloudProgress(data.progress);progressCloudReady=true;}catch(e){progressCloudReady=false;dailyRewardsCloudError=e.message||'Не удалось загрузить профиль из облака.';}finally{progressCloudBusy=false;render();}}
+function queueBalanceIncrease(amount){/* legacy hook retained for compatibility; rewards are now recorded with progress_game or claim RPCs. */}
+
 async function initializeDailyRewardsCloud(){
   dailyRewardsCloudBusy=true;renderDailyRewards();
   try{
@@ -522,6 +477,7 @@ async function initializeDailyRewardsCloud(){
     const data=await friendsApi('daily_rewards_get',{legacyDailyRewards:legacy});
     applyDailyRewardsFromServer(data.dailyRewards,data.balance);
     dailyRewardsCloudReady=true;dailyRewardsCloudError='';
+    await initializeProgressCloud();
     render();
   }catch(error){
     dailyRewardsCloudReady=false;
@@ -549,6 +505,7 @@ async function claimDailyReward(){
     const data=await friendsApi('claim_daily_reward');
     applyDailyRewardsFromServer(data.dailyRewards,data.balance);
     dailyRewardsCloudReady=true;
+    await refreshCloudBalance();
     render();
   }catch(error){
     dailyRewardsCloudError=error?.message||'Не удалось сохранить приз.';
@@ -1241,12 +1198,12 @@ function drawRecordResultOnce(room,won){
 render();
 initializeDailyRewardsCloud().then(()=>{
   const status=document.getElementById('balanceSyncStatus');
-  if(status)status.textContent=dailyRewardsCloudReady?'Облачный баланс подключён к Telegram-аккаунту.':'Облачный баланс пока не подключён — проверь SQL и публикацию функции Supabase.';
+  if(status)status.textContent=(dailyRewardsCloudReady&&progressCloudReady)?'Облачный профиль подключён к Telegram-аккаунту.':'Облачный баланс пока не подключён — проверь SQL и публикацию функции Supabase.';
   queueBalanceIncrease(0);
 });
-window.addEventListener('focus',()=>{if(dailyRewardsCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud().then(()=>queueBalanceIncrease(0));});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dailyRewardsCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud().then(()=>queueBalanceIncrease(0));}});
-setInterval(()=>{if(!document.hidden&&dailyRewardsCloudReady)refreshCloudBalance();},20000);
+window.addEventListener('focus',()=>{if(progressCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(progressCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud();}});
+setInterval(()=>{if(!document.hidden&&progressCloudReady)refreshCloudBalance();},20000);
 </script>
 </body>
 </html>
