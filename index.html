@@ -324,14 +324,23 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .draw-timer{font-weight:1000;font-size:24px;font-variant-numeric:tabular-nums;color:#fff0a8;background:#160a2c;border:1px solid #a875d966;border-radius:12px;padding:7px 12px;min-width:84px;text-align:center}
 .draw-timer.urgent{color:#ff9b9b;border-color:#ff696966}
 .draw-word{border:1px dashed #ffda70aa;background:#3b245b;border-radius:12px;padding:10px;text-align:center;color:#ffe9a5;font-weight:850;margin:8px 0 12px}
-.draw-word-hint{font-size:11px;line-height:1.4;margin:7px 0 12px;color:#bca9d6}
-.draw-word-choices{display:grid;grid-template-columns:1fr;gap:10px;margin:16px 0}.draw-word-choice{width:100%;padding:14px;border-radius:13px;font-size:16px;font-weight:900;background:linear-gradient(145deg,#9854f6,#6530b8);border:1px solid #d2b0ff;box-shadow:0 5px 0 #3e1b70,0 8px 18px #0005;color:#fff}.draw-word-choice:disabled{opacity:.55}
+ .draw-word-hint{font-size:11px;line-height:1.4;margin:7px 0 12px;color:#bca9d6}
+.draw-word-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}
+.draw-word-choice{min-width:0;min-height:76px;padding:10px 5px;border:1px solid #b77aff55;border-radius:13px;background:linear-gradient(145deg,#45216f,#281344);color:#f4eaff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 0 #160927,0 7px 12px #0003}
+.draw-word-choice span{font-size:10px;color:#c9b4e5}
+.draw-word-choice strong{font-size:13px;overflow-wrap:anywhere}
+.draw-word-choice.selected{border-color:#ffe477;background:linear-gradient(145deg,#63418e,#38205d);box-shadow:0 4px 0 #211238,0 0 0 2px #ffe47755;color:#ffe88c}
+.draw-refresh-words{width:100%;margin-top:3px}
 .draw-canvas-wrap{width:100%;background:#fff;border-radius:14px;overflow:hidden;border:2px solid #d8c8ed;box-shadow:0 5px 16px #0004;touch-action:none}
 #drawCanvas{display:block;width:100%;height:auto;aspect-ratio:5/3;touch-action:none;cursor:crosshair}
 .draw-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:10px 0}
 .draw-color{width:30px;height:30px;min-width:30px;min-height:30px;padding:0;border:2px solid #ffffff88;border-radius:50%;box-shadow:0 2px 0 #160927}
 .draw-color.selected{outline:2px solid #ffe477;outline-offset:2px}
 .draw-tool-btn{padding:8px 10px;font-size:12px}
+.draw-toolbar-label{width:100%;font-size:11px;color:#c9b4e5;margin:3px 0 -3px}
+.draw-size-btn{padding:8px 10px;font-size:12px;min-width:42px}
+.draw-size-btn.selected,.draw-eraser.selected{border-color:#ffe477;box-shadow:0 0 0 2px #ffe47755}
+.draw-eraser{padding:8px 11px;font-size:12px}
 .draw-chat{background:#160a2c;border:1px solid #ffffff20;border-radius:13px;padding:10px;margin-top:12px;max-height:190px;overflow:auto;text-align:left}
 .draw-chat-line{padding:6px 2px;border-bottom:1px solid #ffffff12;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
 .draw-chat-line:last-child{border-bottom:0}
@@ -676,9 +685,11 @@ async function saveFriendNickname(){const nickname=document.getElementById('myNi
 let drawLobbyTimer = null;
 let drawRoomTimer = null;
 let drawClockTimer = null;
-let drawClockDeadline = 0;
-let drawServerOffset = 0;
-let drawClockPollPending = false;
+let drawDeadlineMs = 0;
+let drawServerOffsetMs = 0;
+let drawTimeoutPollRequested = false;
+let drawWordOptions = [];
+let drawSelectedWord = '';
 let drawCurrentRoomId = null;
 let drawCurrentRole = null;
 let drawCurrentState = null;
@@ -686,11 +697,41 @@ let drawLocalStrokes = [];
 let drawCanvas = null;
 let drawCtx = null;
 let drawBrushColor = '#20152f';
+let drawBrushWidth = 0.006;
+let drawIsEraser = false;
 let drawPointerDown = false;
 let drawLobbyBusy = false;
 let drawRoomBusy = false;
 let drawCanvasKey = '';
-const DRAW_PALETTE = ['#20152f','#e84b4b','#2878e8','#22a06b','#f0a51a','#ffffff'];
+const DRAW_PALETTE = ['#20152f','#e84b4b','#ff7a30','#f0a51a','#f5df45','#22a06b','#27c4b8','#2878e8','#7954d8','#e45aa8','#ffffff'];
+function drawWordChoicesHTML(){
+  if(!drawWordOptions.length)return '<p class="draw-word-hint">Подбираем три случайных слова…</p>';
+  return drawWordOptions.map((word,index)=>`<button type="button" class="draw-word-choice ${word===drawSelectedWord?'selected':''}" onclick="selectDrawWord(${index})"><span>Вариант ${index+1}</span><strong>${drawEscape(word[0].toLocaleUpperCase('ru-RU')+word.slice(1))}</strong></button>`).join('');
+}
+function selectDrawWord(index){
+  const word=drawWordOptions[Number(index)];
+  if(!word)return;
+  drawSelectedWord=word;
+  const el=document.getElementById('drawWordChoices');
+  if(el)el.innerHTML=drawWordChoicesHTML();
+  drawStatus(`Выбрано слово «${word}». Теперь отправь вызов другу.`);
+}
+async function loadDrawWordOptions(){
+  const el=document.getElementById('drawWordChoices');
+  const button=document.getElementById('drawRefreshWordsButton');
+  if(el)el.innerHTML='<p class="draw-word-hint">Подбираем три случайных слова…</p>';
+  if(button)button.disabled=true;
+  try{
+    const result=await friendsApi('draw_options');
+    drawWordOptions=Array.isArray(result.options)?result.options:[];
+    drawSelectedWord=drawWordOptions[0]||'';
+    if(el)el.innerHTML=drawWordChoicesHTML();
+    if(!drawWordOptions.length)throw new Error('Не удалось подобрать слова. Попробуй обновить варианты.');
+  }catch(e){
+    drawWordOptions=[];drawSelectedWord='';
+    if(el)el.innerHTML=`<p class="draw-word-hint">${drawEscape(e.message||'Не удалось загрузить слова.')}</p>`;
+  }finally{if(button)button.disabled=false;}
+}
 function drawLetterLabel(count){
   const n=Math.abs(Number(count)||0),lastTwo=n%100,last=n%10;
   if(lastTwo>=11&&lastTwo<=14)return 'букв';
@@ -703,7 +744,7 @@ function stopDrawTimers(){
   if(drawLobbyTimer){clearInterval(drawLobbyTimer);drawLobbyTimer=null;}
   if(drawRoomTimer){clearInterval(drawRoomTimer);drawRoomTimer=null;}
   if(drawClockTimer){clearInterval(drawClockTimer);drawClockTimer=null;}
-  drawClockDeadline=0;drawClockPollPending=false;
+  drawDeadlineMs=0;drawTimeoutPollRequested=false;
   drawLobbyBusy=false;drawRoomBusy=false;drawPointerDown=false;
 }
 function drawStatus(message,isError=false){
@@ -720,20 +761,23 @@ async function openDrawLobby(){
   stopDrawTimers();drawCurrentRoomId=null;drawCurrentRole=null;drawCurrentState=null;
   const c=document.getElementById('gameContent');
   c.innerHTML=`
-    <p class="draw-intro">Позови друга на раунд. После принятия вызова тебе выпадут 3 случайных слова на выбор. Нарисуй одно из них, а друг попробует угадать за 60 секунд.</p>
+    <p class="draw-intro">Позови друга на раунд. Тебе выпадут три случайных слова. Выбери одно и нарисуй его, а друг попробует угадать за 60 секунд.</p>
     <div class="draw-panel">
       <h3>🎨 Создать вызов</h3>
       <label for="drawFriendSelect">Кого пригласить угадывать?</label>
       <select class="draw-field" id="drawFriendSelect"><option value="">Загрузка друзей…</option></select>
-      <p class="draw-word-hint">Слово появится только после того, как друг примет вызов. Ты получишь 3 случайных варианта.</p>
+      <label>Выбери одно из трёх случайных слов</label>
+      <div class="draw-word-choices" id="drawWordChoices"><p class="draw-word-hint">Подбираем варианты…</p></div>
+      <button class="secondary draw-refresh-words" id="drawRefreshWordsButton" type="button" onclick="loadDrawWordOptions()">🔄 Другие слова</button>
+      <p class="draw-word-hint">Друг не увидит выбранное слово — ему покажем только количество букв. Недавно использованные слова не предлагаются снова.</p>
       <button class="draw-action" id="drawCreateButton" onclick="sendDrawChallenge()">Отправить вызов</button>
-      <div class="draw-status" id="drawStatus">После старта раунда выберешь одно из трёх слов.</div>
+      <div class="draw-status" id="drawStatus">Слово увидишь только ты. Друг его не узнает до конца раунда.</div>
     </div>
     <div class="draw-panel"><h3>📩 Входящие вызовы</h3><div id="drawIncoming"><p>Загрузка…</p></div></div>
     <div class="draw-panel"><h3>⏳ Отправленные вызовы</h3><div id="drawOutgoing"><p>Загрузка…</p></div></div>
     <div class="draw-panel"><h3>🖌️ Активные раунды</h3><div id="drawActive"><p>Нет активных раундов.</p></div></div>
     <div class="draw-panel"><h3>🏁 Последние результаты</h3><div id="drawFinished"><p>Завершённых раундов пока нет.</p></div></div>`;
-  await refreshDrawLobby();
+  await Promise.all([refreshDrawLobby(),loadDrawWordOptions()]);
   drawLobbyTimer=setInterval(refreshDrawLobby,3000);
 }
 
@@ -772,12 +816,14 @@ async function sendDrawChallenge(){
   const select=document.getElementById('drawFriendSelect');
   const button=document.getElementById('drawCreateButton');
   const targetId=Number(select?.value||0);
+  const word=String(drawSelectedWord||'').trim();
   if(!targetId){drawStatus('Сначала выбери друга.',true);return;}
+  if(!word){drawStatus('Сначала выбери одно из трёх слов.',true);return;}
   if(button)button.disabled=true;
   try{
-    const result=await friendsApi('draw_create',{targetId});
+    const result=await friendsApi('draw_create',{targetId,word});
     drawStatus(result.message||'Вызов отправлен!');
-    await refreshDrawLobby();
+    await Promise.all([refreshDrawLobby(),loadDrawWordOptions()]);
   }catch(e){drawStatus(e.message||'Не удалось отправить вызов.',true);}
   finally{if(button)button.disabled=false;}
 }
@@ -794,13 +840,13 @@ async function openDrawRoom(roomId){
   if(drawLobbyTimer){clearInterval(drawLobbyTimer);drawLobbyTimer=null;}
   if(drawRoomTimer){clearInterval(drawRoomTimer);drawRoomTimer=null;}
   if(drawClockTimer){clearInterval(drawClockTimer);drawClockTimer=null;}
-  drawClockDeadline=0;drawClockPollPending=false;
-  drawCurrentRoomId=roomId;drawCurrentRole=null;drawCanvasKey='';drawLocalStrokes=[];
+  drawDeadlineMs=0;drawTimeoutPollRequested=false;
+  drawCurrentRoomId=roomId;drawCanvasKey='';drawLocalStrokes=[];
   try{
     const data=await friendsApi('draw_state',{roomId});
     drawCurrentState=data.room;
     if(data.room.status==='pending'){
-      document.getElementById('gameContent').innerHTML='<div class="draw-result"><div class="big">⏳</div><h3>Ждём второго игрока</h3><p>После принятия вызова появится выбор из трёх случайных слов.</p><button onclick="openDrawLobby()">Назад к вызовам</button></div>';
+      document.getElementById('gameContent').innerHTML='<div class="draw-result"><div class="big">⏳</div><h3>Ждём второго игрока</h3><p>Как только друг примет вызов, начнётся минутный раунд.</p><button onclick="openDrawLobby()">Назад к вызовам</button></div>';
       drawRoomTimer=setInterval(pollDrawRoom,1600);return;
     }
     renderDrawRoom(data);
@@ -817,22 +863,21 @@ function renderDrawRoom(data){
     document.getElementById('gameContent').innerHTML='<div class="draw-result"><div class="big">✉️</div><h3>Вызов отклонён</h3><button onclick="openDrawLobby()">Вернуться</button></div>';return;
   }
   drawCurrentRole=Number(room.artist_id)===Number(tg?.initDataUnsafe?.user?.id)?'artist':'guesser';
-  const isArtist=drawCurrentRole==='artist';
-  if(!room.deadline_at){
-    if(drawClockTimer){clearInterval(drawClockTimer);drawClockTimer=null;}
-    const options=Array.isArray(data.wordOptions)?data.wordOptions:[];
-    if(isArtist){
-      document.getElementById('gameContent').innerHTML=`<div class="draw-result"><div class="big">🎲</div><h3>Выбери слово для рисунка</h3><p>После выбора начнётся отсчёт 60 секунд. Друг увидит только количество букв.</p><div class="draw-word-choices">${options.map(word=>`<button class="draw-word-choice" onclick="chooseDrawWord('${drawEscape(word)}')">${drawEscape(word[0]?.toLocaleUpperCase('ru-RU')+word.slice(1))}</button>`).join('')}</div><div class="draw-status" id="drawStatus">Выбери один из трёх случайных вариантов.</div><button class="secondary" onclick="openDrawLobby()">Назад к вызовам</button></div>`;
-    }else{
-      document.getElementById('gameContent').innerHTML='<div class="draw-result draw-waiting-word"><div class="big">🎨</div><h3>Друг выбирает слово</h3><p>Как только он выберет один из трёх вариантов, начнётся минутный раунд.</p><p>Не закрывай игру — холст появится автоматически.</p><button class="secondary" onclick="openDrawLobby()">Назад к вызовам</button></div>';
-    }
-    return;
-  }
   drawLocalStrokes=Array.isArray(room.strokes)?room.strokes:[];
+  const isArtist=drawCurrentRole==='artist';
   const wordBlock=isArtist
     ? `<div class="draw-word">Твоё слово: ${drawEscape(room.secretWord||'…')}</div>`
     : `<div class="draw-word">Угадай рисунок · ${Number(room.wordLength)||'?'} ${drawLetterLabel(room.wordLength)} в слове</div>`;
-  const toolbar=isArtist?`<div class="draw-toolbar" id="drawToolbar">${DRAW_PALETTE.map(color=>`<button class="draw-color ${color===drawBrushColor?'selected':''}" style="background:${color}" aria-label="Цвет ${color}" onclick="setDrawColor('${color}')"></button>`).join('')}<button class="secondary draw-tool-btn" onclick="clearDrawCanvas()">Очистить</button></div>`:'';
+  const toolbar=isArtist?`<div class="draw-toolbar" id="drawToolbar">
+    <div class="draw-toolbar-label">Размер кисти</div>
+    <button type="button" class="secondary draw-size-btn ${drawBrushWidth===0.003?'selected':''}" onclick="setDrawWidth(0.003)">Тонкий</button>
+    <button type="button" class="secondary draw-size-btn ${drawBrushWidth===0.007?'selected':''}" onclick="setDrawWidth(0.007)">Средний</button>
+    <button type="button" class="secondary draw-size-btn ${drawBrushWidth===0.015?'selected':''}" onclick="setDrawWidth(0.015)">Толстый</button>
+    <div class="draw-toolbar-label">Цвет кисти</div>
+    ${DRAW_PALETTE.map(color=>`<button type="button" class="draw-color ${!drawIsEraser&&color===drawBrushColor?'selected':''}" style="background:${color}" aria-label="Цвет ${color}" onclick="setDrawColor('${color}')"></button>`).join('')}
+    <button type="button" class="secondary draw-eraser ${drawIsEraser?'selected':''}" onclick="setDrawEraser()">Ластик</button>
+    <button type="button" class="secondary draw-tool-btn" onclick="clearDrawCanvas()">Очистить всё</button>
+  </div>`:'';
   const guessForm=!isArtist?`<form class="draw-chat-form" id="drawGuessForm" onsubmit="event.preventDefault();sendDrawGuess();"><input id="drawGuessInput" maxlength="80" autocomplete="off" placeholder="Напиши свою догадку…"><button type="submit">Отправить</button></form>`:'';
   document.getElementById('gameContent').innerHTML=`
     <div class="draw-room-top"><div class="draw-role">${isArtist?'🖌️ Ты рисуешь':'🔎 Ты угадываешь'}</div><div class="draw-timer" id="drawTimer">01:00</div></div>
@@ -845,17 +890,8 @@ function renderDrawRoom(data){
   drawSetupCanvas(isArtist);
   drawRenderCanvas(drawLocalStrokes);
   drawRenderMessages(data.messages||[]);
-  drawSyncClock(room.deadline_at,data.serverNow);
+  drawUpdateTimer(room.deadline_at,data.serverNow);
   if(!isArtist){const input=document.getElementById('drawGuessInput');if(input)input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendDrawGuess();}});}
-}
-
-async function chooseDrawWord(word){
-  if(!drawCurrentRoomId)return;
-  document.querySelectorAll('.draw-word-choice').forEach(button=>button.disabled=true);
-  try{
-    await friendsApi('draw_select_word',{roomId:drawCurrentRoomId,word});
-    await openDrawRoom(drawCurrentRoomId);
-  }catch(e){drawStatus(e.message||'Не удалось выбрать слово.',true);document.querySelectorAll('.draw-word-choice').forEach(button=>button.disabled=false);}
 }
 
 function drawSetupCanvas(isArtist){
@@ -869,7 +905,7 @@ function drawSetupCanvas(isArtist){
     const p=drawCanvasPoint(e);if(!p)return;
     if(drawLocalStrokes.length>=80){drawStatus('На одном раунде можно сделать не больше 80 штрихов.',true);return;}
     drawPointerDown=true;drawCanvas.setPointerCapture(e.pointerId);
-    drawLocalStrokes.push({color:drawBrushColor,width:0.006,points:[p]});
+    drawLocalStrokes.push({color:drawIsEraser?'#ffffff':drawBrushColor,width:drawBrushWidth,points:[p]});
     drawRenderCanvas(drawLocalStrokes);
   });
   drawCanvas.addEventListener('pointermove',e=>{
@@ -901,7 +937,22 @@ function drawRenderCanvas(strokes){
     drawCtx.stroke();
   }
 }
-function setDrawColor(color){if(!DRAW_PALETTE.includes(color))return;drawBrushColor=color;document.querySelectorAll('.draw-color').forEach(el=>el.classList.toggle('selected',el.getAttribute('aria-label')===`Цвет ${color}`));}
+function setDrawColor(color){
+  if(!DRAW_PALETTE.includes(color))return;
+  drawBrushColor=color;drawIsEraser=false;
+  document.querySelectorAll('.draw-color').forEach(el=>el.classList.toggle('selected',el.getAttribute('aria-label')===`Цвет ${color}`));
+  const eraser=document.querySelector('.draw-eraser');if(eraser)eraser.classList.remove('selected');
+}
+function setDrawWidth(width){
+  const allowed=[0.003,0.007,0.015];if(!allowed.includes(Number(width)))return;
+  drawBrushWidth=Number(width);
+  document.querySelectorAll('.draw-size-btn').forEach(el=>el.classList.toggle('selected',el.getAttribute('onclick')===`setDrawWidth(${drawBrushWidth})`));
+}
+function setDrawEraser(){
+  drawIsEraser=true;
+  document.querySelectorAll('.draw-color').forEach(el=>el.classList.remove('selected'));
+  const eraser=document.querySelector('.draw-eraser');if(eraser)eraser.classList.add('selected');
+}
 async function saveDrawCanvas(){
   if(!drawCurrentRoomId)return;
   try{await friendsApi('draw_save',{roomId:drawCurrentRoomId,strokes:drawLocalStrokes});drawStatus('Рисунок синхронизирован с другом.');}
@@ -931,25 +982,26 @@ async function sendDrawGuess(){
   }catch(e){drawStatus(e.message||'Не удалось отправить догадку.',true);}
   finally{if(button)button.disabled=false;}
 }
-function drawSyncClock(deadline,serverNow){
-  const parsedDeadline=new Date(deadline).getTime();
-  const parsedServerNow=new Date(serverNow||Date.now()).getTime();
-  if(!Number.isFinite(parsedDeadline))return;
-  if(Number.isFinite(parsedServerNow))drawServerOffset=parsedServerNow-Date.now();
-  if(drawClockDeadline!==parsedDeadline){drawClockDeadline=parsedDeadline;drawClockPollPending=false;}
-  if(!drawClockTimer)drawClockTimer=setInterval(drawUpdateTimer,200);
-  drawUpdateTimer();
+function drawUpdateTimer(deadline,serverNow){
+  const parsedDeadline=Date.parse(deadline);
+  if(Number.isFinite(parsedDeadline))drawDeadlineMs=parsedDeadline;
+  const parsedServerNow=Date.parse(serverNow);
+  if(Number.isFinite(parsedServerNow))drawServerOffsetMs=parsedServerNow-Date.now();
+  drawTickTimer();
+  if(!drawClockTimer)drawClockTimer=setInterval(drawTickTimer,200);
 }
-function drawUpdateTimer(){
+function drawTickTimer(){
   const el=document.getElementById('drawTimer');
-  if(!el||!drawClockDeadline)return;
-  const remaining=drawClockDeadline-(Date.now()+drawServerOffset);
-  const seconds=Math.max(0,Math.ceil(remaining/1000));
-  el.textContent=drawFormatTime(seconds);el.classList.toggle('urgent',seconds<=10);
-  if(seconds===0&&!drawClockPollPending){drawClockPollPending=true;pollDrawRoom();}
+  if(!el||!drawDeadlineMs)return;
+  const remainingMs=drawDeadlineMs-(Date.now()+drawServerOffsetMs);
+  const seconds=Math.max(0,Math.ceil(remainingMs/1000));
+  el.textContent=drawFormatTime(seconds);
+  el.classList.toggle('urgent',seconds<=10);
+  if(remainingMs<=0&&!drawTimeoutPollRequested&&drawCurrentRoomId){
+    drawTimeoutPollRequested=true;
+    pollDrawRoom();
+  }
 }
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){drawUpdateTimer();if(drawClockDeadline&&drawClockDeadline< Date.now()+drawServerOffset)pollDrawRoom();}});
-window.addEventListener('focus',()=>{drawUpdateTimer();if(drawClockDeadline&&drawClockDeadline<Date.now()+drawServerOffset)pollDrawRoom();});
 async function pollDrawRoom(){
   if(drawRoomBusy||!drawCurrentRoomId)return;
   drawRoomBusy=true;
@@ -960,13 +1012,7 @@ async function pollDrawRoom(){
       if(drawRoomTimer){clearInterval(drawRoomTimer);drawRoomTimer=null;}
       renderDrawRoom(data);return;
     }
-    if(!data.room.deadline_at){
-      if(drawClockTimer){clearInterval(drawClockTimer);drawClockTimer=null;}
-      if(drawCurrentRole==='artist'?!document.querySelector('.draw-word-choice'):!document.querySelector('.draw-waiting-word'))renderDrawRoom(data);
-      return;
-    }
-    drawSyncClock(data.room.deadline_at,data.serverNow);
-    if(!document.getElementById('drawCanvas')){renderDrawRoom(data);return;}
+    drawUpdateTimer(data.room.deadline_at,data.serverNow);
     const serverStrokes=Array.isArray(data.room.strokes)?data.room.strokes:[];
     const key=JSON.stringify(serverStrokes);
     if(drawCurrentRole==='guesser'&&key!==drawCanvasKey){drawLocalStrokes=serverStrokes;drawCanvasKey=key;drawRenderCanvas(drawLocalStrokes);}
