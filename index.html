@@ -393,14 +393,16 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .case-reel{display:none;width:100%;min-width:0;overflow:hidden;padding:9px 0;border-radius:12px;background:linear-gradient(90deg,#241238,#382052 50%,#241238);border:1px solid #ffcf6255;position:relative}
 .case-reel:before,.case-reel:after{content:"";position:absolute;top:0;bottom:0;width:22px;z-index:2;pointer-events:none}
 .case-reel:before{left:0;background:linear-gradient(90deg,#241238,transparent)}.case-reel:after{right:0;background:linear-gradient(270deg,#241238,transparent)}
-.case-reel-track{display:flex;width:max-content;gap:9px;animation:none}
+.case-reel-track{display:flex;width:max-content;gap:9px;transform:translateX(0);will-change:transform}
 .case-reel-item{flex:0 0 auto;padding:7px 11px;border-radius:9px;background:#160b29;border:1px solid #d9a94c66;color:#ffe18b;font-size:13px;font-weight:900;white-space:nowrap}
 .case-reel-item small{color:#c8b7df;font-size:10px;margin-left:5px}
 .case-art.reel-visible .case-reel{display:block}
-.case-art.spinning .case-reel-track{animation:caseReelScroll .65s linear 4}
-@keyframes caseReelScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.case-reel-window{position:relative;width:100%;padding-top:17px}
+.case-pointer{position:absolute;z-index:4;top:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:16px solid #ffe17a;filter:drop-shadow(0 2px 3px #0009)}
+.case-reel-item{min-width:94px;text-align:center}
+.case-art-copy{max-width:100%;text-align:center;font-size:12px;color:#d9c8f0;line-height:1.45}
 @keyframes caseFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
-.case-art-copy{max-width:220px;font-size:12px;color:#d9c8f0;line-height:1.45}
+.case-art-copy{max-width:100%;text-align:center;font-size:12px;color:#d9c8f0;line-height:1.45}
 .case-art-copy strong{display:block;color:#ffe18b;font-size:15px;margin-bottom:4px}
 .case-prizes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0}
 .case-prize{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 10px;border-radius:11px;background:#160b29;border:1px solid #a875d933;font-size:12px}
@@ -432,7 +434,7 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
     <button class="secondary case-back" type="button" onclick="hideHrumsyCaseDetail()">← Назад к кейсам</button>
     <div class="card case-card">
       <div class="case-head"><h2>🍪 Хрум-кейс</h2><span class="case-price">250 🍪</span></div>
-      <div class="case-art" id="hrumsyCaseArt"><div class="case-box" id="hrumsyCaseBox">🍪</div><div class="case-art-copy"><strong>Хрум-кейс</strong>Внутри — один из 10 вариантов награды. Нажми «Открыть», чтобы запустить прокрутку призов.</div><div class="case-reel" aria-label="Прокручивающиеся призы"><div class="case-reel-track" id="caseReelTrack"></div></div></div>
+      <div class="case-art" id="hrumsyCaseArt"><div class="case-box" id="hrumsyCaseBox">🍪</div><div class="case-reel-window"><div class="case-pointer" aria-hidden="true"></div><div class="case-reel" aria-label="Прокручивающиеся призы"><div class="case-reel-track" id="caseReelTrack"></div></div></div><div class="case-art-copy"><strong>Хрум-кейс</strong>Внутри — один из 10 вариантов награды. Нажми «Открыть», чтобы запустить прокрутку призов.</div></div>
       <div class="case-prizes" id="casePrizes"></div>
       <button class="case-open" id="caseOpenButton" onclick="openHrumsyCase()">Открыть за 250 🍪</button>
       <p class="case-note" id="caseNote">Загружаем облачный баланс…</p>
@@ -508,7 +510,10 @@ function renderHrumsyCase(){
   const prizes=document.getElementById('casePrizes');if(!prizes)return;
   prizes.innerHTML=HRUMSY_CASE_PRIZES.map(p=>`<div class="case-prize"><strong>🍪 ${p.amount.toLocaleString('ru-RU')}</strong><span>${p.chance}%</span></div>`).join('');
   const reel=document.getElementById('caseReelTrack');
-  if(reel&&!reel.dataset.ready){const items=HRUMSY_CASE_PRIZES.map(p=>`<span class="case-reel-item">🍪 ${p.amount.toLocaleString('ru-RU')} <small>${p.chance}%</small></span>`).join('');reel.innerHTML=items+items;reel.dataset.ready='1';}
+  if(reel&&!reel.dataset.ready){
+    const items=Array.from({length:12},()=>HRUMSY_CASE_PRIZES.map(p=>`<span class="case-reel-item">🍪 ${p.amount.toLocaleString('ru-RU')} <small>${p.chance}%</small></span>`).join('')).join('');
+    reel.innerHTML=items;reel.dataset.ready='1';
+  }
   const button=document.getElementById('caseOpenButton'),note=document.getElementById('caseNote');
   if(button)button.disabled=hrumsyCaseBusy||!progressCloudReady||Number(state.coins)<HRUMSY_CASE_COST;
   if(button)button.textContent=hrumsyCaseBusy?'Открываем кейс…':`Открыть за ${HRUMSY_CASE_COST} 🍪`;
@@ -516,21 +521,43 @@ function renderHrumsyCase(){
   const result=document.getElementById('caseResult');
   if(result){result.hidden=hrumsyCaseLastWin===null;result.innerHTML=hrumsyCaseLastWin===null?'':`🎉 Твой выигрыш<strong>+${Number(hrumsyCaseLastWin).toLocaleString('ru-RU')} 🍪</strong>`;}
 }
+
+async function spinHrumsyCaseToPrize(amount){
+  const art=document.getElementById('hrumsyCaseArt'),track=document.getElementById('caseReelTrack'),viewport=track?.parentElement;
+  if(!art||!track||!viewport)return;
+  const prizeIndex=HRUMSY_CASE_PRIZES.findIndex(p=>p.amount===Number(amount));
+  if(prizeIndex<0)return;
+  art.classList.add('reel-visible');
+  track.style.transition='none';track.style.transform='translateX(0)';
+  void track.offsetWidth;
+  const targetIndex=HRUMSY_CASE_PRIZES.length*9+prizeIndex;
+  const target=track.children[targetIndex];
+  if(!target)return;
+  const center=viewport.clientWidth/2;
+  const targetCenter=target.offsetLeft+target.offsetWidth/2;
+  const distance=Math.max(0,targetCenter-center);
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  track.style.transition='transform 3.2s cubic-bezier(.08,.72,.12,1)';
+  track.style.transform=`translateX(${-distance}px)`;
+  await new Promise(resolve=>setTimeout(resolve,3300));
+}
+
 async function openHrumsyCase(){
   if(hrumsyCaseBusy)return;
   if(!progressCloudReady){const note=document.getElementById('caseNote');if(note)note.textContent='Облачный профиль ещё загружается. Попробуй немного позже.';return;}
   if(Number(state.coins)<HRUMSY_CASE_COST){renderHrumsyCase();return;}
   hrumsyCaseBusy=true;hrumsyCaseLastWin=null;renderHrumsyCase();
   const box=document.getElementById('hrumsyCaseBox');if(box)box.classList.add('opening');
-  const art=document.getElementById('hrumsyCaseArt');if(art){art.classList.add('reel-visible');art.classList.add('spinning');}
+  const art=document.getElementById('hrumsyCaseArt');if(art)art.classList.add('reel-visible');
   try{
-    const [result]=await Promise.all([friendsApi('case_open',{eventId:newBalanceEventId()}),new Promise(resolve=>setTimeout(resolve,2600))]);
+    const result=await friendsApi('case_open',{eventId:newBalanceEventId()});
     hrumsyCaseLastWin=Number(result.reward);
+    await spinHrumsyCaseToPrize(hrumsyCaseLastWin);
     if(result.progress)applyCloudProgress(result.progress);else await refreshCloudBalance();
     render();
   }catch(error){
     const note=document.getElementById('caseNote');if(note)note.textContent=error?.message||'Не удалось открыть кейс. Попробуй ещё раз.';
-  }finally{hrumsyCaseBusy=false;if(box)box.classList.remove('opening');if(art)art.classList.remove('spinning');renderHrumsyCase();}
+  }finally{hrumsyCaseBusy=false;if(box)box.classList.remove('opening');renderHrumsyCase();}
 }
 const DAILY_REWARD_AMOUNTS=[20,30,40,50,60,80,100];
 let dailyRewardsCloudReady=false;
