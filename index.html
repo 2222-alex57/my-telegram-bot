@@ -835,6 +835,7 @@ function renderDrawRoom(data){
     return;
   }
   drawLocalStrokes=Array.isArray(room.strokes)?room.strokes:[];
+  drawCanvasKey=JSON.stringify(drawLocalStrokes);
   const wordBlock=isArtist
     ? `<div class="draw-word">Твоё слово: ${drawEscape(room.secretWord||'…')}</div>`
     : `<div class="draw-word">Угадай рисунок · ${Number(room.wordLength)||'?'} ${drawLetterLabel(room.wordLength)} в слове</div>`;
@@ -884,7 +885,7 @@ function drawSetupCanvas(isArtist){
     const p=drawCanvasPoint(e);if(!p)return;
     if(drawLocalStrokes.length>=80){drawStatus('На одном раунде можно сделать не больше 80 штрихов.',true);return;}
     drawPointerDown=true;drawCanvas.setPointerCapture(e.pointerId);
-    drawLocalStrokes.push({color:drawIsEraser?'#ffffff':drawBrushColor,width:drawBrushWidth,points:[p]});
+    drawLocalStrokes.push({color:String(drawIsEraser?'#ffffff':drawBrushColor).toLowerCase(),width:drawBrushWidth,points:[p]});
     drawRenderCanvas(drawLocalStrokes);
   });
   drawCanvas.addEventListener('pointermove',e=>{
@@ -909,7 +910,10 @@ function drawRenderCanvas(strokes){
   drawCtx.clearRect(0,0,w,h);drawCtx.fillStyle='#ffffff';drawCtx.fillRect(0,0,w,h);
   for(const stroke of (strokes||[])){
     const points=stroke.points||[];if(!points.length)continue;
-    drawCtx.beginPath();drawCtx.strokeStyle=stroke.color||'#20152f';drawCtx.lineWidth=Math.max(2,(Number(stroke.width)||0.006)*w);drawCtx.lineCap='round';drawCtx.lineJoin='round';
+    // The color is stored inside each stroke and is therefore identical
+    // on the artist's and guesser's devices.
+    const savedColor=typeof stroke.color==='string'&&/^#[0-9a-f]{6}$/i.test(stroke.color)?stroke.color:'#20152f';
+    drawCtx.beginPath();drawCtx.strokeStyle=savedColor;drawCtx.lineWidth=Math.max(2,(Number(stroke.width)||0.006)*w);drawCtx.lineCap='round';drawCtx.lineJoin='round';
     drawCtx.moveTo(points[0][0]*w,points[0][1]*h);
     for(let i=1;i<points.length;i++)drawCtx.lineTo(points[i][0]*w,points[i][1]*h);
     if(points.length===1){drawCtx.lineTo(points[0][0]*w+0.1,points[0][1]*h+0.1);}
@@ -934,8 +938,12 @@ function setDrawEraser(){
 }
 async function saveDrawCanvas(){
   if(!drawCurrentRoomId)return;
-  try{await friendsApi('draw_save',{roomId:drawCurrentRoomId,strokes:drawLocalStrokes});drawStatus('Рисунок синхронизирован с другом.');}
-  catch(e){drawStatus(e.message||'Не удалось сохранить рисунок.',true);}
+  const snapshot=JSON.stringify(drawLocalStrokes);
+  try{
+    await friendsApi('draw_save',{roomId:drawCurrentRoomId,strokes:drawLocalStrokes});
+    drawCanvasKey=snapshot;
+    drawStatus('Рисунок и все цвета синхронизированы с другом.');
+  }catch(e){drawStatus(e.message||'Не удалось сохранить рисунок.',true);}
 }
 async function clearDrawCanvas(){
   if(drawCurrentRole!=='artist')return;
@@ -999,7 +1007,11 @@ async function pollDrawRoom(){
     if(!document.getElementById('drawCanvas')){renderDrawRoom(data);return;}
     const serverStrokes=Array.isArray(data.room.strokes)?data.room.strokes:[];
     const key=JSON.stringify(serverStrokes);
-    if(drawCurrentRole==='guesser'&&key!==drawCanvasKey){drawLocalStrokes=serverStrokes;drawCanvasKey=key;drawRenderCanvas(drawLocalStrokes);}
+    if(drawCurrentRole==='guesser'&&key!==drawCanvasKey){
+      drawLocalStrokes=serverStrokes.map(stroke=>({...stroke,color:typeof stroke.color==='string'?stroke.color:'#20152f'}));
+      drawCanvasKey=key;
+      drawRenderCanvas(drawLocalStrokes);
+    }
     if(drawCurrentRole==='artist'&&!drawPointerDown&&key!==drawCanvasKey){
       // On first response or after a reconnect, restore the last server-saved drawing.
       if(!drawCanvasKey){drawLocalStrokes=serverStrokes;drawRenderCanvas(drawLocalStrokes);}
