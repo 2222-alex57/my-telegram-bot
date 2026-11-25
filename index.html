@@ -5,25 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SkillRush</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+  // Prevent a downward page gesture from closing the Mini App.
+  // Page content remains vertically scrollable through normal touch scrolling.
+  try {
+    const app = window.Telegram && window.Telegram.WebApp;
+    app?.ready?.();
+    app?.expand?.();
+    app?.disableVerticalSwipes?.();
+  } catch (_) {}
+</script>
 <style>
 
 :root{
   color-scheme:dark;
-  --bg:#100826;--panel:#211044;--panel2:#2b1456;--purple:#8b42f5;
-  --purple2:#bd72ff;--gold:#ffd34e;--gold2:#ff9f1c;
-  --text:#fff9ff;--muted:#c4b3df;--green:#50e0a0;
-  --line:rgba(210,165,255,.22);--shadow:0 12px 30px rgba(0,0,0,.34)
+  --bg:#071522;--panel:#10283d;--panel2:#173954;--purple:#2589ff;
+  --purple2:#55c7ff;--gold:#35d6c9;--gold2:#19a9b8;
+  --text:#f3fbff;--muted:#a9c7dc;--green:#65e6b8;
+  --line:rgba(104,195,255,.24);--shadow:0 12px 30px rgba(0,0,0,.34)
 }
 *{box-sizing:border-box}
-html{min-height:100%;background:var(--bg)}
+html{min-height:100%;background:var(--bg);overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y}
 body{
   min-height:100vh;margin:0;padding:18px 16px calc(112px + env(safe-area-inset-bottom));
   color:var(--text);font-family:Inter,ui-rounded,"Segoe UI",Arial,sans-serif;
   background:
-    radial-gradient(ellipse at 12% 0%,rgba(140,55,255,.35),transparent 38%),
-    radial-gradient(ellipse at 100% 40%,rgba(92,35,190,.23),transparent 42%),
-    linear-gradient(160deg,#100622 0%,#190a35 52%,#100826 100%);
-  overflow-x:hidden
+    radial-gradient(ellipse at 12% 0%,rgba(37,137,255,.28),transparent 38%),
+    radial-gradient(ellipse at 100% 40%,rgba(53,214,201,.16),transparent 42%),
+    linear-gradient(160deg,#071522 0%,#0b2033 52%,#071522 100%);
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y
 }
 body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;
   background-image:radial-gradient(#fff 1px,transparent 1px);background-size:28px 28px;z-index:-1}
@@ -41,15 +51,15 @@ p{color:var(--muted);font-size:13px;line-height:1.55}
 main{max-width:760px;margin:0 auto}
 .hero{
   position:relative;isolation:isolate;overflow:hidden;margin:22px auto 0;padding:24px;
-  border-radius:26px;background:linear-gradient(135deg,#7134c9 0%,#3b176e 48%,#211044 100%);
-  border:1px solid #d49aff70;box-shadow:var(--shadow),inset 0 1px 0 #ffffff45
+  border-radius:26px;background:linear-gradient(135deg,#1766b5 0%,#12446d 48%,#10283d 100%);
+  border:1px solid #7ddcff70;box-shadow:var(--shadow),inset 0 1px 0 #ffffff45
 }
 .hero:after{content:"🍪";position:absolute;right:12px;bottom:-22px;font-size:100px;opacity:.16;transform:rotate(-20deg);z-index:-1}
 .hero h1{font-size:27px;line-height:1.12;margin:0 0 8px;text-shadow:0 3px 12px #21063d}
 .hero p{max-width:440px}
-.level{margin-top:18px;color:#f0ddff;font-size:13px}
+.level{margin-top:18px;color:#d9f4ff;font-size:13px}
 .progress{height:10px;background:#16072e99;border:1px solid #ffffff20;border-radius:20px;margin-top:9px;overflow:hidden}
-.progress div{height:100%;background:linear-gradient(90deg,#ffb52e,#ffe779);border-radius:20px;box-shadow:0 0 12px #ffce4d;width:0%;transition:width .35s}
+.progress div{height:100%;background:linear-gradient(90deg,#19a9b8,#8cecff);border-radius:20px;box-shadow:0 0 12px #35d6c9;width:0%;transition:width .35s}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .card{
   background:linear-gradient(145deg,rgba(57,32,91,.96),rgba(31,19,55,.98));
@@ -59,7 +69,7 @@ main{max-width:760px;margin:0 auto}
 .game{min-height:155px;cursor:pointer;position:relative;overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s}
 .game:after{content:"";position:absolute;width:90px;height:90px;right:-35px;top:-38px;border-radius:50%;background:#a75aff22}
 .game:active{transform:scale(.975)}
-.game:hover{transform:translateY(-3px);border-color:#c18bff99;box-shadow:0 12px 26px #0005,0 0 18px #8b42f533}
+.game:hover{transform:translateY(-3px);border-color:#c18bff99;box-shadow:0 12px 26px #0005,0 0 18px #2589ff33}
 .emoji{font-size:34px;margin-bottom:12px;filter:drop-shadow(0 5px 7px #0005)}
 .game strong{display:block;font-size:15px}
 .reward{color:var(--gold);font-size:12px;margin-top:8px;font-weight:800}
@@ -68,15 +78,15 @@ main{max-width:760px;margin:0 auto}
 .quest-title{font-weight:800;font-size:14px}
 .quest-reward{color:var(--gold);font-size:12px;white-space:nowrap;font-weight:800}
 .quest-progress{height:7px;background:#160d2c;border-radius:10px;margin-top:12px;overflow:hidden}
-.quest-progress div{height:100%;background:linear-gradient(90deg,#45dba0,#b5ff9c);border-radius:10px;transition:width .3s}
+.quest-progress div{height:100%;background:linear-gradient(90deg,#35d6c9,#a5f3fc);border-radius:10px;transition:width .3s}
 .quest-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
 button{
   border:0;border-radius:14px;padding:11px 15px;
-  background:linear-gradient(145deg,#a75cff,#7132d5);color:white;font-weight:850;
-  cursor:pointer;box-shadow:0 5px 0 #451b88,0 8px 16px #0003,inset 0 1px 0 #ffffff55;
+  background:linear-gradient(145deg,#2589ff,#1766b5);color:white;font-weight:850;
+  cursor:pointer;box-shadow:0 5px 0 #0b4778,0 8px 16px #0003,inset 0 1px 0 #ffffff55;
   transition:transform .14s,filter .14s,box-shadow .14s
 }
-button:active{transform:translateY(3px);box-shadow:0 2px 0 #451b88,0 4px 9px #0003}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 #0b4778,0 4px 9px #0003}
 button:hover{filter:brightness(1.12)}
 button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .claim{padding:8px 12px;font-size:12px}
@@ -91,13 +101,13 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .tabs button{
   min-width:0;min-height:58px;padding:8px 3px;border-radius:17px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  background:linear-gradient(145deg,#45216f,#281344);color:#d8c4f5;
-  border:1px solid #b77aff44;box-shadow:0 5px 0 #160927,0 8px 14px #0004,inset 0 1px 0 #ffffff20;
+  background:linear-gradient(145deg,#16466a,#10283d);color:#c3e9f8;
+  border:1px solid #69c9ef44;box-shadow:0 5px 0 #160927,0 8px 14px #0004,inset 0 1px 0 #ffffff20;
   font-size:11px;white-space:nowrap
 }
 .tabs button.active{
-  color:#4a2600;background:linear-gradient(145deg,#ffe477,#ffad25);
-  border-color:#fff0a5;box-shadow:0 5px 0 #a95c0b,0 0 20px #ffbd3d55,inset 0 2px 0 #ffffffa8;
+  color:#4a2600;background:linear-gradient(145deg,#a5f3fc,#19b8c8);
+  border-color:#fff0a5;box-shadow:0 5px 0 #087f9a,0 0 20px #35d6c955,inset 0 2px 0 #ffffffa8;
   transform:translateY(-5px);font-weight:1000
 }
 .page{display:none;animation:pageIn .22s ease}
@@ -106,16 +116,16 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .modal{display:none;position:fixed;inset:0;background:#080313d9;backdrop-filter:blur(8px);z-index:5;align-items:center;justify-content:center;padding:18px}
 .modal-box{
   width:100%;max-width:440px;max-height:85vh;overflow:auto;
-  background:linear-gradient(145deg,#38205d,#1c1034);padding:23px;
-  border:1px solid #c28aff66;border-radius:25px;text-align:center;box-shadow:0 20px 60px #0009
+  background:linear-gradient(145deg,#153b55,#0b2033);padding:23px;
+  border:1px solid #69c9ef66;border-radius:25px;text-align:center;box-shadow:0 20px 60px #0009
 }
 .modal-box h2{margin-top:0}
-.modal-box input{width:100%;padding:13px;margin:12px 0;border-radius:12px;border:1px solid #a875d966;background:#140a28;color:white;font-size:17px;outline:none}
-.modal-box input:focus{border-color:#d5a3ff;box-shadow:0 0 0 3px #a75cff33}
+.modal-box input{width:100%;padding:13px;margin:12px 0;border-radius:12px;border:1px solid #55c7ff66;background:#081b2a;color:white;font-size:17px;outline:none}
+.modal-box input:focus{border-color:#8cecff;box-shadow:0 0 0 3px #2589ff33}
 .big{font-size:46px;margin:20px}
 .result{color:var(--green);font-weight:900;margin:15px}
-.secondary{background:linear-gradient(145deg,#55466d,#332443);margin-top:12px;box-shadow:0 4px 0 #21172f}
-.friend-input{width:100%;padding:13px;border-radius:12px;border:1px solid #a875d966;background:#140a28;color:white;font-size:15px;outline:none;margin:7px 0}.friend-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #ffffff18}.friend-row:last-child{border-bottom:0}.friend-avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#7140a9,#38205d);font-size:20px;flex-shrink:0}.friend-meta{flex:1;min-width:0}.friend-meta strong{display:block;overflow:hidden;text-overflow:ellipsis}.friend-meta small{color:var(--muted)}.friend-actions{display:flex;gap:6px;flex-wrap:wrap}.friend-actions button{padding:8px 10px;font-size:11px}.friend-link{overflow-wrap:anywhere;background:#160a2c;padding:11px;border-radius:10px;color:#e6ceff;font-size:12px;margin:9px 0}.profile-stat{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #ffffff18}
+.secondary{background:linear-gradient(145deg,#31566c,#1b3548);margin-top:12px;box-shadow:0 4px 0 #102333}
+.friend-input{width:100%;padding:13px;border-radius:12px;border:1px solid #55c7ff66;background:#081b2a;color:white;font-size:15px;outline:none;margin:7px 0}.friend-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #ffffff18}.friend-row:last-child{border-bottom:0}.friend-avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#246b9c,#153b55);font-size:20px;flex-shrink:0}.friend-meta{flex:1;min-width:0}.friend-meta strong{display:block;overflow:hidden;text-overflow:ellipsis}.friend-meta small{color:var(--muted)}.friend-actions{display:flex;gap:6px;flex-wrap:wrap}.friend-actions button{padding:8px 10px;font-size:11px}.friend-link{overflow-wrap:anywhere;background:#160a2c;padding:11px;border-radius:10px;color:#d8f5ff;font-size:12px;margin:9px 0}.profile-stat{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #ffffff18}
 .profile-stat b{color:#ffe07a}
 
 /* ===== SkillRush avatar creator ===== */
@@ -270,16 +280,16 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .avatar-portrait.large.accessory-cap .avatar-accessory{top:-2px;font-size:38px}
 .avatar-portrait.small.accessory-cap .avatar-accessory{top:-2px;font-size:16px}
 .avatar-group{margin-top:14px}
-.avatar-group-title{font-size:13px;font-weight:850;color:#f0ddff;margin-bottom:8px}
+.avatar-group-title{font-size:13px;font-weight:850;color:#d9f4ff;margin-bottom:8px}
 .avatar-options{display:flex;gap:8px;flex-wrap:wrap}
 .avatar-option{min-width:48px;min-height:46px;padding:8px 10px;border:1px solid #b77aff55;border-radius:13px;background:#25113f;color:#fff;font-size:21px;box-shadow:0 3px 0 #160927;display:inline-flex;align-items:center;justify-content:center}
-.avatar-option.selected{border-color:#ffe477;background:linear-gradient(145deg,#684095,#3b205e);box-shadow:0 0 0 2px #ffdc6844,0 3px 0 #160927}
+.avatar-option.selected{border-color:#a5f3fc;background:linear-gradient(145deg,#684095,#3b205e);box-shadow:0 0 0 2px #ffdc6844,0 3px 0 #160927}
 .avatar-option.bg-swatch{width:48px;height:42px;min-width:48px;border:2px solid #ffffff55}
-.avatar-option.bg-swatch.selected{border-color:#ffe477;box-shadow:0 0 0 2px #ffdc6844}
+.avatar-option.bg-swatch.selected{border-color:#a5f3fc;box-shadow:0 0 0 2px #ffdc6844}
 .avatar-builder-status{min-height:20px;margin:9px 0 0;font-size:12px;color:#bca9d6}
 .avatar-mode-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .avatar-mode-option{min-height:44px;padding:10px 12px;font-size:13px;gap:7px}
-.avatar-mode-option.selected{border-color:#ffe477;background:linear-gradient(145deg,#684095,#3b205e);box-shadow:0 0 0 2px #ffdc6844,0 3px 0 #160927}
+.avatar-mode-option.selected{border-color:#a5f3fc;background:linear-gradient(145deg,#684095,#3b205e);box-shadow:0 0 0 2px #ffdc6844,0 3px 0 #160927}
 .avatar-mode-hint{min-height:18px;margin:7px 0 0;font-size:11px;color:#bca9d6}
 .avatar-custom-options[hidden]{display:none!important}
 .avatar-telegram-photo-shell{background:linear-gradient(145deg,#3b235e,#180d2b)}
@@ -310,7 +320,7 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .draw-intro{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 12px}
 .draw-panel{background:linear-gradient(145deg,rgba(57,32,91,.96),rgba(31,19,55,.98));border:1px solid var(--line);border-radius:16px;padding:13px;margin:10px 0}
 .draw-panel h3{font-size:15px;margin:0 0 8px}
-.draw-field{width:100%;min-height:43px;padding:11px 12px;border-radius:11px;border:1px solid #a875d966;background:#140a28;color:#fff;font-size:14px;outline:none;margin:6px 0}
+.draw-field{width:100%;min-height:43px;padding:11px 12px;border-radius:11px;border:1px solid #55c7ff66;background:#081b2a;color:#fff;font-size:14px;outline:none;margin:6px 0}
 .draw-action{width:100%;margin-top:8px}
 .draw-list-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff18}
 .draw-list-row:last-child{border-bottom:0}
@@ -321,20 +331,20 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .draw-row-actions button{padding:8px 10px;font-size:11px}
 .draw-room-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .draw-role{font-weight:900;color:#ffe17a;font-size:14px}
-.draw-timer{font-weight:1000;font-size:24px;font-variant-numeric:tabular-nums;color:#fff0a8;background:#160a2c;border:1px solid #a875d966;border-radius:12px;padding:7px 12px;min-width:84px;text-align:center}
+.draw-timer{font-weight:1000;font-size:24px;font-variant-numeric:tabular-nums;color:#fff0a8;background:#160a2c;border:1px solid #55c7ff66;border-radius:12px;padding:7px 12px;min-width:84px;text-align:center}
 .draw-timer.urgent{color:#ff9b9b;border-color:#ff696966}
 .draw-word{border:1px dashed #ffda70aa;background:#3b245b;border-radius:12px;padding:10px;text-align:center;color:#ffe9a5;font-weight:850;margin:8px 0 12px}
 .draw-word-hint{font-size:11px;line-height:1.4;margin:7px 0 12px;color:#bca9d6}
 .draw-word-choices{display:grid;grid-template-columns:1fr;gap:10px;margin:16px 0}.draw-word-choice{width:100%;padding:14px;border-radius:13px;font-size:16px;font-weight:900;background:linear-gradient(145deg,#9854f6,#6530b8);border:1px solid #d2b0ff;box-shadow:0 5px 0 #3e1b70,0 8px 18px #0005;color:#fff}.draw-word-choice:disabled{opacity:.55}
-.draw-canvas-wrap{width:100%;background:#fff;border-radius:14px;overflow:hidden;border:2px solid #d8c8ed;box-shadow:0 5px 16px #0004;touch-action:none}
-#drawCanvas{display:block;width:100%;height:auto;aspect-ratio:5/3;touch-action:none;cursor:crosshair}
+.draw-canvas-wrap{width:100%;background:#fff;border-radius:14px;overflow:hidden;border:2px solid #d8c8ed;box-shadow:0 5px 16px #0004;touch-action:pan-y;overscroll-behavior:contain}
+#drawCanvas{display:block;width:100%;height:auto;aspect-ratio:5/3;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
 .draw-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:10px 0}
 .draw-color{width:30px;height:30px;min-width:30px;min-height:30px;padding:0;border:2px solid #ffffff88;border-radius:50%;box-shadow:0 2px 0 #160927}
-.draw-color.selected{outline:2px solid #ffe477;outline-offset:2px}
+.draw-color.selected{outline:2px solid #a5f3fc;outline-offset:2px}
 .draw-tool-btn{padding:8px 10px;font-size:12px}
 .draw-toolbar-label{width:100%;font-size:11px;color:#c9b4e5;margin:3px 0 -3px}
 .draw-size-btn{padding:8px 10px;font-size:12px;min-width:42px}
-.draw-size-btn.selected,.draw-eraser.selected{border-color:#ffe477;box-shadow:0 0 0 2px #ffe47755}
+.draw-size-btn.selected,.draw-eraser.selected{border-color:#a5f3fc;box-shadow:0 0 0 2px #a5f3fc55}
 .draw-eraser{padding:8px 11px;font-size:12px}
 .draw-chat{background:#160a2c;border:1px solid #ffffff20;border-radius:13px;padding:10px;margin-top:12px;max-height:190px;overflow:auto;text-align:left}
 .draw-chat-line{padding:6px 2px;border-bottom:1px solid #ffffff12;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
@@ -342,7 +352,7 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .draw-chat-line strong{color:#e9c9ff}
 .draw-chat-line.correct strong{color:#8df0bd}
 .draw-chat-form{display:flex;gap:7px;margin-top:9px}
-.draw-chat-form input{flex:1;min-width:0;padding:11px;border-radius:10px;border:1px solid #a875d966;background:#140a28;color:#fff;font-size:14px}
+.draw-chat-form input{flex:1;min-width:0;padding:11px;border-radius:10px;border:1px solid #55c7ff66;background:#081b2a;color:#fff;font-size:14px}
 .draw-chat-form button{padding:10px 13px}
 .draw-status{min-height:18px;color:#bca9d6;font-size:12px;margin:8px 0 0}
 .draw-result{text-align:center;padding:15px 8px}
@@ -696,6 +706,10 @@ let drawPointerDown = false;
 let drawLobbyBusy = false;
 let drawRoomBusy = false;
 let drawCanvasKey = '';
+let drawLiveSaveTimer = null;
+let drawSaveInFlight = false;
+let drawSaveQueued = false;
+let drawLastSavedKey = '';
 const DRAW_PALETTE = ['#20152f','#e84b4b','#ff7a30','#f0a51a','#f5df45','#22a06b','#27c4b8','#2878e8','#7954d8','#e45aa8','#ffffff'];
 function drawLetterLabel(count){
   const n=Math.abs(Number(count)||0),lastTwo=n%100,last=n%10;
@@ -801,7 +815,7 @@ async function openDrawRoom(roomId){
   if(drawRoomTimer){clearInterval(drawRoomTimer);drawRoomTimer=null;}
   if(drawClockTimer){clearInterval(drawClockTimer);drawClockTimer=null;}
   drawClockDeadline=0;drawClockPollPending=false;
-  drawCurrentRoomId=roomId;drawCurrentRole=null;drawCanvasKey='';drawLocalStrokes=[];
+  drawCurrentRoomId=roomId;drawCurrentRole=null;drawCanvasKey='';drawLocalStrokes=[];drawLastSavedKey='';drawSaveQueued=false;if(drawLiveSaveTimer){clearTimeout(drawLiveSaveTimer);drawLiveSaveTimer=null;}
   try{
     const data=await friendsApi('draw_state',{roomId});
     drawCurrentState=data.room;
@@ -810,7 +824,7 @@ async function openDrawRoom(roomId){
       drawRoomTimer=setInterval(pollDrawRoom,1600);return;
     }
     renderDrawRoom(data);
-    if(data.room.status==='active')drawRoomTimer=setInterval(pollDrawRoom,1200);
+    if(data.room.status==='active')drawRoomTimer=setInterval(pollDrawRoom,300);
   }catch(e){drawCurrentRoomId=null;document.getElementById('gameContent').innerHTML=`<p>${drawEscape(e.message||'Не удалось открыть раунд.')}</p><button onclick="openDrawLobby()">Назад</button>`;}
 }
 
@@ -835,7 +849,6 @@ function renderDrawRoom(data){
     return;
   }
   drawLocalStrokes=Array.isArray(room.strokes)?room.strokes:[];
-  drawCanvasKey=JSON.stringify(drawLocalStrokes);
   const wordBlock=isArtist
     ? `<div class="draw-word">Твоё слово: ${drawEscape(room.secretWord||'…')}</div>`
     : `<div class="draw-word">Угадай рисунок · ${Number(room.wordLength)||'?'} ${drawLetterLabel(room.wordLength)} в слове</div>`;
@@ -884,20 +897,35 @@ function drawSetupCanvas(isArtist){
     if(!drawCurrentState||drawCurrentState.status!=='active')return;
     const p=drawCanvasPoint(e);if(!p)return;
     if(drawLocalStrokes.length>=80){drawStatus('На одном раунде можно сделать не больше 80 штрихов.',true);return;}
-    drawPointerDown=true;drawCanvas.setPointerCapture(e.pointerId);
-    drawLocalStrokes.push({color:String(drawIsEraser?'#ffffff':drawBrushColor).toLowerCase(),width:drawBrushWidth,points:[p]});
+    drawPointerDown=true;
+    try{drawCanvas.setPointerCapture(e.pointerId);}catch(_){}
+    drawLocalStrokes.push({color:drawIsEraser?'#ffffff':drawBrushColor,width:drawBrushWidth,points:[p]});
+    drawCanvasKey='';
     drawRenderCanvas(drawLocalStrokes);
+    scheduleLiveDrawSave(true);
   });
   drawCanvas.addEventListener('pointermove',e=>{
     if(!drawPointerDown)return;
-    const p=drawCanvasPoint(e);if(!p)return;
+    const events=typeof e.getCoalescedEvents==='function'?e.getCoalescedEvents():[e];
     const stroke=drawLocalStrokes[drawLocalStrokes.length-1];
-    if(stroke&&stroke.points.length<120)stroke.points.push(p);
+    for(const ev of events){
+      const p=drawCanvasPoint(ev);if(!p)continue;
+      if(stroke&&stroke.points.length<120)stroke.points.push(p);
+    }
     drawRenderCanvas(drawLocalStrokes);
+    scheduleLiveDrawSave(false);
   });
-  const end=()=>{if(!drawPointerDown)return;drawPointerDown=false;const stroke=drawLocalStrokes[drawLocalStrokes.length-1];if(stroke&&stroke.points.length===1)stroke.points.push([Math.min(1,stroke.points[0][0]+0.001),stroke.points[0][1]]);drawRenderCanvas(drawLocalStrokes);saveDrawCanvas();};
+  const end=()=>{
+    if(!drawPointerDown)return;
+    drawPointerDown=false;
+    const stroke=drawLocalStrokes[drawLocalStrokes.length-1];
+    if(stroke&&stroke.points.length===1)stroke.points.push([Math.min(1,stroke.points[0][0]+0.001),stroke.points[0][1]]);
+    drawRenderCanvas(drawLocalStrokes);
+    scheduleLiveDrawSave(true);
+  };
   drawCanvas.addEventListener('pointerup',end);
   drawCanvas.addEventListener('pointercancel',end);
+  drawCanvas.addEventListener('lostpointercapture',end);
 }
 function drawCanvasPoint(e){
   const rect=drawCanvas.getBoundingClientRect();
@@ -910,10 +938,7 @@ function drawRenderCanvas(strokes){
   drawCtx.clearRect(0,0,w,h);drawCtx.fillStyle='#ffffff';drawCtx.fillRect(0,0,w,h);
   for(const stroke of (strokes||[])){
     const points=stroke.points||[];if(!points.length)continue;
-    // The color is stored inside each stroke and is therefore identical
-    // on the artist's and guesser's devices.
-    const savedColor=typeof stroke.color==='string'&&/^#[0-9a-f]{6}$/i.test(stroke.color)?stroke.color:'#20152f';
-    drawCtx.beginPath();drawCtx.strokeStyle=savedColor;drawCtx.lineWidth=Math.max(2,(Number(stroke.width)||0.006)*w);drawCtx.lineCap='round';drawCtx.lineJoin='round';
+    drawCtx.beginPath();drawCtx.strokeStyle=stroke.color||'#20152f';drawCtx.lineWidth=Math.max(2,(Number(stroke.width)||0.006)*w);drawCtx.lineCap='round';drawCtx.lineJoin='round';
     drawCtx.moveTo(points[0][0]*w,points[0][1]*h);
     for(let i=1;i<points.length;i++)drawCtx.lineTo(points[i][0]*w,points[i][1]*h);
     if(points.length===1){drawCtx.lineTo(points[0][0]*w+0.1,points[0][1]*h+0.1);}
@@ -936,14 +961,35 @@ function setDrawEraser(){
   document.querySelectorAll('.draw-color').forEach(el=>el.classList.remove('selected'));
   const eraser=document.querySelector('.draw-eraser');if(eraser)eraser.classList.add('selected');
 }
+function scheduleLiveDrawSave(immediate=false){
+  if(!drawCurrentRoomId||drawCurrentRole!=='artist')return;
+  if(drawLiveSaveTimer){clearTimeout(drawLiveSaveTimer);drawLiveSaveTimer=null;}
+  drawLiveSaveTimer=setTimeout(()=>{
+    drawLiveSaveTimer=null;
+    saveDrawCanvas();
+  },immediate?0:110);
+}
 async function saveDrawCanvas(){
-  if(!drawCurrentRoomId)return;
-  const snapshot=JSON.stringify(drawLocalStrokes);
+  if(!drawCurrentRoomId||drawCurrentRole!=='artist')return;
+  if(drawSaveInFlight){drawSaveQueued=true;return;}
+  const snapshot=JSON.parse(JSON.stringify(drawLocalStrokes));
+  const snapshotKey=JSON.stringify(snapshot);
+  if(snapshotKey===drawLastSavedKey)return;
+  drawSaveInFlight=true;
   try{
-    await friendsApi('draw_save',{roomId:drawCurrentRoomId,strokes:drawLocalStrokes});
-    drawCanvasKey=snapshot;
-    drawStatus('Рисунок и все цвета синхронизированы с другом.');
-  }catch(e){drawStatus(e.message||'Не удалось сохранить рисунок.',true);}
+    await friendsApi('draw_save',{roomId:drawCurrentRoomId,strokes:snapshot});
+    drawLastSavedKey=snapshotKey;
+  }catch(e){
+    drawStatus(e.message||'Не удалось синхронизировать рисунок. Повторяем…',true);
+    drawSaveQueued=true;
+  }finally{
+    drawSaveInFlight=false;
+    if(drawSaveQueued){
+      drawSaveQueued=false;
+      if(drawLiveSaveTimer)clearTimeout(drawLiveSaveTimer);
+      drawLiveSaveTimer=setTimeout(()=>{drawLiveSaveTimer=null;saveDrawCanvas();},80);
+    }
+  }
 }
 async function clearDrawCanvas(){
   if(drawCurrentRole!=='artist')return;
@@ -1007,12 +1053,8 @@ async function pollDrawRoom(){
     if(!document.getElementById('drawCanvas')){renderDrawRoom(data);return;}
     const serverStrokes=Array.isArray(data.room.strokes)?data.room.strokes:[];
     const key=JSON.stringify(serverStrokes);
-    if(drawCurrentRole==='guesser'&&key!==drawCanvasKey){
-      drawLocalStrokes=serverStrokes.map(stroke=>({...stroke,color:typeof stroke.color==='string'?stroke.color:'#20152f'}));
-      drawCanvasKey=key;
-      drawRenderCanvas(drawLocalStrokes);
-    }
-    if(drawCurrentRole==='artist'&&!drawPointerDown&&key!==drawCanvasKey){
+    if(drawCurrentRole==='guesser'&&key!==drawCanvasKey){drawLocalStrokes=serverStrokes;drawCanvasKey=key;drawRenderCanvas(drawLocalStrokes);}
+    if(drawCurrentRole==='artist'&&!drawPointerDown&&!drawSaveInFlight&&key!==drawCanvasKey){
       // On first response or after a reconnect, restore the last server-saved drawing.
       if(!drawCanvasKey){drawLocalStrokes=serverStrokes;drawRenderCanvas(drawLocalStrokes);}
       drawCanvasKey=key;
