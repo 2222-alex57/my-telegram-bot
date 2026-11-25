@@ -135,11 +135,140 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .avatar-portrait.small .avatar-base{font-size:27px;transform:translateY(2px)}
 .avatar-portrait .avatar-accessory{position:absolute;top:2px;right:7px;font-size:30px;line-height:1;filter:drop-shadow(0 3px 2px #0008);transform:rotate(8deg)}
 .avatar-portrait.small .avatar-accessory{top:-1px;right:0;font-size:13px}
-.avatar-portrait.accessory-glasses .avatar-accessory{top:34px;right:18px;transform:none;font-size:25px}
-.avatar-portrait.large.accessory-glasses .avatar-accessory{top:39px;right:22px;font-size:29px}
-.avatar-portrait.small.accessory-glasses .avatar-accessory{top:13px;right:5px;font-size:12px}
-.avatar-portrait.accessory-headphones .avatar-accessory{top:8px;right:1px;transform:none}
-.avatar-portrait.small.accessory-headphones .avatar-accessory{top:1px;right:-1px}
+/* Realistic glasses: visible eyes through clear lenses, arms run back toward ears */
+.avatar-portrait .avatar-glasses-temples,
+.avatar-portrait .avatar-glasses-front,
+.avatar-portrait .avatar-headphones-band,
+.avatar-portrait .avatar-headphones-cups{
+  position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible
+}
+.avatar-portrait .avatar-glasses-temples{z-index:1}
+.avatar-portrait .avatar-base{position:relative;z-index:2}
+.avatar-portrait .avatar-glasses-front{z-index:3}
+.avatar-portrait .avatar-glasses-front .lens{
+  fill:rgba(190,231,255,.10);stroke:#17233a;stroke-width:2.6;vector-effect:non-scaling-stroke
+}
+.avatar-portrait .avatar-glasses-front .lens-shine{
+  fill:none;stroke:rgba(255,255,255,.78);stroke-width:1.35;stroke-linecap:round
+}
+.avatar-portrait .avatar-glasses-front .bridge,
+.avatar-portrait .avatar-glasses-temples .temple{
+  fill:none;stroke:#17233a;stroke-width:3.3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke
+}
+.avatar-portrait .avatar-glasses-front .hinge{
+  fill:#8fdcff;stroke:#17233a;stroke-width:1.5;vector-effect:non-scaling-stroke
+}
+.avatar-portrait.small .avatar-glasses-front .lens,
+.avatar-portrait.small .avatar-glasses-front .bridge,
+.avatar-portrait.small .avatar-glasses-temples .temple{stroke-width:2.2}
+
+/* Headphones: padded ear cups sit at both sides; the curved band passes over the head */
+.avatar-portrait .avatar-headphones-band{z-index:1}
+.avatar-portrait .avatar-headphones-band .band-shadow{
+  fill:none;stroke:#151126;stroke-width:11;stroke-linecap:round;vector-effect:non-scaling-stroke
+}
+.avatar-portrait .avatar-headphones-band .band{
+  fill:none;stroke:#25223e;stroke-width:7;stroke-linecap:round;vector-effect:non-scaling-stroke
+}
+.avatar-portrait .avatar-headphones-band .band-highlight{
+  fill:none;stroke:rgba(255,255,255,.58);stroke-width:1.7;stroke-linecap:round;vector-effect:non-scaling-stroke
+}
+.avatar-portrait .avatar-headphones-cups{z-index:3}
+.avatar-portrait .avatar-headphones-cups .cup-outline{fill:#211b38;stroke:#100d20;stroke-width:2.2;vector-effect:non-scaling-stroke}
+.avatar-portrait .avatar-headphones-cups .cup{fill:url(#headphoneCupGradient);stroke:#a98bff;stroke-width:1.7;vector-effect:non-scaling-stroke}
+.avatar-portrait .avatar-headphones-cups .ear-pad{fill:#090817;opacity:.78}
+.avatar-portrait .avatar-headphones-cups .cup-highlight{fill:none;stroke:rgba(255,255,255,.6);stroke-width:1.5;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.avatar-portrait.small .avatar-headphones-cups .cup-outline{stroke-width:3.2}
+
+
+/* Baseball cap: crown follows the top of the character's head, visor rests above the eyes */
+.avatar-portrait .avatar-cap-art{
+  position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;
+  overflow:visible;filter:drop-shadow(0 2px 2px rgba(0,0,0,.42))
+}
+.avatar-portrait .avatar-cap-art .cap-crown{
+  fill:url(#avatarCapGradient);stroke:#17233a;stroke-width:1.7;stroke-linejoin:round;vector-effect:non-scaling-stroke
+}
+.avatar-portrait .avatar-cap-art .cap-visor{
+  fill:#294b91;stroke:#17233a;stroke-width:1.7;stroke-linejoin:round;vector-effect:non-scaling-stroke
+}
+.avatar-portrait .avatar-cap-art .cap-seam{
+  fill:none;stroke:rgba(255,255,255,.48);stroke-width:1.15;stroke-linecap:round;vector-effect:non-scaling-stroke
+}
+.avatar-portrait .avatar-cap-art .cap-button{fill:#d9e5ff;stroke:#17233a;stroke-width:1;vector-effect:non-scaling-stroke}
+.avatar-portrait.small .avatar-cap-art .cap-crown,
+.avatar-portrait.small .avatar-cap-art .cap-visor{stroke-width:2.2}
+
+/* Per-character fitting: the same accessory artwork adapts to each head shape. */
+.avatar-portrait{
+  --glasses-scale-x:1; --glasses-scale-y:1; --glasses-y:0%;
+  --headphones-scale-x:1; --headphones-scale-y:1; --headphones-y:0%;
+  --cap-scale-x:1; --cap-scale-y:1; --cap-y:0%;
+}
+.avatar-portrait.base-cat{
+  --glasses-scale-x:.92; --glasses-scale-y:.96; --glasses-y:0%;
+  --headphones-scale-x:.95; --headphones-scale-y:.98; --headphones-y:0%;
+  --cap-scale-x:.94; --cap-scale-y:.98; --cap-y:0%;
+}
+.avatar-portrait.base-fox{
+  --glasses-scale-x:.82; --glasses-scale-y:.93; --glasses-y:0%;
+  --headphones-scale-x:.88; --headphones-scale-y:.96; --headphones-y:0%;
+  --cap-scale-x:.88; --cap-scale-y:.94; --cap-y:-1.5%;
+}
+.avatar-portrait.base-panda{
+  --glasses-scale-x:1.04; --glasses-scale-y:1.02; --glasses-y:0%;
+  --headphones-scale-x:1.03; --headphones-scale-y:1.02; --headphones-y:0%;
+  --cap-scale-x:1.04; --cap-scale-y:1.02; --cap-y:0%;
+}
+.avatar-portrait.base-frog{
+  --glasses-scale-x:.96; --glasses-scale-y:1.02; --glasses-y:1%;
+  --headphones-scale-x:1.02; --headphones-scale-y:1.03; --headphones-y:0%;
+  --cap-scale-x:.98; --cap-scale-y:1.02; --cap-y:1%;
+}
+.avatar-portrait.base-robot{
+  --glasses-scale-x:.90; --glasses-scale-y:.94; --glasses-y:1%;
+  --headphones-scale-x:.94; --headphones-scale-y:.96; --headphones-y:0%;
+  --cap-scale-x:.92; --cap-scale-y:.94; --cap-y:-1%;
+}
+.avatar-portrait.base-alien{
+  --glasses-scale-x:1.02; --glasses-scale-y:1.04; --glasses-y:1%;
+  --headphones-scale-x:1.06; --headphones-scale-y:1.04; --headphones-y:0%;
+  --cap-scale-x:1.00; --cap-scale-y:1.00; --cap-y:-1%;
+}
+.avatar-portrait.base-dragon{
+  --glasses-scale-x:1.04; --glasses-scale-y:1.00; --glasses-y:0%;
+  --headphones-scale-x:1.05; --headphones-scale-y:1.02; --headphones-y:0%;
+  --cap-scale-x:1.04; --cap-scale-y:1.02; --cap-y:0%;
+}
+.avatar-portrait.base-ghost{
+  --glasses-scale-x:.88; --glasses-scale-y:.96; --glasses-y:0%;
+  --headphones-scale-x:.91; --headphones-scale-y:.98; --headphones-y:0%;
+  --cap-scale-x:.89; --cap-scale-y:.96; --cap-y:0%;
+}
+.avatar-portrait .avatar-glasses-temples,
+.avatar-portrait .avatar-glasses-front{
+  transform:translateY(var(--glasses-y)) scale(var(--glasses-scale-x),var(--glasses-scale-y));
+  transform-origin:50% 50%;
+}
+.avatar-portrait .avatar-headphones-band,
+.avatar-portrait .avatar-headphones-cups{
+  transform:translateY(var(--headphones-y)) scale(var(--headphones-scale-x),var(--headphones-scale-y));
+  transform-origin:50% 50%;
+}
+.avatar-portrait .avatar-cap-art{
+  transform:translateY(var(--cap-y)) scale(var(--cap-scale-x),var(--cap-scale-y));
+  transform-origin:50% 50%;
+}
+
+/* Crown and cap stay centered on top of the head */
+.avatar-portrait .avatar-accessory{position:absolute;top:2px;right:7px;font-size:30px;line-height:1;filter:drop-shadow(0 3px 2px #0008);transform:rotate(8deg);z-index:4}
+.avatar-portrait.small .avatar-accessory{top:-1px;right:0;font-size:13px}
+.avatar-portrait.accessory-crown .avatar-accessory{top:-3px;left:50%;right:auto;transform:translateX(-50%);font-size:34px;z-index:4}
+.avatar-portrait.large.accessory-crown .avatar-accessory{top:-4px;font-size:38px}
+.avatar-portrait.small.accessory-crown .avatar-accessory{top:-3px;font-size:16px}
+.avatar-portrait.accessory-cap .avatar-accessory{top:0;left:50%;right:auto;transform:translateX(-50%);font-size:34px;z-index:4}
+.avatar-portrait.large.accessory-cap .avatar-accessory{top:-2px;font-size:38px}
+.avatar-portrait.small.accessory-cap .avatar-accessory{top:-2px;font-size:16px}
 .avatar-group{margin-top:14px}
 .avatar-group-title{font-size:13px;font-weight:850;color:#f0ddff;margin-bottom:8px}
 .avatar-options{display:flex;gap:8px;flex-wrap:wrap}
@@ -149,6 +278,17 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .avatar-option.bg-swatch.selected{border-color:#ffe477;box-shadow:0 0 0 2px #ffdc6844}
 .avatar-builder-status{min-height:20px;margin:9px 0 0;font-size:12px;color:#bca9d6}
 .avatar-display{display:flex;justify-content:center;margin:8px 0 14px}
+/* Controlled vector faces: eye positions are stable across platforms and font sets. */
+.avatar-portrait .avatar-base{
+  position:absolute;inset:0;z-index:2;display:block;width:100%;height:100%;
+  margin:0;padding:0;font-size:0;line-height:0;transform:none;filter:none;
+}
+.avatar-portrait .avatar-character{display:block;width:100%;height:100%;overflow:visible}
+/* Glasses use the same coordinates as the vector eyes. Do not translate or scale them independently. */
+.avatar-portrait .avatar-glasses-temples,
+.avatar-portrait .avatar-glasses-front{transform:none!important;transform-origin:50% 50%}
+.avatar-portrait .avatar-glasses-front .lens{fill:rgba(205,238,255,.055);}
+
 .friend-avatar{width:auto;height:auto;background:none;border-radius:0;display:block;flex-shrink:0;font-size:inherit}
 @media(max-width:380px){body{padding-left:12px;padding-right:12px}.tabs{gap:5px;padding-left:7px;padding-right:7px}.tabs button{font-size:10px}.hero{padding:19px}.hero h1{font-size:24px}}
 
@@ -210,16 +350,159 @@ function render(){resetQuests();document.getElementById('balance').textContent=s
 // Заполните два значения после создания Edge Function. Публичный anon key допустим в клиенте.
 const FRIENDS_CONFIG={SUPABASE_URL:'https://dxsekydmpmaskmxafapx.supabase.co',SUPABASE_ANON_KEY:'sb_publishable_OWmjCdIYWm24udIT0PSkmA_qPhBU96X',BOT_USERNAME:'SkillRushGameBot'};
 let friendsMe=null;
-const AVATAR_DEFAULT={base:'cookie',accessory:'none',background:'purple'};
-const AVATAR_BASES=[{id:'cookie',label:'Печенька',emoji:'🍪'},{id:'donut',label:'Пончик',emoji:'🍩'},{id:'cupcake',label:'Кекс',emoji:'🧁'},{id:'choco',label:'Шоколад',emoji:'🍫'}];
+const AVATAR_DEFAULT={base:'cat',accessory:'none',background:'purple'};
+// Individual eye coordinates for each emoji character (SVG viewBox: 0-100).
+// Frog eyes are naturally higher; ghost/fox/robot faces sit at slightly different levels.
+// These eye centers are shared by the vector character artwork and glasses.
+// Because the faces and glasses use the same 100x100 SVG coordinate system,
+// the lenses sit around—not over—the eyes at every display size.
+const AVATAR_EYE_FIT={
+  cat:{left:37,right:63,y:48,w:20,h:18},
+  fox:{left:38,right:62,y:47,w:19,h:17},
+  panda:{left:37,right:63,y:48,w:21,h:18},
+  frog:{left:35,right:65,y:35,w:20,h:18},
+  robot:{left:38,right:62,y:48,w:19,h:18},
+  alien:{left:36,right:64,y:49,w:21,h:19},
+  dragon:{left:37,right:63,y:47,w:20,h:18},
+  ghost:{left:39,right:61,y:49,w:18,h:16}
+};
+const AVATAR_BASES=[{id:'cat',label:'Кот',emoji:'🐱'},{id:'fox',label:'Лиса',emoji:'🦊'},{id:'panda',label:'Панда',emoji:'🐼'},{id:'frog',label:'Лягушка',emoji:'🐸'},{id:'robot',label:'Робот',emoji:'🤖'},{id:'alien',label:'Инопланетянин',emoji:'👽'},{id:'dragon',label:'Дракон',emoji:'🐲'},{id:'ghost',label:'Привидение',emoji:'👻'}];
 const AVATAR_ACCESSORIES=[{id:'none',label:'Без аксессуара',emoji:'🚫'},{id:'crown',label:'Корона',emoji:'👑'},{id:'glasses',label:'Очки',emoji:'🕶️'},{id:'cap',label:'Кепка',emoji:'🧢'},{id:'headphones',label:'Наушники',emoji:'🎧'},{id:'star',label:'Звезда',emoji:'⭐'}];
 const AVATAR_BACKGROUNDS=[{id:'purple',label:'Фиолетовый',color:'linear-gradient(145deg,#b77cff,#6024a8)'},{id:'gold',label:'Золотой',color:'linear-gradient(145deg,#fff0a0,#e99b24)'},{id:'blue',label:'Синий',color:'linear-gradient(145deg,#9be8ff,#2876c9)'},{id:'pink',label:'Розовый',color:'linear-gradient(145deg,#ffc3e8,#ce579e)'},{id:'green',label:'Зелёный',color:'linear-gradient(145deg,#b7ffc9,#35a879)'}];
 let avatarDraft={...AVATAR_DEFAULT};
 let avatarSaved={...AVATAR_DEFAULT};
-function safeAvatar(value){const a=value&&typeof value==='object'?value:{};return {base:AVATAR_BASES.some(x=>x.id===a.base)?a.base:'cookie',accessory:AVATAR_ACCESSORIES.some(x=>x.id===a.accessory)?a.accessory:'none',background:AVATAR_BACKGROUNDS.some(x=>x.id===a.background)?a.background:'purple'};}
+function safeAvatar(value){const a=value&&typeof value==='object'?value:{};const legacyBases={cookie:'cat',donut:'fox',cupcake:'panda',choco:'robot'};const requestedBase=legacyBases[a.base]||a.base;return {base:AVATAR_BASES.some(x=>x.id===requestedBase)?requestedBase:'cat',accessory:AVATAR_ACCESSORIES.some(x=>x.id===a.accessory)?a.accessory:'none',background:AVATAR_BACKGROUNDS.some(x=>x.id===a.background)?a.background:'purple'};}
+function avatarCharacterMarkup(id){
+  const eyes=(fit, color='#fff')=>`<g class="face-eyes">
+    <ellipse cx="${fit.left}" cy="${fit.y}" rx="5.2" ry="6.4" fill="${color}"/>
+    <ellipse cx="${fit.right}" cy="${fit.y}" rx="5.2" ry="6.4" fill="${color}"/>
+    <ellipse cx="${fit.left+0.8}" cy="${fit.y+0.8}" rx="2.7" ry="4.0" fill="#21152b"/>
+    <ellipse cx="${fit.right+0.8}" cy="${fit.y+0.8}" rx="2.7" ry="4.0" fill="#21152b"/>
+    <circle cx="${fit.left+1.8}" cy="${fit.y-1.0}" r="1.15" fill="#fff"/>
+    <circle cx="${fit.right+1.8}" cy="${fit.y-1.0}" r="1.15" fill="#fff"/>
+  </g>`;
+  const fit=AVATAR_EYE_FIT[id]||AVATAR_EYE_FIT.cat;
+  let art='';
+  switch(id){
+    case 'cat': art=`
+      <path d="M17 39 L21 12 Q22 8 27 13 L42 27 Q50 24 58 27 L73 13 Q78 8 79 13 L83 40 Q88 57 77 74 Q66 88 50 88 Q34 88 23 74 Q12 57 17 39Z" fill="#e99b55" stroke="#6f3a2a" stroke-width="2.5"/>
+      <path d="M24 29 L25 17 L37 29Z M76 29 L75 17 L63 29Z" fill="#f6b3b2"/>
+      <path d="M21 48 Q22 32 50 31 Q78 32 79 48 L76 69 Q66 84 50 84 Q34 84 24 69Z" fill="#f5bd7d"/>
+      ${eyes(fit)}
+      <ellipse cx="42" cy="64" rx="9" ry="7" fill="#fff0db"/><ellipse cx="58" cy="64" rx="9" ry="7" fill="#fff0db"/>
+      <path d="M47 61 Q50 58 53 61 Q52 66 50 66 Q48 66 47 61Z" fill="#7e3544"/><path d="M50 66 Q47 72 43 69 M50 66 Q53 72 57 69" fill="none" stroke="#6d3740" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M34 63 L19 60 M34 67 L18 69 M66 63 L81 60 M66 67 L82 69" stroke="#6f3a2a" stroke-width="1.5" stroke-linecap="round"/>`;
+      break;
+    case 'fox': art=`
+      <path d="M16 43 L20 9 Q21 5 26 12 L43 29 Q50 25 57 29 L74 12 Q79 5 80 9 L84 43 Q87 65 72 80 Q61 90 50 91 Q39 90 28 80 Q13 65 16 43Z" fill="#f17b35" stroke="#873e26" stroke-width="2.5"/>
+      <path d="M24 28 L24 15 L37 29Z M76 28 L76 15 L63 29Z" fill="#ffcf91"/>
+      <path d="M22 54 Q31 36 50 38 Q69 36 78 54 Q72 79 50 86 Q28 79 22 54Z" fill="#fff0d8"/>
+      ${eyes(fit)}
+      <path d="M42 64 Q50 57 58 64 Q56 78 50 80 Q44 78 42 64Z" fill="#fff9ed"/><path d="M46 65 Q50 61 54 65 Q53 69 50 69 Q47 69 46 65Z" fill="#55313a"/>
+      <path d="M50 69 Q46 74 42 71 M50 69 Q54 74 58 71" fill="none" stroke="#74433a" stroke-width="1.7" stroke-linecap="round"/>`;
+      break;
+    case 'panda': art=`
+      <circle cx="24" cy="29" r="13" fill="#24232b"/><circle cx="76" cy="29" r="13" fill="#24232b"/>
+      <path d="M16 51 Q16 20 50 20 Q84 20 84 51 Q84 85 50 87 Q16 85 16 51Z" fill="#f4f1e9" stroke="#34313a" stroke-width="2.5"/>
+      <ellipse cx="36" cy="46" rx="10" ry="13" transform="rotate(25 36 46)" fill="#34313a"/><ellipse cx="64" cy="46" rx="10" ry="13" transform="rotate(-25 64 46)" fill="#34313a"/>
+      ${eyes(fit,'#f8f5ef')}
+      <ellipse cx="42" cy="67" rx="8" ry="6" fill="#fff"/><ellipse cx="58" cy="67" rx="8" ry="6" fill="#fff"/><ellipse cx="50" cy="64" rx="4" ry="3" fill="#26232a"/>
+      <path d="M50 67 Q46 73 42 70 M50 67 Q54 73 58 70" fill="none" stroke="#373039" stroke-width="1.7" stroke-linecap="round"/>`;
+      break;
+    case 'frog': art=`
+      <path d="M13 54 Q12 37 25 34 Q29 16 39 22 Q50 12 61 22 Q72 16 76 34 Q89 37 87 54 Q86 81 50 85 Q14 81 13 54Z" fill="#69c85b" stroke="#286e43" stroke-width="2.5"/>
+      <ellipse cx="35" cy="35" rx="12" ry="13" fill="#79d965" stroke="#286e43" stroke-width="2"/><ellipse cx="65" cy="35" rx="12" ry="13" fill="#79d965" stroke="#286e43" stroke-width="2"/>
+      ${eyes(fit,'#fff')}
+      <path d="M33 63 Q50 76 67 63" fill="none" stroke="#245d3a" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="25" cy="60" rx="5" ry="3" fill="#a4ed83" opacity=".8"/><ellipse cx="75" cy="60" rx="5" ry="3" fill="#a4ed83" opacity=".8"/>`;
+      break;
+    case 'robot': art=`
+      <path d="M50 11 L50 20 M45 11 L55 11" stroke="#9cc8e8" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="9" r="4" fill="#ffca62" stroke="#273d5c" stroke-width="1.5"/>
+      <rect x="15" y="22" width="70" height="66" rx="17" fill="#9db8cc" stroke="#344b65" stroke-width="3"/><rect x="21" y="29" width="58" height="49" rx="11" fill="#d6e4e8"/>
+      <path d="M15 46 L9 51 L9 65 L16 68 M85 46 L91 51 L91 65 L84 68" fill="#7694ac" stroke="#344b65" stroke-width="2"/>
+      ${eyes(fit,'#ecfbff')}
+      <path d="M39 69 Q50 75 61 69" fill="none" stroke="#39758b" stroke-width="2.4" stroke-linecap="round"/>`;
+      break;
+    case 'alien': art=`
+      <path d="M50 9 Q80 11 84 42 Q89 75 66 88 Q50 96 34 88 Q11 75 16 42 Q20 11 50 9Z" fill="#8cdb7b" stroke="#397b58" stroke-width="2.5"/>
+      <path d="M25 34 Q50 18 75 34" fill="none" stroke="#baf59b" stroke-width="3" stroke-linecap="round"/>
+      ${eyes(fit,'#f7fff2')}
+      <path d="M43 69 Q50 74 57 69" fill="none" stroke="#397b58" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="28" cy="63" r="2" fill="#baf59b"/><circle cx="72" cy="63" r="2" fill="#baf59b"/>`;
+      break;
+    case 'dragon': art=`
+      <path d="M22 33 L16 13 Q15 8 21 13 L42 27 Q50 24 58 27 L79 13 Q85 8 84 13 L78 37 Q88 55 76 76 Q65 88 50 88 Q35 88 24 76 Q12 55 22 33Z" fill="#62b66e" stroke="#286044" stroke-width="2.5"/>
+      <path d="M24 28 L19 17 L36 31 M76 28 L81 17 L64 31" fill="#e6c36a" stroke="#286044" stroke-width="1.5"/>
+      ${eyes(fit,'#fff4dc')}
+      <path d="M30 62 Q50 52 70 62 Q68 80 50 82 Q32 80 30 62Z" fill="#8bd17a" stroke="#286044" stroke-width="1.5"/>
+      <ellipse cx="43" cy="68" rx="2" ry="2.8" fill="#28513c"/><ellipse cx="57" cy="68" rx="2" ry="2.8" fill="#28513c"/>
+      <path d="M43 77 Q50 80 57 77" fill="none" stroke="#28513c" stroke-width="1.6" stroke-linecap="round"/>`;
+      break;
+    case 'ghost': art=`
+      <path d="M18 78 L18 48 Q18 17 50 14 Q82 17 82 48 L82 80 Q75 75 68 82 Q59 75 50 83 Q41 75 32 82 Q25 75 18 78Z" fill="#e8f5ff" stroke="#7694b8" stroke-width="2.5"/>
+      <path d="M29 28 Q40 18 50 19" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/>
+      ${eyes(fit,'#fff')}
+      <ellipse cx="50" cy="66" rx="4" ry="5" fill="#51647f"/>`;
+      break;
+    default: art='';
+  }
+  return `<svg class="avatar-character" viewBox="0 0 100 100" role="img" aria-label="${id}">${art}</svg>`;
+}
+
 function avatarMarkup(value,size='large'){
-  const a=safeAvatar(value);const base=AVATAR_BASES.find(x=>x.id===a.base)||AVATAR_BASES[0];const accessory=AVATAR_ACCESSORIES.find(x=>x.id===a.accessory)||AVATAR_ACCESSORIES[0];
-  return `<div class="avatar-portrait ${size} bg-${a.background} accessory-${a.accessory}" aria-label="Аватарка: ${base.label}"><span class="avatar-base">${base.emoji}</span>${a.accessory!=='none'?`<span class="avatar-accessory">${accessory.emoji}</span>`:''}</div>`;
+  const a=safeAvatar(value);
+  const base=AVATAR_BASES.find(x=>x.id===a.base)||AVATAR_BASES[0];
+  const accessory=AVATAR_ACCESSORIES.find(x=>x.id===a.accessory)||AVATAR_ACCESSORIES[0];
+  // Eye positions are tuned per character rather than using one generic glasses height.
+  // Values use the same 0-100 coordinate space as the avatar SVG layers.
+  const eyeFit = AVATAR_EYE_FIT[a.base] || AVATAR_EYE_FIT.cat;
+  const glasses = a.accessory==='glasses' ? `
+    <svg class="avatar-glasses-temples" viewBox="0 0 100 100" aria-hidden="true">
+      <path class="temple" d="M${(eyeFit.left-eyeFit.w/2).toFixed(1)} ${eyeFit.y} Q${(eyeFit.left-eyeFit.w/2-5).toFixed(1)} ${eyeFit.y+1} 8 ${eyeFit.y+5} L4 ${eyeFit.y+2} M${(eyeFit.right+eyeFit.w/2).toFixed(1)} ${eyeFit.y} Q${(eyeFit.right+eyeFit.w/2+5).toFixed(1)} ${eyeFit.y+1} 92 ${eyeFit.y+5} L96 ${eyeFit.y+2}"/>
+    </svg>` : '';
+  const glassesFront = a.accessory==='glasses' ? `
+    <svg class="avatar-glasses-front" viewBox="0 0 100 100" aria-hidden="true">
+      <rect class="lens" x="${(eyeFit.left-eyeFit.w/2).toFixed(1)}" y="${(eyeFit.y-eyeFit.h/2).toFixed(1)}" width="${eyeFit.w}" height="${eyeFit.h}" rx="${(eyeFit.h*.30).toFixed(1)}"/>
+      <rect class="lens" x="${(eyeFit.right-eyeFit.w/2).toFixed(1)}" y="${(eyeFit.y-eyeFit.h/2).toFixed(1)}" width="${eyeFit.w}" height="${eyeFit.h}" rx="${(eyeFit.h*.30).toFixed(1)}"/>
+      <path class="bridge" d="M${(eyeFit.left+eyeFit.w/2).toFixed(1)} ${eyeFit.y-1} Q50 ${eyeFit.y-4} ${(eyeFit.right-eyeFit.w/2).toFixed(1)} ${eyeFit.y-1}"/>
+      <path class="lens-shine" d="M${(eyeFit.left-eyeFit.w/2+3).toFixed(1)} ${(eyeFit.y-eyeFit.h/2+4).toFixed(1)} Q${(eyeFit.left-eyeFit.w/2+7).toFixed(1)} ${(eyeFit.y-eyeFit.h/2+1).toFixed(1)} ${(eyeFit.left-eyeFit.w/2+12).toFixed(1)} ${(eyeFit.y-eyeFit.h/2+3).toFixed(1)} M${(eyeFit.right-eyeFit.w/2+3).toFixed(1)} ${(eyeFit.y-eyeFit.h/2+4).toFixed(1)} Q${(eyeFit.right-eyeFit.w/2+7).toFixed(1)} ${(eyeFit.y-eyeFit.h/2+1).toFixed(1)} ${(eyeFit.right-eyeFit.w/2+12).toFixed(1)} ${(eyeFit.y-eyeFit.h/2+3).toFixed(1)}"/>
+      <circle class="hinge" cx="${(eyeFit.left-eyeFit.w/2).toFixed(1)}" cy="${eyeFit.y}" r="1.7"/>
+      <circle class="hinge" cx="${(eyeFit.right+eyeFit.w/2).toFixed(1)}" cy="${eyeFit.y}" r="1.7"/>
+    </svg>` : '';
+  const headphoneBand = a.accessory==='headphones' ? `
+    <svg class="avatar-headphones-band" viewBox="0 0 100 100" aria-hidden="true">
+      <path class="band-shadow" d="M17 57 C15 17 29 7 50 7 C71 7 85 17 83 57"/>
+      <path class="band" d="M17 57 C15 17 29 7 50 7 C71 7 85 17 83 57"/>
+      <path class="band-highlight" d="M23 42 C23 19 33 13 50 13 C67 13 77 19 77 42"/>
+    </svg>` : '';
+  const headphoneCups = a.accessory==='headphones' ? `
+    <svg class="avatar-headphones-cups" viewBox="0 0 100 100" aria-hidden="true">
+      <defs><linearGradient id="headphoneCupGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b58bff"/><stop offset=".48" stop-color="#7045c6"/><stop offset="1" stop-color="#38235f"/></linearGradient></defs>
+      <path class="cup-outline" d="M10 43 Q8 40 8 46 L8 65 Q8 74 16 75 L22 73 L22 42 L16 40 Q12 40 10 43Z"/>
+      <path class="cup" d="M13 44 Q12 42 15 42 L20 44 L20 70 L15 72 Q12 72 12 68 L12 47 Q12 45 13 44Z"/>
+      <path class="ear-pad" d="M16 48 Q18 46 19 49 L19 65 Q18 69 16 66Z"/>
+      <path class="cup-highlight" d="M14 48 Q15 45 17 47"/>
+      <path class="cup-outline" d="M90 43 Q92 40 92 46 L92 65 Q92 74 84 75 L78 73 L78 42 L84 40 Q88 40 90 43Z"/>
+      <path class="cup" d="M87 44 Q88 42 85 42 L80 44 L80 70 L85 72 Q88 72 88 68 L88 47 Q88 45 87 44Z"/>
+      <path class="ear-pad" d="M84 48 Q82 46 81 49 L81 65 Q82 69 84 66Z"/>
+      <path class="cup-highlight" d="M86 48 Q85 45 83 47"/>
+    </svg>` : '';
+  const capArtwork = a.accessory==='cap' ? `
+    <svg class="avatar-cap-art" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <linearGradient id="avatarCapGradient" x1="0" y1="0" x2="0.9" y2="1">
+          <stop offset="0" stop-color="#79a8ff"/><stop offset="0.55" stop-color="#3568c8"/><stop offset="1" stop-color="#1b3678"/>
+        </linearGradient>
+      </defs>
+      <path class="cap-crown" d="M27 39 C27 22 36 12 50 12 C64 12 73 23 73 39 C60 35 41 35 27 42 Z"/>
+      <path class="cap-seam" d="M50 14 C49 22 49 29 50 36 M36 19 Q32 26 32 36 M64 19 Q68 26 68 36"/>
+      <circle class="cap-button" cx="50" cy="13.5" r="2.2"/>
+      <path class="cap-visor" d="M27 37 C39 32 62 32 77 39 C73 45 62 47 49 45 C38 44 30 42 25 40 Q24 38 27 37 Z"/>
+      <path class="cap-seam" d="M30 39 Q51 34 73 40"/>
+    </svg>` : '';
+  const emojiAccessory = a.accessory!=='none' && !['glasses','headphones','cap'].includes(a.accessory)
+    ? `<span class="avatar-accessory">${accessory.emoji}</span>` : '';
+  return `<div class="avatar-portrait ${size} base-${a.base} bg-${a.background} accessory-${a.accessory}" aria-label="Аватарка: ${base.label}">${glasses}<span class="avatar-base">${avatarCharacterMarkup(a.base)}</span>${glassesFront}${headphoneBand}${headphoneCups}${capArtwork}${emojiAccessory}</div>`;
 }
 function avatarStatus(message,isError=false){const el=document.getElementById('avatarBuilderStatus');if(el){el.textContent=message;el.style.color=isError?'#ff9b9b':'#bca9d6';}}
 function renderAvatarBuilder(){
