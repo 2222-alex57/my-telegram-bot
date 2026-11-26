@@ -464,35 +464,15 @@ body{font-family:'Nunito Sans',ui-rounded,'Segoe UI',Arial,sans-serif}
 <main>
 <section class="page active" id="home"><div class="daily-rewards"><div class="daily-rewards-head"><h2>🎁 Ежедневные призы</h2><span class="daily-streak" id="dailyStreak">🔥 Серия: 0 дней</span><div class="daily-help"><button class="daily-help-button" type="button" aria-label="Как работают ежедневные призы" aria-expanded="false" onclick="toggleDailyHelp()">?</button><div class="daily-help-panel" id="dailyHelpPanel"><strong>Как это работает?</strong><br>Каждый день забирай свой приз, чтобы продолжить серию. Если пропустишь хотя бы один день, серия сбросится и начнётся с 1-го дня. После 7-го дня за каждый следующий день начисляется по 100 Хрумсов. Полученные ранее Хрумсы не пропадают.</div></div></div><div class="daily-reward-grid" id="dailyRewardGrid"></div><button class="daily-reward-action" id="dailyRewardButton" onclick="claimDailyReward()">Забрать приз</button><p class="daily-reward-note" id="dailyRewardNote"></p></div><h2>🔥 Популярные игры</h2><div class="grid" id="games"></div><h2>🎯 Твои задания</h2><div class="card"><div id="homequests"></div><button onclick="showPage('quests')" style="width:100%;margin-top:12px">Все квесты →</button></div></section>
 <section class="page" id="gamespage">
-  <div class="feature-banner mini-games-banner" id="miniGamesBanner" role="button" tabindex="0" aria-expanded="false" aria-controls="miniGamesContent" onclick="toggleMiniGames()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMiniGames()}">
+  <div class="feature-banner mini-games-banner" id="miniGamesBanner" role="button" tabindex="0" aria-expanded="false" aria-controls="miniGamesScreen" onclick="openFeatureScreen('games')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openFeatureScreen('games')}">
     <span class="feature-icon" aria-hidden="true">🍪</span>
-    <span class="feature-copy"><strong>МИНИ-ИГРЫ</strong><small>Испытай удачу, память и реакцию</small><em>Нажми, чтобы открыть игры ↓</em></span>
+    <span class="feature-copy"><strong>МИНИ-ИГРЫ</strong><small>Испытай удачу, память и реакцию</small><em>Нажми, чтобы открыть игры →</em></span>
     <span class="feature-floater floater-one" aria-hidden="true">⚡</span><span class="feature-floater floater-two" aria-hidden="true">🎲</span><span class="feature-floater floater-three" aria-hidden="true">🧩</span>
   </div>
-  <div id="miniGamesContent" class="feature-content" hidden><div class="grid" id="allgames"></div></div>
-  <div class="feature-banner cases-banner" id="casesBanner" role="button" tabindex="0" aria-expanded="false" aria-controls="casesContent" onclick="toggleCaseCatalog()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCaseCatalog()}">
+  <div class="feature-banner cases-banner" id="casesBanner" role="button" tabindex="0" aria-expanded="false" aria-controls="casesScreen" onclick="openFeatureScreen('cases')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openFeatureScreen('cases')}">
     <span class="feature-icon case-feature-icon" aria-hidden="true">🎁</span>
-    <span class="feature-copy"><strong>КЕЙСЫ</strong><small>Открывай кейсы и забирай Хрумсы</small><em>Нажми, чтобы посмотреть все кейсы ↓</em></span>
+    <span class="feature-copy"><strong>КЕЙСЫ</strong><small>Открывай кейсы и забирай Хрумсы</small><em>Нажми, чтобы посмотреть все кейсы →</em></span>
     <span class="feature-floater case-floater-one" aria-hidden="true">🍪</span><span class="feature-floater case-floater-two" aria-hidden="true">✨</span><span class="feature-floater case-floater-three" aria-hidden="true">💎</span>
-  </div>
-  <div id="casesContent" class="feature-content cases-content" hidden>
-  <div id="caseCatalog">
-    <div class="card case-entry" role="button" tabindex="0" onclick="showHrumsyCaseDetail()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showHrumsyCaseDetail()}">
-      <div class="case-entry-avatar" aria-hidden="true"><span>🍪</span></div>
-      <div class="case-entry-copy"><strong>🍪 Хрум-кейс</strong><p>Открой кейс и посмотри, какие призы можно получить.</p><span class="case-entry-link">Перейти к кейсу →</span></div>
-    </div>
-  </div>
-  <div id="hrumsyCaseDetail" hidden>
-    <button class="secondary case-back" type="button" onclick="hideHrumsyCaseDetail()">← Назад к кейсам</button>
-    <div class="card case-card">
-      <div class="case-head"><h2>🍪 Хрум-кейс</h2><span class="case-price">250 🍪</span></div>
-      <div class="case-art" id="hrumsyCaseArt"><div class="case-box" id="hrumsyCaseBox">🍪</div><div class="case-reel-window"><div class="case-pointer" aria-hidden="true"></div><div class="case-reel" aria-label="Прокручивающиеся призы"><div class="case-reel-track" id="caseReelTrack"></div></div></div><div class="case-art-copy"><strong>Хрум-кейс</strong>Внутри — один из 10 вариантов награды. Нажми «Открыть», чтобы запустить прокрутку призов.</div></div>
-      <div class="case-prizes" id="casePrizes"></div>
-      <button class="case-open" id="caseOpenButton" onclick="openHrumsyCase()">Открыть за 250 🍪</button>
-      <p class="case-note" id="caseNote">Загружаем облачный баланс…</p>
-      <div class="case-result" id="caseResult" hidden></div>
-    </div>
-  </div>
   </div>
 </section>
 <section class="page" id="quests">
@@ -554,6 +534,38 @@ body{font-family:'Nunito Sans',ui-rounded,'Segoe UI',Arial,sans-serif}
     <div class="quest-screen-list" id="weeklyFullList"></div>
   </div>
 </div>
+<div class="quest-screen" id="miniGamesScreen" aria-hidden="true">
+  <div class="quest-screen-inner">
+    <button class="secondary quest-screen-back" type="button" onclick="closeFeatureScreens()">← Назад</button>
+    <h1 class="quest-screen-title">🎮 Мини-игры</h1>
+    <p class="quest-screen-subtitle">Выбирай игру и начинай зарабатывать Хрумсы.</p>
+    <div class="grid" id="allgames"></div>
+  </div>
+</div>
+<div class="quest-screen" id="casesScreen" aria-hidden="true">
+  <div class="quest-screen-inner cases-content">
+    <button class="secondary quest-screen-back" type="button" onclick="closeFeatureScreens()">← Назад</button>
+    <h1 class="quest-screen-title">🎁 Кейсы</h1>
+    <p class="quest-screen-subtitle">Открывай кейсы и забирай Хрумсы.</p>
+    <div id="caseCatalog">
+      <div class="card case-entry" role="button" tabindex="0" onclick="showHrumsyCaseDetail()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showHrumsyCaseDetail()}">
+        <div class="case-entry-avatar" aria-hidden="true"><span>🍪</span></div>
+        <div class="case-entry-copy"><strong>🍪 Хрум-кейс</strong><p>Открой кейс и посмотри, какие призы можно получить.</p><span class="case-entry-link">Перейти к кейсу →</span></div>
+      </div>
+    </div>
+    <div id="hrumsyCaseDetail" hidden>
+      <button class="secondary case-back" type="button" onclick="hideHrumsyCaseDetail()">← Назад к кейсам</button>
+      <div class="card case-card">
+        <div class="case-head"><h2>🍪 Хрум-кейс</h2><span class="case-price">250 🍪</span></div>
+        <div class="case-art" id="hrumsyCaseArt"><div class="case-box" id="hrumsyCaseBox">🍪</div><div class="case-reel-window"><div class="case-pointer" aria-hidden="true"></div><div class="case-reel" aria-label="Прокручивающиеся призы"><div class="case-reel-track" id="caseReelTrack"></div></div></div><div class="case-art-copy"><strong>Хрум-кейс</strong>Внутри — один из 10 вариантов награды. Нажми «Открыть», чтобы запустить прокрутку призов.</div></div>
+        <div class="case-prizes" id="casePrizes"></div>
+        <button class="case-open" id="caseOpenButton" onclick="openHrumsyCase()">Открыть за 250 🍪</button>
+        <p class="case-note" id="caseNote">Загружаем облачный баланс…</p>
+        <div class="case-result" id="caseResult" hidden></div>
+      </div>
+    </div>
+  </div>
+</div>
 <nav class="tabs" aria-label="Основная навигация"><button class="active" onclick="showPage('home',this)">🏠 Главная</button><button onclick="showPage('gamespage',this)">🎮 Игры</button><button onclick="showPage('quests',this)">🎯 Квесты</button><button onclick="showPage('profile',this)">👤 Профиль</button><button onclick="showPage('friendspage',this)">👥 Друзья</button></nav>
 <div class="modal" id="modal"><div class="modal-box"><h2 id="gameTitle">Игра</h2><div id="gameContent"></div><button class="secondary" onclick="closeGame()">Закрыть</button></div></div>
 <script>
@@ -598,13 +610,29 @@ function renderFullQuestScreens(){
   if(daily)daily.innerHTML=dailyTasks.map(taskHTML).join('');
   if(weekly)weekly.innerHTML=weeklyTasks.map(taskHTML).join('');
 }
-function showPage(id,button){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));const page=document.getElementById(id);if(!page)return;page.classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];const tab=document.querySelectorAll('.tabs button')[index];if(tab)tab.classList.add('active')}if(id!=='gamespage')hideHrumsyCaseDetail();if(id==='friendspage')loadFriends();if(id==='profile')loadAvatarProfile()}
+function showPage(id,button){closeFeatureScreens();closeQuestScreens();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));const page=document.getElementById(id);if(!page)return;page.classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];const tab=document.querySelectorAll('.tabs button')[index];if(tab)tab.classList.add('active')}if(id!=='gamespage')hideHrumsyCaseDetail();if(id==='friendspage')loadFriends();if(id==='profile')loadAvatarProfile()}
 function taskHTML(t){const period=t.id.startsWith('d-')?'d':'w',data=period==='d'?state.daily:state.weekly,value=data[t.key]||0,done=value>=t.goal,claimed=state.claimed.includes(t.id);return `<div class="card quest"><div class="quest-top"><span class="quest-title">${t.name}</span><span class="quest-reward">+${t.reward} 🍪</span></div><div class="quest-progress"><div style="width:${Math.min(100,value/t.goal*100)}%"></div></div><div class="quest-bottom"><small>${Math.min(value,t.goal)} / ${t.goal}</small><button class="claim" ${!done||claimed?'disabled':''} onclick="claimQuest('${t.id}',${t.reward})">${claimed?'Получено':done?'Забрать':'В процессе'}</button></div></div>`}
 async function claimQuest(id,reward){if(!progressCloudReady||progressCloudBusy||state.claimed.includes(id))return;const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks,t=tasks.find(x=>x.id===id),data=id.startsWith('d-')?state.daily:state.weekly;if(!t||data[t.key]<t.goal)return;progressCloudBusy=true;render();try{const result=await friendsApi('progress_quest_claim',{taskId:id});applyCloudProgress(result.progress)}catch(e){alert(e.message||'Не удалось забрать награду.')}finally{progressCloudBusy=false;render()}}
 function gameCard(g){return `<div class="card game" onclick="openGame('${g.id}')"><div class="emoji">${g.emoji}</div><strong>${g.name}</strong><p>${g.desc}</p><div class="reward">${g.id==='draw'?'🎨 С другом · 60 секунд':`🏆 До ${g.reward} Хрумсов`}</div></div>`}
 
-function toggleMiniGames(){const content=document.getElementById('miniGamesContent'),banner=document.getElementById('miniGamesBanner');if(!content||!banner)return;const open=content.hidden;content.hidden=!open;banner.setAttribute('aria-expanded',String(open));banner.classList.toggle('expanded',open);const hint=banner.querySelector('.feature-copy em');if(hint)hint.textContent=open?'Нажми, чтобы свернуть игры ↑':'Нажми, чтобы открыть игры ↓';}
-function toggleCaseCatalog(){const content=document.getElementById('casesContent'),banner=document.getElementById('casesBanner');if(!content||!banner)return;const open=content.hidden;content.hidden=!open;banner.setAttribute('aria-expanded',String(open));banner.classList.toggle('expanded',open);const hint=banner.querySelector('.feature-copy em');if(hint)hint.textContent=open?'Нажми, чтобы свернуть кейсы ↑':'Нажми, чтобы посмотреть все кейсы ↓';if(!open)hideHrumsyCaseDetail();}
+function openFeatureScreen(type){
+  closeFeatureScreens();
+  const id=type==='games'?'miniGamesScreen':'casesScreen';
+  const screen=document.getElementById(id);
+  if(!screen)return;
+  screen.classList.add('open');
+  screen.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  if(type==='cases'){hideHrumsyCaseDetail();renderHrumsyCase();}
+}
+function closeFeatureScreens(){
+  ['miniGamesScreen','casesScreen'].forEach(id=>{
+    const screen=document.getElementById(id);
+    if(screen){screen.classList.remove('open');screen.setAttribute('aria-hidden','true');}
+  });
+  document.body.style.overflow='';
+  hideHrumsyCaseDetail();
+}
 function showHrumsyCaseDetail(){const catalog=document.getElementById('caseCatalog'),detail=document.getElementById('hrumsyCaseDetail');if(catalog)catalog.hidden=true;if(detail)detail.hidden=false;renderHrumsyCase();}
 function hideHrumsyCaseDetail(){const catalog=document.getElementById('caseCatalog'),detail=document.getElementById('hrumsyCaseDetail');if(catalog)catalog.hidden=false;if(detail)detail.hidden=true;const box=document.getElementById('hrumsyCaseBox');if(box)box.classList.remove('opening');}
 
