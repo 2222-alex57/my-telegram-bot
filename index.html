@@ -415,46 +415,24 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 @media(max-width:360px){.case-prize{padding:8px;font-size:11px}.case-box{font-size:48px}}
 
 
-/* Animated mini-games banner */
-.mini-games-banner{position:relative;isolation:isolate;display:flex;align-items:center;gap:14px;width:100%;min-height:154px;margin:4px 0 16px;padding:20px 48px 20px 18px;overflow:hidden;text-align:left;border:1px solid #e1b6ff99;border-radius:24px;background:radial-gradient(circle at 85% 15%,#ffcf5b66,transparent 27%),linear-gradient(125deg,#9a45f5 0%,#6326bb 48%,#32135e 100%);box-shadow:0 10px 0 #32105e,0 16px 30px #0006,inset 0 2px 0 #ffffff55;animation:miniBannerGlow 3s ease-in-out infinite}
-.mini-games-banner:before{content:"";position:absolute;z-index:-1;width:190px;height:190px;right:-48px;top:-64px;border:1px solid #ffffff35;border-radius:50%;box-shadow:0 0 0 17px #ffffff0b,0 0 0 36px #ffffff08}
-.mini-banner-cookie{display:grid;place-items:center;flex:0 0 88px;width:88px;height:88px;border-radius:25px;background:linear-gradient(145deg,#ffe69a,#d98b35);border:2px solid #fff0b8;box-shadow:inset 0 3px 8px #fff9,0 8px 16px #22083f99;font-size:54px;transform:rotate(-8deg);animation:miniCookieFloat 2.4s ease-in-out infinite}
-.mini-banner-copy{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
-.mini-banner-copy strong{font-size:clamp(21px,5vw,29px);font-weight:1000;letter-spacing:1px;color:#fff5c9;text-shadow:0 3px 0 #54218d,0 5px 12px #21083d}
-.mini-banner-copy small{font-size:12px;color:#f2ddff;line-height:1.35}
-.mini-banner-copy b{margin-top:5px;font-size:11px;color:#ffe17a}
-.mini-banner-arrow{position:absolute;right:15px;bottom:14px;font-size:28px;color:#ffe17a;transition:transform .25s}
-.mini-games-banner.expanded .mini-banner-arrow{transform:rotate(180deg)}
-.mini-banner-orbit{position:absolute;z-index:-1;font-size:24px;filter:drop-shadow(0 4px 5px #23083f99);animation:miniOrbit 4s ease-in-out infinite}
-.orbit-one{right:23%;top:13px}.orbit-two{right:9%;bottom:17px;animation-delay:-1.3s}.orbit-three{right:40%;bottom:14px;animation-delay:-2.4s}
-.mini-games-content{animation:miniContentIn .3s ease both}
-.mini-games-content[hidden]{display:none}
-@keyframes miniCookieFloat{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-7px) rotate(5deg)}}
-@keyframes miniOrbit{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-10px) rotate(12deg)}}
-@keyframes miniBannerGlow{0%,100%{box-shadow:0 10px 0 #32105e,0 16px 30px #0006,inset 0 2px 0 #ffffff55}50%{box-shadow:0 10px 0 #32105e,0 16px 34px #7b35d955,inset 0 2px 0 #ffffff77}}
-@keyframes miniContentIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:390px){.mini-games-banner{gap:11px;min-height:140px;padding:16px 42px 16px 13px}.mini-banner-cookie{flex-basis:72px;width:72px;height:72px;font-size:44px;border-radius:21px}.mini-banner-copy small{font-size:11px}.orbit-one{right:19%}}
-@media(prefers-reduced-motion:reduce){.mini-games-banner,.mini-banner-cookie,.mini-banner-orbit{animation:none}}
-
-
-
-/* Animated cases banner */
-.cases-banner{position:relative;isolation:isolate;display:flex;align-items:center;gap:14px;width:100%;min-height:154px;margin:16px 0;padding:20px 48px 20px 18px;overflow:hidden;text-align:left;border:1px solid #ffe09a99;border-radius:24px;background:radial-gradient(circle at 86% 15%,#ffdc7966,transparent 28%),linear-gradient(125deg,#a45a24 0%,#75401f 46%,#39204f 100%);box-shadow:0 10px 0 #321b3e,0 16px 30px #0006,inset 0 2px 0 #ffffff55;animation:casesBannerGlow 3.2s ease-in-out infinite}
-.cases-banner:before{content:"";position:absolute;z-index:-1;width:190px;height:190px;right:-48px;top:-64px;border:1px solid #ffffff35;border-radius:50%;box-shadow:0 0 0 17px #ffffff0b,0 0 0 36px #ffffff08}
-.cases-banner-icon{display:grid;place-items:center;flex:0 0 88px;width:88px;height:88px;border-radius:25px;background:linear-gradient(145deg,#ffe9a9,#d88b36);border:2px solid #fff0b8;box-shadow:inset 0 3px 8px #fff9,0 8px 16px #22083f99;font-size:52px;transform:rotate(-8deg);animation:miniCookieFloat 2.5s ease-in-out infinite}
-.cases-banner-copy{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
-.cases-banner-copy strong{font-size:clamp(23px,5vw,30px);font-weight:1000;letter-spacing:1px;color:#fff0bd;text-shadow:0 3px 0 #713b20,0 5px 12px #21083d}
-.cases-banner-copy small{font-size:12px;color:#ffebd8;line-height:1.35}
-.cases-banner-copy b{margin-top:5px;font-size:11px;color:#ffe17a}
-.cases-banner-arrow{position:absolute;right:15px;bottom:14px;font-size:28px;color:#ffe17a;transition:transform .25s}
-.cases-banner.expanded .cases-banner-arrow{transform:rotate(180deg)}
-.cases-banner-orbit{position:absolute;z-index:-1;font-size:24px;filter:drop-shadow(0 4px 5px #23083f99);animation:miniOrbit 4s ease-in-out infinite}
-.cases-orbit-one{right:23%;top:13px}.cases-orbit-two{right:9%;bottom:17px;animation-delay:-1.3s}.cases-orbit-three{right:40%;bottom:14px;animation-delay:-2.4s}
-.cases-content{animation:miniContentIn .3s ease both}
-.cases-content[hidden]{display:none}
-@keyframes casesBannerGlow{0%,100%{box-shadow:0 10px 0 #321b3e,0 16px 30px #0006,inset 0 2px 0 #ffffff55}50%{box-shadow:0 10px 0 #321b3e,0 16px 34px #d18a3b55,inset 0 2px 0 #ffffff77}}
-@media(max-width:390px){.cases-banner{gap:11px;min-height:140px;padding:16px 42px 16px 13px}.cases-banner-icon{flex-basis:72px;width:72px;height:72px;font-size:42px;border-radius:21px}.cases-banner-copy small{font-size:11px}.cases-orbit-one{right:19%}}
-@media(prefers-reduced-motion:reduce){.cases-banner,.cases-banner-icon,.cases-banner-orbit{animation:none}}
+/* Collapsible animated feature banners for games and cases */
+.feature-banner{position:relative;isolation:isolate;display:flex;align-items:center;gap:16px;min-height:154px;margin:10px 0 18px;padding:20px 22px;border-radius:25px;overflow:hidden;cursor:pointer;user-select:none;border:1px solid #d7a3ff99;box-shadow:0 12px 28px #0005,inset 0 1px 0 #ffffff66;transition:transform .18s,filter .18s,box-shadow .18s}
+.feature-banner:active{transform:scale(.988)}.feature-banner:hover{filter:brightness(1.08);box-shadow:0 14px 32px #0006,0 0 22px #b46cff44}
+.feature-banner:before{content:"";position:absolute;z-index:-1;width:190px;height:190px;right:-35px;top:-65px;border:1px solid #ffffff35;border-radius:50%;box-shadow:0 0 0 14px #ffffff0b,0 0 0 30px #ffffff08;animation:bannerOrbit 8s linear infinite}
+.mini-games-banner{background:linear-gradient(112deg,#9844ee 0%,#6426bb 55%,#3b1a67 100%)}
+.cases-banner{background:linear-gradient(112deg,#f0a52b 0%,#b76a22 36%,#63317f 100%);border-color:#ffe09a99}
+.feature-icon{width:88px;height:88px;flex:0 0 88px;display:grid;place-items:center;border-radius:23px;background:linear-gradient(145deg,#fff1a8,#ffb638);font-size:51px;box-shadow:0 8px 18px #18072f66,inset 0 2px 4px #ffffffc9;border:2px solid #fff5c5;animation:cookieBob 3s ease-in-out infinite}
+.case-feature-icon{background:linear-gradient(145deg,#ffe7a0,#ffb23c)}
+.feature-copy{display:flex;flex-direction:column;gap:5px;min-width:0;position:relative;z-index:1}.feature-copy strong{font-size:clamp(23px,5vw,31px);font-weight:1000;line-height:1.05;color:#fff7a9;text-shadow:0 3px 12px #28083e99;letter-spacing:.3px}.feature-copy small{font-size:12px;font-weight:800;color:#fff0ff}.feature-copy em{font-size:11px;font-style:normal;font-weight:900;color:#ffe879;margin-top:5px}
+.feature-floater{position:absolute;z-index:0;font-size:25px;filter:drop-shadow(0 5px 5px #0006);animation:floatFeature 3.4s ease-in-out infinite}.floater-one{right:24%;top:12px}.floater-two{right:42%;bottom:14px;animation-delay:-1.1s}.floater-three{right:8%;bottom:15px;animation-delay:-2s}.case-floater-one{right:25%;top:14px;animation-delay:-.7s}.case-floater-two{right:9%;bottom:17px;animation-delay:-1.7s}.case-floater-three{right:43%;bottom:13px;animation-delay:-2.4s}
+.feature-content{margin:-4px 0 20px;animation:featureReveal .24s ease}.feature-content[hidden]{display:none!important}.cases-content #caseCatalog{display:grid;gap:12px}.cases-content #hrumsyCaseDetail[hidden]{display:none!important}
+.feature-banner.expanded{border-bottom-left-radius:17px;border-bottom-right-radius:17px}
+@keyframes cookieBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
+@keyframes floatFeature{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-12px) rotate(9deg)}}
+@keyframes bannerOrbit{to{transform:rotate(360deg)}}
+@keyframes featureReveal{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:420px){.feature-banner{min-height:132px;padding:16px;gap:12px}.feature-icon{width:70px;height:70px;flex-basis:70px;font-size:41px;border-radius:19px}.feature-copy strong{font-size:23px}.feature-copy small{font-size:10px}.feature-copy em{font-size:10px}.feature-floater{font-size:20px}}
+@media(prefers-reduced-motion:reduce){.feature-banner:before,.feature-icon,.feature-floater{animation:none!important}.feature-content{animation:none}}
 
 </style>
 </head>
@@ -462,31 +440,26 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 <header><div class="logo">SKILL<span>RUSH</span></div><div class="balance">🍪 <span id="balance">0</span></div></header><div class="balance-sync-status" id="balanceSyncStatus" role="status"></div>
 <section class="hero"><h1>Играй. Побеждай. Забирай!</h1><p>Соревнуйся в мини-играх, выполняй задания и зарабатывай Хрумсы.</p><div class="level"><div style="display:flex;justify-content:space-between"><span>⭐ Уровень <b id="level">1</b></span><span id="xp">0 / 500 XP</span></div><div class="progress"><div id="xpbar"></div></div></div></section>
 <main>
-<section class="page active" id="home"><div class="daily-rewards"><div class="daily-rewards-head"><h2>🎁 Ежедневные призы</h2><span class="daily-streak" id="dailyStreak">🔥 Серия: 0 дней</span><div class="daily-help"><button class="daily-help-button" type="button" aria-label="Как работают ежедневные призы" aria-expanded="false" onclick="toggleDailyHelp()">?</button><div class="daily-help-panel" id="dailyHelpPanel"><strong>Как это работает?</strong><br>Каждый день забирай свой приз, чтобы продолжить серию. Если пропустишь хотя бы один день, серия сбросится и начнётся с 1-го дня. После 7-го дня за каждый следующий день начисляется по 100 Хрумсов. Полученные ранее Хрумсы не пропадают.</div></div></div><div class="daily-reward-grid" id="dailyRewardGrid"></div><button class="daily-reward-action" id="dailyRewardButton" onclick="claimDailyReward()">Забрать приз</button><p class="daily-reward-note" id="dailyRewardNote"></p></div></section>
+<section class="page active" id="home"><div class="daily-rewards"><div class="daily-rewards-head"><h2>🎁 Ежедневные призы</h2><span class="daily-streak" id="dailyStreak">🔥 Серия: 0 дней</span><div class="daily-help"><button class="daily-help-button" type="button" aria-label="Как работают ежедневные призы" aria-expanded="false" onclick="toggleDailyHelp()">?</button><div class="daily-help-panel" id="dailyHelpPanel"><strong>Как это работает?</strong><br>Каждый день забирай свой приз, чтобы продолжить серию. Если пропустишь хотя бы один день, серия сбросится и начнётся с 1-го дня. После 7-го дня за каждый следующий день начисляется по 100 Хрумсов. Полученные ранее Хрумсы не пропадают.</div></div></div><div class="daily-reward-grid" id="dailyRewardGrid"></div><button class="daily-reward-action" id="dailyRewardButton" onclick="claimDailyReward()">Забрать приз</button><p class="daily-reward-note" id="dailyRewardNote"></p></div><h2>🔥 Популярные игры</h2><div class="grid" id="games"></div><h2>🎯 Твои задания</h2><div class="card"><div id="homequests"></div><button onclick="showPage('quests')" style="width:100%;margin-top:12px">Все квесты →</button></div></section>
 <section class="page" id="gamespage">
-  <button class="mini-games-banner" id="miniGamesBanner" type="button" onclick="toggleMiniGames()" aria-expanded="false" aria-controls="miniGamesContent">
-    <span class="mini-banner-orbit orbit-one">⚡</span><span class="mini-banner-orbit orbit-two">🧩</span><span class="mini-banner-orbit orbit-three">🎲</span>
-    <span class="mini-banner-cookie">🍪</span>
-    <span class="mini-banner-copy"><strong>МИНИ-ИГРЫ</strong><small>Испытай удачу, память и реакцию</small><b id="miniGamesToggleText">Нажми, чтобы открыть игры ↓</b></span>
-    <span class="mini-banner-arrow" id="miniGamesArrow">⌄</span>
-  </button>
-  <div id="miniGamesContent" class="mini-games-content" hidden>
-    <h2>🔥 Выбирай игру</h2>
-    <div class="grid" id="allgames"></div>
+  <div class="feature-banner mini-games-banner" id="miniGamesBanner" role="button" tabindex="0" aria-expanded="false" aria-controls="miniGamesContent" onclick="toggleMiniGames()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMiniGames()}">
+    <span class="feature-icon" aria-hidden="true">🍪</span>
+    <span class="feature-copy"><strong>МИНИ-ИГРЫ</strong><small>Испытай удачу, память и реакцию</small><em>Нажми, чтобы открыть игры ↓</em></span>
+    <span class="feature-floater floater-one" aria-hidden="true">⚡</span><span class="feature-floater floater-two" aria-hidden="true">🎲</span><span class="feature-floater floater-three" aria-hidden="true">🧩</span>
   </div>
-  <button class="cases-banner" id="casesBanner" type="button" onclick="toggleCases()" aria-expanded="false" aria-controls="casesContent">
-    <span class="cases-banner-orbit cases-orbit-one">✨</span><span class="cases-banner-orbit cases-orbit-two">🍪</span><span class="cases-banner-orbit cases-orbit-three">💎</span>
-    <span class="cases-banner-icon">🎁</span>
-    <span class="cases-banner-copy"><strong>КЕЙСЫ</strong><small>Открывай кейсы и забирай Хрумсы</small><b id="casesToggleText">Нажми, чтобы посмотреть кейсы ↓</b></span>
-    <span class="cases-banner-arrow" id="casesBannerArrow">⌄</span>
-  </button>
-  <div id="casesContent" class="cases-content" hidden>
-    <div id="caseCatalog">
-      <div class="card case-entry" role="button" tabindex="0" onclick="showHrumsyCaseDetail()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showHrumsyCaseDetail()}">
-        <div class="case-entry-avatar" aria-hidden="true"><span>🍪</span></div>
-        <div class="case-entry-copy"><strong>🍪 Хрум-кейс</strong><p>Открой кейс и посмотри, какие призы можно получить.</p><span class="case-entry-link">Перейти к кейсу →</span></div>
-      </div>
+  <div id="miniGamesContent" class="feature-content" hidden><div class="grid" id="allgames"></div></div>
+  <div class="feature-banner cases-banner" id="casesBanner" role="button" tabindex="0" aria-expanded="false" aria-controls="casesContent" onclick="toggleCaseCatalog()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCaseCatalog()}">
+    <span class="feature-icon case-feature-icon" aria-hidden="true">🎁</span>
+    <span class="feature-copy"><strong>КЕЙСЫ</strong><small>Открывай кейсы и забирай Хрумсы</small><em>Нажми, чтобы посмотреть все кейсы ↓</em></span>
+    <span class="feature-floater case-floater-one" aria-hidden="true">🍪</span><span class="feature-floater case-floater-two" aria-hidden="true">✨</span><span class="feature-floater case-floater-three" aria-hidden="true">💎</span>
+  </div>
+  <div id="casesContent" class="feature-content cases-content" hidden>
+  <div id="caseCatalog">
+    <div class="card case-entry" role="button" tabindex="0" onclick="showHrumsyCaseDetail()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showHrumsyCaseDetail()}">
+      <div class="case-entry-avatar" aria-hidden="true"><span>🍪</span></div>
+      <div class="case-entry-copy"><strong>🍪 Хрум-кейс</strong><p>Открой кейс и посмотри, какие призы можно получить.</p><span class="case-entry-link">Перейти к кейсу →</span></div>
     </div>
+  </div>
   <div id="hrumsyCaseDetail" hidden>
     <button class="secondary case-back" type="button" onclick="hideHrumsyCaseDetail()">← Назад к кейсам</button>
     <div class="card case-card">
@@ -548,13 +521,13 @@ if(id==='reaction'){c.innerHTML='<p>Нажми «Старт» и жди зелё
 if(id==='memory'){const seq=Array.from({length:4},()=>Math.floor(Math.random()*4)),icons=['🔴','🔵','🟡','🟢'];let shown=0,entered=[];c.innerHTML='<p>Запомни последовательность:</p><div class="big" id="sequence">...</div>';const display=()=>{if(shown<seq.length){document.getElementById('sequence').textContent=icons[seq[shown++]];setTimeout(display,750)}else{c.innerHTML='<p>Повтори последовательность по порядку:</p><div class="grid">'+icons.map((x,i)=>`<button onclick="memoryPick(${i})">${x}</button>`).join('')+'</div>'}};window.memoryPick=i=>{entered.push(i);if(i!==seq[entered.length-1])finishGame(0,false,'Последовательность не совпала!');else if(entered.length===seq.length)finishGame(35,true,'Отличная память!')};setTimeout(display,800)}
 if(id==='guess'){const target=1+Math.floor(Math.random()*10);let attempts=0;c.innerHTML='<p>Угадай число от 1 до 10. У тебя 3 попытки.</p><input id="guess" type="number" min="1" max="10" placeholder="Введи число"><button id="try">Проверить</button><div id="hint"></div>';document.getElementById('try').onclick=()=>{const n=Number(document.getElementById('guess').value);if(!Number.isInteger(n)||n<1||n>10)return;attempts++;if(n===target)finishGame(25,true,'Ты угадал число!');else if(attempts>=3)finishGame(0,false,`Не угадал! Это было число ${target}`);else{document.getElementById('hint').textContent=n<target?'Загаданное число больше ↑':'Загаданное число меньше ↓';document.getElementById('guess').value=''}}}}
 function closeGame(){stopDrawTimers();drawCurrentRoomId=null;document.getElementById('modal').style.display='none';render()}
-function showPage(id,button){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];document.querySelectorAll('.tabs button')[index].classList.add('active')}if(id!=='gamespage')hideHrumsyCaseDetail();if(id==='friendspage')loadFriends();if(id==='profile')loadAvatarProfile()}
+function showPage(id,button){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));const page=document.getElementById(id);if(!page)return;page.classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];const tab=document.querySelectorAll('.tabs button')[index];if(tab)tab.classList.add('active')}if(id!=='gamespage')hideHrumsyCaseDetail();if(id==='friendspage')loadFriends();if(id==='profile')loadAvatarProfile()}
 function taskHTML(t){const period=t.id.startsWith('d-')?'d':'w',data=period==='d'?state.daily:state.weekly,value=data[t.key]||0,done=value>=t.goal,claimed=state.claimed.includes(t.id);return `<div class="card quest"><div class="quest-top"><span class="quest-title">${t.name}</span><span class="quest-reward">+${t.reward} 🍪</span></div><div class="quest-progress"><div style="width:${Math.min(100,value/t.goal*100)}%"></div></div><div class="quest-bottom"><small>${Math.min(value,t.goal)} / ${t.goal}</small><button class="claim" ${!done||claimed?'disabled':''} onclick="claimQuest('${t.id}',${t.reward})">${claimed?'Получено':done?'Забрать':'В процессе'}</button></div></div>`}
 async function claimQuest(id,reward){if(!progressCloudReady||progressCloudBusy||state.claimed.includes(id))return;const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks,t=tasks.find(x=>x.id===id),data=id.startsWith('d-')?state.daily:state.weekly;if(!t||data[t.key]<t.goal)return;progressCloudBusy=true;render();try{const result=await friendsApi('progress_quest_claim',{taskId:id});applyCloudProgress(result.progress)}catch(e){alert(e.message||'Не удалось забрать награду.')}finally{progressCloudBusy=false;render()}}
-function toggleMiniGames(){const content=document.getElementById('miniGamesContent'),banner=document.getElementById('miniGamesBanner'),label=document.getElementById('miniGamesToggleText'),arrow=document.getElementById('miniGamesArrow');const opening=content.hidden;content.hidden=!opening;banner.setAttribute('aria-expanded',String(opening));banner.classList.toggle('expanded',opening);label.textContent=opening?'Нажми, чтобы свернуть игры ↑':'Нажми, чтобы открыть игры ↓';arrow.textContent=opening?'⌃':'⌄';}
-function toggleCases(){const content=document.getElementById('casesContent'),banner=document.getElementById('casesBanner'),label=document.getElementById('casesToggleText'),arrow=document.getElementById('casesBannerArrow');const opening=content.hidden;content.hidden=!opening;banner.setAttribute('aria-expanded',String(opening));banner.classList.toggle('expanded',opening);label.textContent=opening?'Нажми, чтобы скрыть кейсы ↑':'Нажми, чтобы посмотреть кейсы ↓';arrow.textContent=opening?'⌃':'⌄';}
 function gameCard(g){return `<div class="card game" onclick="openGame('${g.id}')"><div class="emoji">${g.emoji}</div><strong>${g.name}</strong><p>${g.desc}</p><div class="reward">${g.id==='draw'?'🎨 С другом · 60 секунд':`🏆 До ${g.reward} Хрумсов`}</div></div>`}
 
+function toggleMiniGames(){const content=document.getElementById('miniGamesContent'),banner=document.getElementById('miniGamesBanner');if(!content||!banner)return;const open=content.hidden;content.hidden=!open;banner.setAttribute('aria-expanded',String(open));banner.classList.toggle('expanded',open);const hint=banner.querySelector('.feature-copy em');if(hint)hint.textContent=open?'Нажми, чтобы свернуть игры ↑':'Нажми, чтобы открыть игры ↓';}
+function toggleCaseCatalog(){const content=document.getElementById('casesContent'),banner=document.getElementById('casesBanner');if(!content||!banner)return;const open=content.hidden;content.hidden=!open;banner.setAttribute('aria-expanded',String(open));banner.classList.toggle('expanded',open);const hint=banner.querySelector('.feature-copy em');if(hint)hint.textContent=open?'Нажми, чтобы свернуть кейсы ↑':'Нажми, чтобы посмотреть все кейсы ↓';if(!open)hideHrumsyCaseDetail();}
 function showHrumsyCaseDetail(){const catalog=document.getElementById('caseCatalog'),detail=document.getElementById('hrumsyCaseDetail');if(catalog)catalog.hidden=true;if(detail)detail.hidden=false;renderHrumsyCase();}
 function hideHrumsyCaseDetail(){const catalog=document.getElementById('caseCatalog'),detail=document.getElementById('hrumsyCaseDetail');if(catalog)catalog.hidden=false;if(detail)detail.hidden=true;const box=document.getElementById('hrumsyCaseBox');if(box)box.classList.remove('opening');}
 
