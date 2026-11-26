@@ -1625,6 +1625,8 @@ function drawRecordResultOnce(room,won){
 }
 
 render();
+// One administrator launch log per Mini App load; logging errors never block startup.
+if(tg?.initData){friendsApi('app_open').catch(()=>{});}
 initializeDailyRewardsCloud().then(()=>{
   const status=document.getElementById('balanceSyncStatus');
   if(status)status.textContent=(dailyRewardsCloudReady&&progressCloudReady)?'':'Облачный баланс пока не подключён — проверь SQL и публикацию функции Supabase.';
