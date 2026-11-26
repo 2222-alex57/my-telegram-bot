@@ -513,7 +513,8 @@ body{font-family:'Nunito Sans',ui-rounded,'Segoe UI',Arial,sans-serif}
 </section>
 <section class="page" id="friendspage"><h2>👥 Друзья</h2>
 <div class="card"><h3>🔎 Найти игрока</h3><p>Ищи по игровому никнейму и отправляй заявку в друзья.</p><input class="friend-input" id="friendSearch" maxlength="20" placeholder="Например, Player_123"><button style="width:100%" onclick="searchFriends()">Найти игроков</button><div id="friendSearchResults"></div></div>
-<div class="card" style="margin-top:12px"><h3>🔗 Твоя ссылка-приглашение</h3><p>Поделись ссылкой. Когда другой игрок откроет SkillRush, ему будет предложено добавить тебя в друзья.</p><div class="friend-link" id="friendInviteLink">Сначала загрузим твой профиль...</div><button style="width:100%" onclick="copyFriendLink()">Скопировать ссылку</button></div>
+<div class="card" style="margin-top:12px"><h3>🔗 Твоя ссылка-приглашение</h3><p>Поделись ссылкой: за каждого нового игрока, который впервые откроет SkillRush по ней, ты получишь 200 Хрумсов.</p><div class="friend-link" id="friendInviteLink">Сначала загрузим твой профиль...</div><button style="width:100%" onclick="copyFriendLink()">Скопировать ссылку</button></div>
+<div class="card" style="margin-top:12px"><h3>🎁 Мои рефералы</h3><p>За каждого нового игрока по твоей ссылке — 200 Хрумсов. За первого ещё и эксклюзивная аватарка!</p><div class="profile-stat"><span>Приглашено игроков</span><b id="referralCount">0</b></div><div class="profile-stat"><span>Заработано</span><b id="referralEarned">0 🍪</b></div><div id="myReferrals"><p>Загрузка списка...</p></div></div>
 <div class="card" style="margin-top:12px"><h3>📩 Входящие заявки</h3><div id="friendRequests"><p>Загрузка...</p></div></div>
 <div class="card" style="margin-top:12px"><h3>⭐ Мои друзья</h3><div id="myFriends"><p>Загрузка...</p></div></div>
 <div class="card" style="margin-top:12px"><h3>✏️ Игровой никнейм</h3><p>Латинские буквы, цифры и подчёркивание; от 3 до 20 символов.</p><input class="friend-input" id="myNickname" maxlength="20" placeholder="Твой никнейм"><button style="width:100%" onclick="saveFriendNickname()">Сохранить никнейм</button></div>
@@ -533,6 +534,7 @@ body{font-family:'Nunito Sans',ui-rounded,'Segoe UI',Arial,sans-serif}
     <div class="avatar-group"><div class="avatar-group-title">3. Выбери фон</div><div class="avatar-options" id="avatarBackgroundOptions"></div></div>
   </div>
   <button id="saveAvatarButton" style="width:100%;margin-top:17px" onclick="saveAvatar()">Сохранить аватарку</button>
+  <button id="referralAvatarButton" type="button" hidden style="width:100%;margin-top:10px;background:linear-gradient(145deg,#e7b84f,#9b5a16);color:#fff" onclick="applyReferralAvatar()">🎁 Установить эксклюзивную аватарку</button>
   <div id="avatarBuilderStatus" class="avatar-builder-status" role="status">Аватарка загружается из профиля…</div>
 </div>
 <div class="promo-card">
@@ -931,13 +933,15 @@ const AVATAR_EYE_FIT={
   robot:{left:38,right:62,y:48,w:19,h:18},
   alien:{left:36,right:64,y:49,w:21,h:19},
   dragon:{left:37,right:63,y:47,w:20,h:18},
-  ghost:{left:39,right:61,y:49,w:18,h:16}
+  ghost:{left:39,right:61,y:49,w:18,h:16},
+  cookie:{left:37,right:63,y:46,w:20,h:18}
 };
-const AVATAR_BASES=[{id:'cat',label:'Кот',emoji:'🐱'},{id:'fox',label:'Лиса',emoji:'🦊'},{id:'panda',label:'Панда',emoji:'🐼'},{id:'frog',label:'Лягушка',emoji:'🐸'},{id:'robot',label:'Робот',emoji:'🤖'},{id:'alien',label:'Инопланетянин',emoji:'👽'},{id:'dragon',label:'Дракон',emoji:'🐲'},{id:'ghost',label:'Привидение',emoji:'👻'}];
+const AVATAR_BASES=[{id:'cat',label:'Кот',emoji:'🐱'},{id:'fox',label:'Лиса',emoji:'🦊'},{id:'panda',label:'Панда',emoji:'🐼'},{id:'frog',label:'Лягушка',emoji:'🐸'},{id:'robot',label:'Робот',emoji:'🤖'},{id:'alien',label:'Инопланетянин',emoji:'👽'},{id:'dragon',label:'Дракон',emoji:'🐲'},{id:'ghost',label:'Привидение',emoji:'👻'},{id:'cookie',label:'Печенька-легенда',emoji:'🍪'}];
 const AVATAR_ACCESSORIES=[{id:'none',label:'Без аксессуара',emoji:'🚫'},{id:'crown',label:'Корона',emoji:'👑'},{id:'glasses',label:'Очки',emoji:'🕶️'},{id:'cap',label:'Кепка',emoji:'🧢'},{id:'headphones',label:'Наушники',emoji:'🎧'},{id:'star',label:'Звезда',emoji:'⭐'}];
 const AVATAR_BACKGROUNDS=[{id:'purple',label:'Фиолетовый',color:'linear-gradient(145deg,#b77cff,#6024a8)'},{id:'gold',label:'Золотой',color:'linear-gradient(145deg,#fff0a0,#e99b24)'},{id:'blue',label:'Синий',color:'linear-gradient(145deg,#9be8ff,#2876c9)'},{id:'pink',label:'Розовый',color:'linear-gradient(145deg,#ffc3e8,#ce579e)'},{id:'green',label:'Зелёный',color:'linear-gradient(145deg,#b7ffc9,#35a879)'}];
 let avatarDraft={...AVATAR_DEFAULT};
 let avatarSaved={...AVATAR_DEFAULT};
+let referralAvatarUnlocked=false;
 function isHttpsPhotoUrl(value){
   if(typeof value!=='string'||value.length>2048)return false;
   try{return new URL(value).protocol==='https:';}catch{return false;}
@@ -1027,6 +1031,13 @@ function avatarCharacterMarkup(id){
       ${eyes(fit,'#fff')}
       <ellipse cx="50" cy="66" rx="4" ry="5" fill="#51647f"/>`;
       break;
+    case 'cookie': art=`
+      <path d="M50 10 C57 15 61 12 67 18 C73 24 80 23 84 33 C88 43 82 49 88 58 C91 69 82 74 75 82 C66 91 57 86 49 91 C39 94 34 85 25 84 C14 80 17 69 12 61 C8 51 17 44 14 35 C15 24 25 23 32 17 C39 11 43 16 50 10Z" fill="#d99545" stroke="#75401f" stroke-width="3"/>
+      <path d="M25 30 Q37 17 48 20" fill="none" stroke="#f7d18a" stroke-width="4" stroke-linecap="round" opacity=".9"/>
+      <circle cx="29" cy="39" r="4.5" fill="#704020"/><circle cx="70" cy="30" r="4" fill="#704020"/><circle cx="76" cy="65" r="4.5" fill="#704020"/><circle cx="34" cy="73" r="4" fill="#704020"/><circle cx="53" cy="84" r="3.5" fill="#704020"/>
+      ${eyes(fit,'#fff8e9')}
+      <path d="M42 66 Q50 74 58 66" fill="none" stroke="#704020" stroke-width="2.8" stroke-linecap="round"/>`;
+      break;
     default: art='';
   }
   return `<svg class="avatar-character" viewBox="0 0 100 100" role="img" aria-label="${id}">${art}</svg>`;
@@ -1114,7 +1125,7 @@ function renderAvatarBuilder(){
   const baseEl=document.getElementById('avatarBaseOptions');
   const accessoryEl=document.getElementById('avatarAccessoryOptions');
   const backgroundEl=document.getElementById('avatarBackgroundOptions');
-  if(baseEl)baseEl.innerHTML=AVATAR_BASES.map(x=>`<button class="avatar-option avatar-character-option ${avatarDraft.base===x.id?'selected':''}" title="${x.label}" aria-label="Выбрать персонажа: ${x.label}" onclick="pickAvatar('base','${x.id}')"><span class="avatar-picker-avatar bg-purple">${avatarCharacterMarkup(x.id)}</span></button>`).join('');
+  if(baseEl)baseEl.innerHTML=AVATAR_BASES.filter(x=>x.id!=='cookie'||referralAvatarUnlocked).map(x=>`<button class="avatar-option avatar-character-option ${avatarDraft.base===x.id?'selected':''}" title="${x.label}" aria-label="Выбрать персонажа: ${x.label}" onclick="pickAvatar('base','${x.id}')"><span class="avatar-picker-avatar bg-purple">${avatarCharacterMarkup(x.id)}</span></button>`).join('');
   if(accessoryEl)accessoryEl.innerHTML=AVATAR_ACCESSORIES.map(x=>`<button class="avatar-option ${avatarDraft.accessory===x.id?'selected':''}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('accessory','${x.id}')">${x.emoji}</button>`).join('');
   if(backgroundEl)backgroundEl.innerHTML=AVATAR_BACKGROUNDS.map(x=>`<button class="avatar-option bg-swatch ${avatarDraft.background===x.id?'selected':''}" style="background:${x.color}" title="${x.label}" aria-label="${x.label}" onclick="pickAvatar('background','${x.id}')"></button>`).join('');
 }
@@ -1135,9 +1146,10 @@ function chooseAvatarMode(mode){
 function pickAvatar(part,value){if(!['base','accessory','background'].includes(part))return;const allowed={base:AVATAR_BASES,accessory:AVATAR_ACCESSORIES,background:AVATAR_BACKGROUNDS};if(!allowed[part].some(x=>x.id===value))return;avatarDraft={...avatarDraft,type:'character',[part]:value};delete avatarDraft.photo_url;renderAvatarBuilder();avatarStatus('Предпросмотр обновлён. Нажми «Сохранить аватарку», чтобы применить изменения.');}
 async function loadAvatarProfile(){
   avatarStatus('Загружаем аватарку…');
-  try{const data=await friendsApi('me');friendsMe=data.player;avatarSaved=safeAvatar(data.player?.avatar);avatarDraft={...avatarSaved};if(avatarDraft.type==='telegram'&&currentTelegramPhotoUrl())avatarDraft.photo_url=currentTelegramPhotoUrl();if(data.player?.nickname)document.getElementById('username').textContent=data.player.nickname;renderAvatarBuilder();avatarStatus('Аватарка загружена. Выбери фото Telegram или нарисованного персонажа.');}
+  try{const [data,referrals]=await Promise.all([friendsApi('me'),friendsApi('referral_list')]);friendsMe=data.player;referralAvatarUnlocked=!!referrals.avatarUnlocked;const rewardButton=document.getElementById('referralAvatarButton');if(rewardButton)rewardButton.hidden=!referralAvatarUnlocked;avatarSaved=safeAvatar(data.player?.avatar);avatarDraft={...avatarSaved};if(avatarDraft.type==='telegram'&&currentTelegramPhotoUrl())avatarDraft.photo_url=currentTelegramPhotoUrl();if(data.player?.nickname)document.getElementById('username').textContent=data.player.nickname;renderAvatarBuilder();avatarStatus('Аватарка загружена. Выбери фото Telegram или нарисованного персонажа.');}
   catch(e){renderAvatarBuilder();avatarStatus(e.message||'Не удалось загрузить аватарку.',true);}
 }
+function applyReferralAvatar(){const button=document.getElementById('referralAvatarButton');if(!button||button.hidden)return;avatarDraft={type:'character',base:'cookie',accessory:'crown',background:'gold'};renderAvatarBuilder();avatarStatus('Эксклюзивная «Печенька-легенда» выбрана! Нажми «Сохранить аватарку».');}
 async function saveAvatar(){
   const button=document.getElementById('saveAvatarButton');if(button)button.disabled=true;
   avatarStatus('Сохраняем аватарку…');
@@ -1177,19 +1189,28 @@ async function createPromoCode(){const codeEl=document.getElementById('promoAdmi
 async function togglePromoCode(id,isActive){try{await friendsApi('promo_admin_toggle',{id,isActive});const data=await friendsApi('promo_admin_list');renderPromoAdminList(data.promos||[]);promoAdminStatus(isActive?'Промокод включён.':'Промокод отключён.');}catch(error){promoAdminStatus(error?.message||'Не удалось изменить промокод.',true);}}
 
 function friendStatus(message,isError=false){const el=document.getElementById('friendsStatus');if(el)el.innerHTML=`<p style="color:${isError?'#ff9b9b':'#8df0bd'}">${friendEsc(message)}</p>`}
-function friendLink(){if(!friendsMe)return '';const bot=FRIENDS_CONFIG.BOT_USERNAME.replace(/^@/,'').trim();if(!bot||bot.includes('ВСТАВЬТЕ'))return 'Укажи username бота в FRIENDS_CONFIG, чтобы сформировать ссылку.';return `https://t.me/${encodeURIComponent(bot)}?startapp=friend_${friendsMe.telegram_id}`}
+function friendLink(){if(!friendsMe)return '';const bot=FRIENDS_CONFIG.BOT_USERNAME.replace(/^@/,'').trim();if(!bot||bot.includes('ВСТАВЬТЕ'))return 'Укажи username бота в FRIENDS_CONFIG, чтобы сформировать ссылку.';return `https://t.me/${encodeURIComponent(bot)}?startapp=ref_${friendsMe.telegram_id}`}
 async function copyFriendLink(){const link=friendLink();if(!link.startsWith('https://')){friendStatus(link,true);return}try{await navigator.clipboard.writeText(link);friendStatus('Ссылка скопирована!')}catch{friendStatus('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.',true)}}
+function renderReferralList(data){
+  const count=document.getElementById('referralCount'),earned=document.getElementById('referralEarned'),list=document.getElementById('myReferrals');
+  const rows=Array.isArray(data?.referrals)?data.referrals:[];
+  if(count)count.textContent=String(Number(data?.count)||0);
+  if(earned)earned.textContent=`${Number(data?.earned)||0} 🍪`;
+  if(list)list.innerHTML=rows.length?rows.map((r,i)=>`<div class="friend-row"><div class="friend-avatar">${avatarMarkup(r.avatar,'small')}</div><div class="friend-meta"><strong>${friendEsc(r.nickname||'Игрок SkillRush')}</strong><small>Приглашён ${friendEsc(new Date(r.created_at).toLocaleDateString('ru-RU'))}${r.first_bonus?' · 🎁 Первый реферал':''}</small></div><div class="friend-actions"><b style="color:#ffe07a">+200 🍪</b></div></div>`).join(''):'<p>Пока никто не перешёл по твоей ссылке. Поделись ею, чтобы получить первые награды!</p>';
+  const rewardButton=document.getElementById('referralAvatarButton');referralAvatarUnlocked=!!data?.avatarUnlocked;if(rewardButton)rewardButton.hidden=!referralAvatarUnlocked;
+}
 async function loadFriends(){
   const reqEl=document.getElementById('friendRequests'),listEl=document.getElementById('myFriends');if(reqEl)reqEl.innerHTML='<p>Загрузка...</p>';if(listEl)listEl.innerHTML='<p>Загрузка...</p>';
   try{
     const me=await friendsApi('me');friendsMe=me.player;
     const nick=document.getElementById('myNickname');if(nick&&!nick.value)nick.value=friendsMe.nickname||'';
     const linkEl=document.getElementById('friendInviteLink');if(linkEl)linkEl.textContent=friendLink();
-    const [requests,friends]=await Promise.all([friendsApi('requests'),friendsApi('friends')]);
+    const [requests,friends,referrals]=await Promise.all([friendsApi('requests'),friendsApi('friends'),friendsApi('referral_list')]);
+    renderReferralList(referrals);
     if(reqEl){const rows=requests.requests||[];reqEl.innerHTML=rows.length?rows.map(r=>{const p=r.player||r.sr_players||{};return `<div class="friend-row"><div class="friend-avatar">${avatarMarkup(p.avatar,'small')}</div><div class="friend-meta"><strong>${friendEsc(p.nickname||'Игрок')}</strong><small>Хочет добавить тебя в друзья</small></div><div class="friend-actions"><button onclick="handleFriendRequest('${r.id}','accept_request')">Принять</button><button class="secondary" onclick="handleFriendRequest('${r.id}','reject_request')">Отклонить</button></div></div>`}).join(''):'<p>Пока нет входящих заявок.</p>'}
     if(listEl){const rows=friends.friends||[];listEl.innerHTML=rows.length?rows.map(p=>`<div class="friend-row"><div class="friend-avatar">${avatarMarkup(p.avatar,'small')}</div><div class="friend-meta"><strong>${friendEsc(p.nickname)}</strong><small>${friendEsc(p.display_name||'Игрок SkillRush')}</small></div><div class="friend-actions"><button class="secondary" onclick="removeFriend(${Number(p.telegram_id)})">Удалить</button></div></div>`).join(''):'<p>Пока нет друзей. Найди игрока или поделись ссылкой!</p>'}
     friendStatus(`Профиль загружен: @${friendsMe.nickname}`);
-    const start=tg?.initDataUnsafe?.start_param||'';if(/^friend_\d+$/.test(start)&&!sessionStorage.getItem('sr_friend_start_'+start)){sessionStorage.setItem('sr_friend_start_'+start,'1');const targetId=Number(start.slice(7));if(targetId!==Number(friendsMe.telegram_id)){const result=await friendsApi('invite_friend',{targetId});friendStatus(result.message||'Заявка по приглашению отправлена.');}}
+    const start=tg?.initDataUnsafe?.start_param||'';if(/^(?:friend_|ref_)\d+$/.test(start)&&!sessionStorage.getItem('sr_friend_start_'+start)){sessionStorage.setItem('sr_friend_start_'+start,'1');const targetId=Number(start.replace(/^(?:friend_|ref_)/,''));if(targetId!==Number(friendsMe.telegram_id)){const result=await friendsApi('invite_friend',{targetId});friendStatus(result.message||'Заявка по приглашению отправлена.');}}
   }catch(e){if(reqEl)reqEl.innerHTML=`<p>${friendEsc(e.message)}</p>`;if(listEl)listEl.innerHTML='<p>Не удалось загрузить список.</p>';friendStatus(e.message,true)}
 }
 async function searchFriends(){const query=document.getElementById('friendSearch').value.trim(),el=document.getElementById('friendSearchResults');if(query.length<2){el.innerHTML='<p>Введи хотя бы 2 символа.</p>';return}el.innerHTML='<p>Ищем...</p>';try{const data=await friendsApi('search',{query});const rows=data.players||[];el.innerHTML=rows.length?rows.map(p=>`<div class="friend-row"><div class="friend-avatar">${avatarMarkup(p.avatar,'small')}</div><div class="friend-meta"><strong>${friendEsc(p.nickname)}</strong><small>${friendEsc(p.display_name||'Игрок SkillRush')}</small></div><div class="friend-actions">${p.isFriend?'<small>Уже в друзьях</small>':`<button onclick="sendFriendRequest(${Number(p.telegram_id)})">Добавить</button>`}</div></div>`).join(''):'<p>Игроки не найдены. Пользователь должен хотя бы один раз открыть SkillRush.</p>'}catch(e){el.innerHTML=`<p>${friendEsc(e.message)}</p>`}}
