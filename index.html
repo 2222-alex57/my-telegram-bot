@@ -552,6 +552,21 @@ body{font-family:'Nunito Sans',ui-rounded,'Segoe UI',Arial,sans-serif}
         <div class="case-entry-avatar" aria-hidden="true"><span>🍪</span></div>
         <div class="case-entry-copy"><strong>🍪 Хрум-кейс</strong><p>Открой кейс и посмотри, какие призы можно получить.</p><span class="case-entry-link">Перейти к кейсу →</span></div>
       </div>
+      <div class="card case-entry" role="button" tabindex="0" onclick="showDailyCaseDetail()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showDailyCaseDetail()}">
+        <div class="case-entry-avatar" aria-hidden="true"><span>🎁</span></div>
+        <div class="case-entry-copy"><strong>🎁 Ежедневный кейс</strong><p>Забирай бесплатную награду каждый день!</p><span class="case-entry-link">Перейти к кейсу →</span></div>
+      </div>
+    </div>
+    <div id="dailyCaseDetail" hidden>
+      <button class="secondary case-back" type="button" onclick="hideDailyCaseDetail()">← Назад к кейсам</button>
+      <div class="card case-card">
+        <div class="case-head"><h2>🎁 Ежедневный кейс</h2><span class="case-price">БЕСПЛАТНО</span></div>
+        <div class="case-art" id="dailyCaseArt"><div class="case-box" id="dailyCaseBox">🎁</div><div class="case-reel-window"><div class="case-pointer" aria-hidden="true"></div><div class="case-reel"><div class="case-reel-track" id="dailyCaseReelTrack"></div></div></div><div class="case-art-copy"><strong>Ежедневный кейс</strong>Один бесплатный шанс каждый день. Внутри — 10 вариантов награды!</div></div>
+        <div class="case-prizes" id="dailyCasePrizes"></div>
+        <button class="case-open" id="dailyCaseOpenButton" onclick="openDailyCase()">Открыть бесплатно</button>
+        <p class="case-note" id="dailyCaseNote">Одна попытка в день.</p>
+        <div class="case-result" id="dailyCaseResult" hidden></div>
+      </div>
     </div>
     <div id="hrumsyCaseDetail" hidden>
       <button class="secondary case-back" type="button" onclick="hideHrumsyCaseDetail()">← Назад к кейсам</button>
@@ -623,9 +638,10 @@ function openFeatureScreen(type){
   screen.classList.add('open');
   screen.setAttribute('aria-hidden','false');
   document.body.style.overflow='hidden';
-  if(type==='cases'){hideHrumsyCaseDetail();renderHrumsyCase();}
+  if(type==='cases'){hideHrumsyCaseDetail();hideDailyCaseDetail(true);const c=document.getElementById('caseCatalog');if(c)c.hidden=false;renderHrumsyCase();renderDailyCase();}
 }
 function closeFeatureScreens(){
+  hideDailyCaseDetail(true);
   ['miniGamesScreen','casesScreen'].forEach(id=>{
     const screen=document.getElementById(id);
     if(screen){screen.classList.remove('open');screen.setAttribute('aria-hidden','true');}
@@ -633,8 +649,10 @@ function closeFeatureScreens(){
   document.body.style.overflow='';
   hideHrumsyCaseDetail();
 }
-function showHrumsyCaseDetail(){const catalog=document.getElementById('caseCatalog'),detail=document.getElementById('hrumsyCaseDetail');if(catalog)catalog.hidden=true;if(detail)detail.hidden=false;renderHrumsyCase();}
+function showHrumsyCaseDetail(){hideDailyCaseDetail(true);const catalog=document.getElementById('caseCatalog'),detail=document.getElementById('hrumsyCaseDetail');if(catalog)catalog.hidden=true;if(detail)detail.hidden=false;renderHrumsyCase();}
 function hideHrumsyCaseDetail(){const catalog=document.getElementById('caseCatalog'),detail=document.getElementById('hrumsyCaseDetail');if(catalog)catalog.hidden=false;if(detail)detail.hidden=true;const box=document.getElementById('hrumsyCaseBox');if(box)box.classList.remove('opening');}
+function showDailyCaseDetail(){hideHrumsyCaseDetail();const catalog=document.getElementById('caseCatalog'),detail=document.getElementById('dailyCaseDetail');if(catalog)catalog.hidden=true;if(detail)detail.hidden=false;renderDailyCase();if(progressCloudReady)refreshDailyCaseStatus();}
+function hideDailyCaseDetail(silent=false){const catalog=document.getElementById('caseCatalog'),detail=document.getElementById('dailyCaseDetail');if(!silent&&catalog)catalog.hidden=false;if(detail)detail.hidden=true;const box=document.getElementById('dailyCaseBox');if(box)box.classList.remove('opening');}
 
 const HRUMSY_CASE_COST=250;
 const HRUMSY_CASE_PRIZES=[
@@ -697,6 +715,43 @@ async function openHrumsyCase(){
     const note=document.getElementById('caseNote');if(note)note.textContent=error?.message||'Не удалось открыть кейс. Попробуй ещё раз.';
   }finally{hrumsyCaseBusy=false;if(box)box.classList.remove('opening');renderHrumsyCase();}
 }
+const DAILY_CASE_PRIZES=[{amount:5,chance:22},{amount:10,chance:18},{amount:15,chance:15},{amount:20,chance:12},{amount:25,chance:10},{amount:30,chance:8},{amount:40,chance:6},{amount:50,chance:4},{amount:100,chance:3},{amount:200,chance:2}];
+let dailyCaseBusy=false,dailyCaseLastWin=null,dailyCaseNextOpenAt=null,dailyCaseCanOpen=false,dailyCaseStatusReady=false,dailyCaseStatusBusy=false;
+function renderDailyCase(){
+ const prizes=document.getElementById('dailyCasePrizes');if(!prizes)return;
+ prizes.innerHTML=DAILY_CASE_PRIZES.map(p=>`<div class="case-prize"><strong>🍪 ${p.amount} Хрумсов</strong><span>${p.chance}%</span></div>`).join('');
+ const track=document.getElementById('dailyCaseReelTrack');if(track&&!track.dataset.ready){track.innerHTML=Array.from({length:12},()=>DAILY_CASE_PRIZES.map(p=>`<span class="case-reel-item">🍪 ${p.amount} <small>${p.chance}%</small></span>`).join('')).join('');track.dataset.ready='1';}
+ const btn=document.getElementById('dailyCaseOpenButton'),note=document.getElementById('dailyCaseNote');
+ const remaining=dailyCaseNextOpenAt?Date.parse(dailyCaseNextOpenAt)-Date.now():0;
+ const cooling=Number.isFinite(remaining)&&remaining>0;
+ if(btn){btn.disabled=dailyCaseBusy||!progressCloudReady||!dailyCaseStatusReady||!dailyCaseCanOpen||cooling;btn.textContent=dailyCaseBusy?'Открываем кейс…':cooling?'Кейс на перезарядке':'Открыть бесплатно';}
+ if(note)note.textContent=dailyCaseBusy?'Определяем выигрыш…':!progressCloudReady?'Подключаем облачный профиль…':!dailyCaseStatusReady?'Проверяем доступность кейса…':cooling?`⏳ Следующее открытие через: ${formatDailyCountdown(remaining)}`:'Бесплатное открытие доступно!';
+ const result=document.getElementById('dailyCaseResult');if(result){result.hidden=dailyCaseLastWin===null;result.innerHTML=dailyCaseLastWin===null?'':`🎉 Твой выигрыш<strong>+${dailyCaseLastWin} 🍪</strong>`;}
+}
+async function refreshDailyCaseStatus(){
+ if(dailyCaseStatusBusy||!progressCloudReady)return;
+ dailyCaseStatusBusy=true;
+ try{const data=await friendsApi('daily_case_status');dailyCaseNextOpenAt=data.nextOpenAt||null;dailyCaseCanOpen=!!data.canOpen;dailyCaseStatusReady=true;}
+ catch(error){dailyCaseStatusReady=false;dailyCaseCanOpen=false;const note=document.getElementById('dailyCaseNote');if(note)note.textContent=error?.message||'Не удалось проверить доступность кейса.';}
+ finally{dailyCaseStatusBusy=false;renderDailyCase();}
+}
+function updateDailyCaseCountdown(){
+ if(!dailyCaseStatusReady||!dailyCaseNextOpenAt)return;
+ const remaining=Date.parse(dailyCaseNextOpenAt)-Date.now();
+ if(remaining<=0){dailyCaseCanOpen=true;dailyCaseNextOpenAt=null;dailyCaseStatusReady=false;refreshDailyCaseStatus();}
+ else{const note=document.getElementById('dailyCaseNote');if(note)note.textContent=`⏳ Следующее открытие через: ${formatDailyCountdown(remaining)}`;}
+}
+async function openDailyCase(){
+ if(dailyCaseBusy||!progressCloudReady||!dailyCaseStatusReady||!dailyCaseCanOpen)return;dailyCaseBusy=true;dailyCaseLastWin=null;renderDailyCase();
+ const box=document.getElementById('dailyCaseBox');if(box)box.classList.add('opening');
+ try{const result=await friendsApi('daily_case_open',{eventId:newBalanceEventId()});dailyCaseLastWin=Number(result.reward);if(!DAILY_CASE_PRIZES.some(p=>p.amount===dailyCaseLastWin))throw new Error('Сервер вернул неизвестную награду.');
+ dailyCaseNextOpenAt=result.nextOpenAt||null;dailyCaseCanOpen=false;dailyCaseStatusReady=true;
+ const art=document.getElementById('dailyCaseArt'),track=document.getElementById('dailyCaseReelTrack'),viewport=track?.parentElement; if(art&&track&&viewport){art.classList.add('reel-visible');track.style.transition='none';track.style.transform='translateX(0)';void track.offsetWidth;const idx=DAILY_CASE_PRIZES.findIndex(p=>p.amount===dailyCaseLastWin),target=track.children[DAILY_CASE_PRIZES.length*9+idx];if(target){await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));track.style.transition='transform 3.2s cubic-bezier(.08,.72,.12,1)';track.style.transform=`translateX(${-Math.max(0,target.offsetLeft+target.offsetWidth/2-viewport.clientWidth/2)}px)`;await new Promise(r=>setTimeout(r,3300));}}
+ if(result.progress)applyCloudProgress(result.progress);else await refreshCloudBalance();render();
+ }catch(e){const note=document.getElementById('dailyCaseNote');if(note)note.textContent=e.message||'Не удалось открыть кейс.';dailyCaseLastWin=null;await refreshDailyCaseStatus();}
+ finally{dailyCaseBusy=false;if(box)box.classList.remove('opening');renderDailyCase();}
+}
+
 const DAILY_REWARD_AMOUNTS=[20,30,40,50,60,80,100];
 let dailyRewardsCloudReady=false;
 let dailyRewardsCloudBusy=false;
@@ -757,7 +812,7 @@ async function queueGameProgress(amount,win){
   catch(e){balanceSyncError=e.message||'Не удалось сохранить игровой результат.';const el=document.getElementById('balanceSyncStatus');if(el)el.textContent='Не удалось сохранить прогресс в облаке. Открой приложение снова для проверки.';}
 }
 async function refreshCloudBalance(){if(!progressCloudReady)return;try{const data=await friendsApi('progress_get');applyCloudProgress(data.progress);render();}catch(e){balanceSyncError=e.message||'Не удалось обновить профиль.';}}
-async function initializeProgressCloud(){progressCloudBusy=true;try{const data=await friendsApi('progress_get');applyCloudProgress(data.progress);progressCloudReady=true;}catch(e){progressCloudReady=false;dailyRewardsCloudError=e.message||'Не удалось загрузить профиль из облака.';}finally{progressCloudBusy=false;render();}}
+async function initializeProgressCloud(){progressCloudBusy=true;try{const data=await friendsApi('progress_get');applyCloudProgress(data.progress);progressCloudReady=true;await refreshDailyCaseStatus();}catch(e){progressCloudReady=false;dailyRewardsCloudError=e.message||'Не удалось загрузить профиль из облака.';}finally{progressCloudBusy=false;render();}}
 function queueBalanceIncrease(amount){/* legacy hook retained for compatibility; rewards are now recorded with progress_game or claim RPCs. */}
 
 async function initializeDailyRewardsCloud(){
@@ -1523,7 +1578,7 @@ initializeDailyRewardsCloud().then(()=>{
 window.addEventListener('focus',()=>{if(progressCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(progressCloudReady)refreshCloudBalance();else initializeDailyRewardsCloud();}});
 setInterval(()=>{if(!document.hidden&&progressCloudReady)refreshCloudBalance();},20000);
-setInterval(()=>{if(!document.hidden)updateDailyRewardCountdown();},1000);
+setInterval(()=>{if(!document.hidden){updateDailyRewardCountdown();updateDailyCaseCountdown();}},1000);
 </script>
 </body>
 </html>
