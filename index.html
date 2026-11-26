@@ -117,6 +117,23 @@ button:disabled{opacity:.45;cursor:default;filter:saturate(.5)}
 .secondary{background:linear-gradient(145deg,#55466d,#332443);margin-top:12px;box-shadow:0 4px 0 #21172f}
 .friend-input{width:100%;padding:13px;border-radius:12px;border:1px solid #a875d966;background:#140a28;color:white;font-size:15px;outline:none;margin:7px 0}.friend-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #ffffff18}.friend-row:last-child{border-bottom:0}.friend-avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#7140a9,#38205d);font-size:20px;flex-shrink:0}.friend-meta{flex:1;min-width:0}.friend-meta strong{display:block;overflow:hidden;text-overflow:ellipsis}.friend-meta small{color:var(--muted)}.friend-actions{display:flex;gap:6px;flex-wrap:wrap}.friend-actions button{padding:8px 10px;font-size:11px}.friend-link{overflow-wrap:anywhere;background:#160a2c;padding:11px;border-radius:10px;color:#e6ceff;font-size:12px;margin:9px 0}.profile-stat{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #ffffff18}
 .profile-stat b{color:#ffe07a}
+.promo-card{margin-top:14px;margin-bottom:16px;padding:20px 16px;background:linear-gradient(145deg,rgba(57,32,91,.98),rgba(31,19,55,.98));border:1px solid var(--line);border-radius:20px;box-shadow:0 10px 24px #0004,inset 0 1px 0 #ffffff18}
+.promo-card h2{font-size:clamp(25px,7vw,36px);line-height:1.1;text-align:center;margin:0 0 17px;font-weight:950;letter-spacing:-1px;color:var(--text);text-shadow:0 3px 16px #9a4cff55}
+.promo-entry{display:flex;align-items:center;gap:8px;padding:7px;background:linear-gradient(145deg,#160a2d,#21103e);border:1px solid #a66aff55;border-radius:18px;min-width:0;box-shadow:inset 0 2px 8px #0005}
+.promo-entry:focus-within{border-color:var(--purple2);box-shadow:0 0 0 2px #9b5cff33,inset 0 2px 8px #0005}
+.promo-entry input{flex:1;min-width:0;width:0;border:0;outline:0;background:transparent;color:var(--text);padding:12px 7px;font-size:15px;font-weight:750}
+.promo-entry input::placeholder{color:#a996c4}
+.promo-entry button{flex:0 0 auto;padding:13px 17px;border:1px solid #d9b8ff66;border-radius:15px;background:linear-gradient(145deg,#a65cff 0%,#7836d2 55%,#54239b 100%);color:#fff;font-size:14px;font-weight:900;box-shadow:0 4px 0 #351466,0 7px 14px #0004,inset 0 1px 0 #ffffff55;white-space:nowrap}
+.promo-entry button:active{transform:translateY(2px);box-shadow:0 2px 0 #351466,0 4px 9px #0004,inset 0 1px 0 #ffffff44}
+.promo-status{min-height:20px;margin:10px 4px 0;color:var(--muted);font-size:13px;text-align:center}
+.promo-status.success{color:var(--green)}.promo-status.error{color:#ff9b9b}
+.promo-admin-card{display:none;margin:0 0 18px;padding:18px 16px;background:linear-gradient(145deg,rgba(48,28,78,.98),rgba(24,14,43,.98));border:1px solid #a66aff66;border-radius:20px;box-shadow:0 10px 24px #0004,inset 0 1px 0 #ffffff18}
+.promo-admin-card.visible{display:block}.promo-admin-card h3{margin:0 0 8px;color:var(--text);font-size:20px}.promo-admin-card p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.promo-admin-form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.promo-admin-form input{min-width:0;width:100%;padding:12px;border:1px solid #a66aff55;border-radius:12px;background:#160a2d;color:var(--text);font-size:14px;outline:none}.promo-admin-form input:first-child{grid-column:1/-1}
+.promo-admin-form button{grid-column:1/-1;padding:13px;border:1px solid #d9b8ff66;border-radius:13px;background:linear-gradient(145deg,#a65cff,#54239b);color:#fff;font-weight:900;box-shadow:0 4px 0 #351466}
+.promo-admin-list{display:grid;gap:8px;margin-top:14px}.promo-admin-item{padding:11px;border:1px solid #ffffff20;border-radius:13px;background:#160a2d}.promo-admin-item-top{display:flex;justify-content:space-between;gap:8px;align-items:center}.promo-admin-item small{display:block;margin-top:5px;color:var(--muted)}.promo-admin-item button{margin-top:8px;padding:7px 11px;border:1px solid #a66aff66;border-radius:10px;background:#39205b;color:#fff;font-weight:800}
+
+@media(max-width:360px){.promo-entry{gap:5px;padding:6px}.promo-entry button{padding:12px 11px;font-size:12px}.promo-entry input{font-size:13px}}
 
 /* ===== SkillRush avatar creator ===== */
 .avatar-builder{margin:14px 0 18px}
@@ -516,6 +533,23 @@ body{font-family:'Nunito Sans',ui-rounded,'Segoe UI',Arial,sans-serif}
   <button id="saveAvatarButton" style="width:100%;margin-top:17px" onclick="saveAvatar()">Сохранить аватарку</button>
   <div id="avatarBuilderStatus" class="avatar-builder-status" role="status">Аватарка загружается из профиля…</div>
 </div>
+<div class="promo-card">
+  <h2>Промокоды</h2>
+  <div class="promo-entry"><input id="promoCodeInput" type="text" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Введите промокод" aria-label="Введите промокод" onkeydown="if(event.key==='Enter')redeemPromoCode()"><button id="promoActivateButton" type="button" onclick="redeemPromoCode()">Активировать</button></div>
+  <div class="promo-status" id="promoCodeStatus" role="status" aria-live="polite"></div>
+</div>
+<div class="promo-admin-card" id="promoAdminCard">
+  <h3>🛠 Управление промокодами</h3>
+  <p>Создавай коды с фиксированной наградой. Пустой лимит означает неограниченное число активаций.</p>
+  <div class="promo-admin-form">
+    <input id="promoAdminCode" type="text" maxlength="40" placeholder="Название, например SKILLRUSH100" autocapitalize="characters" spellcheck="false">
+    <input id="promoAdminReward" type="number" min="1" max="1000000" step="1" placeholder="Награда в Хрумсах">
+    <input id="promoAdminMaxUses" type="number" min="1" max="10000000" step="1" placeholder="Лимит активаций (необязательно)">
+    <button type="button" id="promoAdminCreateButton" onclick="createPromoCode()">＋ Создать промокод</button>
+  </div>
+  <div class="promo-status" id="promoAdminStatus" role="status" aria-live="polite"></div>
+  <div class="promo-admin-list" id="promoAdminList"><p>Загружаем промокоды…</p></div>
+</div>
 <div class="card"><div class="emoji">🎮</div><h3 id="username">Игрок SkillRush</h3><p>Участник игровой арены</p><div class="profile-stat"><span>Уровень</span><b id="plevel">1</b></div><div class="profile-stat"><span>Хрумсы</span><b id="pcoins">0</b></div><div class="profile-stat"><span>Всего игр</span><b id="pplays">0</b></div><div class="profile-stat"><span>Победы</span><b id="pwins">0</b></div><div class="profile-stat"><span>Всего заработано</span><b id="pearned">0</b></div></div></section>
 </main>
 <div class="quest-screen" id="dailyQuestScreen" aria-hidden="true">
@@ -625,7 +659,7 @@ function renderFullQuestScreens(){
   if(daily)daily.innerHTML=dailyTasks.map(taskHTML).join('');
   if(weekly)weekly.innerHTML=weeklyTasks.map(taskHTML).join('');
 }
-function showPage(id,button){closeFeatureScreens();closeQuestScreens();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));const page=document.getElementById(id);if(!page)return;page.classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];const tab=document.querySelectorAll('.tabs button')[index];if(tab)tab.classList.add('active')}if(id!=='gamespage')hideHrumsyCaseDetail();if(id==='friendspage')loadFriends();if(id==='profile')loadAvatarProfile()}
+function showPage(id,button){closeFeatureScreens();closeQuestScreens();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));const page=document.getElementById(id);if(!page)return;page.classList.add('active');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(button)button.classList.add('active');else{const index={home:0,gamespage:1,quests:2,profile:3,friendspage:4}[id];const tab=document.querySelectorAll('.tabs button')[index];if(tab)tab.classList.add('active')}if(id!=='gamespage')hideHrumsyCaseDetail();if(id==='friendspage')loadFriends();if(id==='profile'){loadAvatarProfile();loadPromoAdmin(true)}}
 function taskHTML(t){const period=t.id.startsWith('d-')?'d':'w',data=period==='d'?state.daily:state.weekly,value=data[t.key]||0,done=value>=t.goal,claimed=state.claimed.includes(t.id);return `<div class="card quest"><div class="quest-top"><span class="quest-title">${t.name}</span><span class="quest-reward">+${t.reward} 🍪</span></div><div class="quest-progress"><div style="width:${Math.min(100,value/t.goal*100)}%"></div></div><div class="quest-bottom"><small>${Math.min(value,t.goal)} / ${t.goal}</small><button class="claim" ${!done||claimed?'disabled':''} onclick="claimQuest('${t.id}',${t.reward})">${claimed?'Получено':done?'Забрать':'В процессе'}</button></div></div>`}
 async function claimQuest(id,reward){if(!progressCloudReady||progressCloudBusy||state.claimed.includes(id))return;const tasks=id.startsWith('d-')?dailyTasks:weeklyTasks,t=tasks.find(x=>x.id===id),data=id.startsWith('d-')?state.daily:state.weekly;if(!t||data[t.key]<t.goal)return;progressCloudBusy=true;render();try{const result=await friendsApi('progress_quest_claim',{taskId:id});applyCloudProgress(result.progress)}catch(e){alert(e.message||'Не удалось забрать награду.')}finally{progressCloudBusy=false;render()}}
 function gameCard(g){return `<div class="card game" onclick="openGame('${g.id}')"><div class="emoji">${g.emoji}</div><strong>${g.name}</strong><p>${g.desc}</p><div class="reward">${g.id==='draw'?'🎨 С другом · 60 секунд':`🏆 До ${g.reward} Хрумсов`}</div></div>`}
@@ -1131,6 +1165,27 @@ async function friendsApi(action,extra={}){
   if(!response.ok||data.error)throw new Error(data.error||'Не удалось выполнить запрос.');
   return data;
 }
+async function redeemPromoCode(){
+  const input=document.getElementById('promoCodeInput'),button=document.getElementById('promoActivateButton'),status=document.getElementById('promoCodeStatus');
+  const code=String(input?.value||'').trim().toUpperCase();
+  if(!code){if(status){status.className='promo-status error';status.textContent='Сначала введи промокод.';}return;}
+  if(!/^[A-ZА-ЯЁ0-9_-]{3,40}$/.test(code)){if(status){status.className='promo-status error';status.textContent='Проверь промокод: допустимы буквы, цифры, дефис и _. ';}return;}
+  if(button)button.disabled=true;if(status){status.className='promo-status';status.textContent='Проверяем промокод…';}
+  try{
+    const result=await friendsApi('promo_redeem',{code});
+    if(Number.isFinite(Number(result.balance))){state.coins=Math.max(0,Number(result.balance));if(Number.isFinite(Number(result.earned)))state.earned=Math.max(0,Number(result.earned));save();render();}
+    if(input)input.value='';
+    if(status){status.className='promo-status success';status.textContent=`Промокод активирован! +${Number(result.reward)||0} Хрумсов 🎉`;}
+  }catch(error){if(status){status.className='promo-status error';status.textContent=error?.message||'Не удалось активировать промокод.';}}
+  finally{if(button)button.disabled=false;}
+}
+let promoAdminLoaded=false;
+function promoAdminStatus(message,isError=false){const el=document.getElementById('promoAdminStatus');if(el){el.className='promo-status '+(isError?'error':'success');el.textContent=message;}}
+function renderPromoAdminList(rows){const el=document.getElementById('promoAdminList');if(!el)return;el.innerHTML=rows.length?rows.map(p=>`<div class="promo-admin-item"><div class="promo-admin-item-top"><strong>${friendEsc(p.code)}</strong><b>+${Number(p.reward)} 🍪</b></div><small>Использовано: ${Number(p.uses_count)||0}${p.max_uses===null?' / ∞':' / '+Number(p.max_uses)} · ${p.is_active?'Активен':'Отключён'}</small><button type="button" onclick="togglePromoCode(${Number(p.id)},${!p.is_active})">${p.is_active?'Отключить':'Включить'}</button></div>`).join(''):'<p>Промокодов пока нет.</p>';}
+async function loadPromoAdmin(force=false){const panel=document.getElementById('promoAdminCard');if(!panel)return;try{const data=await friendsApi('promo_admin_list');panel.classList.add('visible');renderPromoAdminList(data.promos||[]);promoAdminLoaded=true;}catch(error){if(error?.message==='Доступ только для администратора.')panel.classList.remove('visible');else if(force)promoAdminStatus(error?.message||'Не удалось загрузить список.',true);}}
+async function createPromoCode(){const codeEl=document.getElementById('promoAdminCode'),rewardEl=document.getElementById('promoAdminReward'),limitEl=document.getElementById('promoAdminMaxUses'),button=document.getElementById('promoAdminCreateButton');const code=String(codeEl?.value||'').trim().toUpperCase(),reward=Number(rewardEl?.value),maxUses=String(limitEl?.value||'').trim();if(button)button.disabled=true;try{const data=await friendsApi('promo_admin_create',{code,reward,maxUses});promoAdminStatus(`Промокод ${data.promo.code} создан!`);if(codeEl)codeEl.value='';if(rewardEl)rewardEl.value='';if(limitEl)limitEl.value='';const list=await friendsApi('promo_admin_list');renderPromoAdminList(list.promos||[]);}catch(error){promoAdminStatus(error?.message||'Не удалось создать промокод.',true);}finally{if(button)button.disabled=false;}}
+async function togglePromoCode(id,isActive){try{await friendsApi('promo_admin_toggle',{id,isActive});const data=await friendsApi('promo_admin_list');renderPromoAdminList(data.promos||[]);promoAdminStatus(isActive?'Промокод включён.':'Промокод отключён.');}catch(error){promoAdminStatus(error?.message||'Не удалось изменить промокод.',true);}}
+
 function friendStatus(message,isError=false){const el=document.getElementById('friendsStatus');if(el)el.innerHTML=`<p style="color:${isError?'#ff9b9b':'#8df0bd'}">${friendEsc(message)}</p>`}
 function friendLink(){if(!friendsMe)return '';const bot=FRIENDS_CONFIG.BOT_USERNAME.replace(/^@/,'').trim();if(!bot||bot.includes('ВСТАВЬТЕ'))return 'Укажи username бота в FRIENDS_CONFIG, чтобы сформировать ссылку.';return `https://t.me/${encodeURIComponent(bot)}?startapp=friend_${friendsMe.telegram_id}`}
 async function copyFriendLink(){const link=friendLink();if(!link.startsWith('https://')){friendStatus(link,true);return}try{await navigator.clipboard.writeText(link);friendStatus('Ссылка скопирована!')}catch{friendStatus('Не удалось скопировать автоматически. Выдели ссылку и скопируй её вручную.',true)}}
