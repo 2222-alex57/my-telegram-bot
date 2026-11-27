@@ -1188,7 +1188,7 @@ function currentTelegramPhotoUrl(){
 }
 function safeAvatar(value){
   const a=value&&typeof value==='object'?value:{};
-  const legacyBases={cookie:'cat',donut:'fox',cupcake:'panda',choco:'robot'};
+  const legacyBases={donut:'fox',cupcake:'panda',choco:'robot'};
   const requestedBase=legacyBases[a.base]||a.base;
   const result={type:'character',base:AVATAR_BASES.some(x=>x.id===requestedBase)?requestedBase:'cat',accessory:AVATAR_ACCESSORIES.some(x=>x.id===a.accessory)?a.accessory:'none',background:AVATAR_BACKGROUNDS.some(x=>x.id===a.background)?a.background:'purple'};
   if(a.type==='telegram'&&isHttpsPhotoUrl(a.photo_url))return {...result,type:'telegram',photo_url:a.photo_url};
